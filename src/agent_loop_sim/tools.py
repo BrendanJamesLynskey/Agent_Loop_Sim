@@ -10,7 +10,8 @@ TypeScript port alike:
 
 - a file system (a dict of path -> text);
 - a shell simulator that understands ``ls``, ``cat``, ``pytest`` (it really evaluates the
-  tiny repository's tests, see ``run_pytest``), ``rm``, ``echo`` and ``git status``;
+  tiny repository's tests, see ``run_pytest``), ``rm``, ``echo``, ``git status`` and
+  ``pip install`` (simulated: nothing is downloaded);
 - search over a fixed corpus of documents;
 - a calculator (+ - * / and parentheses).
 """
@@ -407,6 +408,43 @@ def run_pytest(files: dict[str, str]) -> tuple[int, str]:
     return 0, "\n".join(lines)
 
 
+# ── the sandbox around the shell ──────────────────────────────────────────
+
+NETWORK_COMMANDS = ("curl", "wget")
+SANDBOX_MODES = ("off", "workspace", "read_only")
+
+
+def sandbox_violation(sandbox: dict[str, Any] | None, command: str) -> str | None:
+    """What the sandbox stops in this shell command, or None if it may run.
+
+    The sandbox wraps the shell only (as the public harnesses' sandboxes do); file tools are
+    governed by the permission rules instead. Modes: ``off``; ``workspace`` (writes only inside
+    the repository, no network unless ``network`` is true); ``read_only`` (no writes at all,
+    no network unless ``network`` is true). The checks are on the command line, which is all a
+    fake shell has: a real sandbox is enforced by the operating system on every system call.
+    """
+    if sandbox is None or sandbox.get("mode", "off") == "off":
+        return None
+    mode = sandbox["mode"]
+    argv = split_ws(command)
+    if not argv:
+        return None
+    cmd = argv[0]
+    installs = cmd in ("pip", "pip3") and argv[1:2] == ["install"]
+    if (cmd in NETWORK_COMMANDS or installs) and not sandbox.get("network", False):
+        return f"{cmd}: network access is blocked by the sandbox"
+    if installs:
+        return f"{cmd}: cannot write to site-packages: outside the sandbox's writable roots"
+    if cmd == "rm":
+        targets = [a for a in argv[1:] if not a.startswith("-")]
+        if mode == "read_only" and targets:
+            return f"rm: cannot remove '{targets[0]}': read-only file system (sandbox)"
+        for t in targets:
+            if t.startswith("/") or t.startswith("~") or t == ".." or t.startswith("../") or "/../" in t:
+                return f"rm: cannot remove '{t}': outside the sandbox's writable roots"
+    return None
+
+
 # ── the world the tools act on ────────────────────────────────────────────
 
 
@@ -476,6 +514,9 @@ class World:
                         del self.files[p]
                         gone.append(p)
             code, out = 0, ("removed " + ", ".join(gone)) if gone else ""
+        elif cmd in ("pip", "pip3") and argv[1:2] == ["install"]:
+            pkgs = [a for a in argv[2:] if not a.startswith("-")]
+            code, out = (0, "Successfully installed " + " ".join(pkgs) + " (simulated)") if pkgs else (1, "ERROR: You must give at least one requirement to install")
         elif cmd == "git" and argv[1:2] == ["status"]:
             changed = sorted(p for p in self.files if self.original.get(p) != self.files[p])
             deleted = sorted(p for p in self.original if p not in self.files)

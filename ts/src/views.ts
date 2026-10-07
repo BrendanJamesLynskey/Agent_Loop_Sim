@@ -163,3 +163,95 @@ export function timeline(events: Ev[]): Obj[] {
   }
   return spans;
 }
+
+/** Chapter 6: the parent's and every sub-agent's context side by side (see views.py). */
+export function agentsFrames(events: Ev[]): Obj[] {
+  const frames: Obj[] = [];
+  const parts: Record<string, Part[]> = {};
+  const sent: Record<string, number> = {};
+  const busy: Record<string, number> = {};
+  const resultKind = isReact(events) ? "observation" : "tool_result";
+  const snap = (f: Obj) => {
+    f.parts = Object.fromEntries(Object.entries(parts).map(([a, p]) => [a, [...p]]));
+    f.totals = Object.fromEntries(Object.entries(parts).map(([a, p]) => [a, total(p)]));
+    f.sent = { ...sent };
+    f.busy = { ...busy };
+    frames.push(f);
+  };
+  for (const e of events) {
+    const ty = e.type;
+    const a = e.agent as string;
+    if (ty === "run_start") {
+      parts[a] = [];
+      sent[a] = 0;
+      busy[a] = 0;
+      continue;
+    }
+    if (ty === "handoff") {
+      if (e.direction === "spawn") {
+        parts[e.child] = [];
+        sent[e.child] = 0;
+        busy[e.child] = 0;
+        snap({ phase: "spawn", agent: a, child: e.child, t: e.t, prompt_tokens: e.prompt_tokens });
+      } else
+        snap({
+          phase: "return", agent: a, child: e.child, t: e.t, status: e.status,
+          child_tokens: e.child_tokens, summary_tokens: e.summary_tokens,
+        });
+      continue;
+    }
+    if (ty === "model_call") {
+      sent[a] = sent[a]! + e.input_tokens;
+      busy[a] = busy[a]! + e.dur;
+      if (e.purpose !== "act") continue;
+      parts[a] = agg(e.context);
+      snap({ phase: "call", agent: a, turn: e.turn, t: e.t, input: e.input_tokens });
+      parts[a] = add(dropPrompt(parts[a]!), "assistant", e.message_tokens);
+      snap({ phase: "output", agent: a, turn: e.turn, t: e.t + e.dur, output: e.output_tokens });
+    } else if (ty === "tool_call") {
+      snap({ phase: "tool", agent: a, turn: e.turn, t: e.t, name: e.name, subject: e.subject });
+    } else if (ty === "tool_result") {
+      parts[a] = add(parts[a]!, resultKind, e.tokens);
+      snap({ phase: "result", agent: a, t: e.t + e.dur, name: e.name, ok: e.ok, tokens: e.tokens });
+    } else if (ty === "compaction") {
+      parts[a] = dropPrompt(agg(e.context));
+      snap({ phase: "compact", agent: a, turn: e.turn, t: e.t, before: e.before, after: e.after });
+    } else if (ty === "error") {
+      if (e.message_tokens > 0) parts[a] = add(parts[a]!, e.kind === "malformed" ? "error" : "nudge", e.message_tokens);
+      snap({ phase: "error", agent: a, turn: e.turn, t: e.t, kind: e.kind, detail: e.detail });
+    } else if (ty === "run_end") {
+      snap({ phase: "done", agent: a, t: e.t, status: e.status });
+    }
+  }
+  return frames;
+}
+
+/** Chapter 7: each tool call on its way through the harness's checkpoints (see views.py). */
+export function pipelineFrames(events: Ev[]): Obj[] {
+  const frames: Obj[] = [];
+  const subject: Record<string, string> = {};
+  for (const e of events) {
+    const ty = e.type;
+    if (ty === "tool_call") {
+      subject[e.call] = e.subject;
+      frames.push({ stage: "call", agent: e.agent, call: e.call, name: e.name, subject: e.subject, t: e.t });
+    } else if (ty === "permission_check") {
+      frames.push({
+        stage: "permission", agent: e.agent, call: e.call, subject: subject[e.call], decision: e.decision,
+        reason: e.reason, answer: e.answer, wait: e.wait, t: e.t,
+      });
+    } else if (ty === "hook") {
+      if (e.action === "rewrite") subject[e.call] = e.subject;
+      frames.push({
+        stage: "hook", agent: e.agent, call: e.call, subject: subject[e.call], hook: e.hook, phase: e.phase,
+        action: e.action, result: e.result, t: e.t,
+      });
+    } else if (ty === "tool_result") {
+      frames.push({
+        stage: "result", agent: e.agent, call: e.call, name: e.name, subject: subject[e.call], ok: e.ok,
+        kind: e.kind, text: e.text, t: e.t + e.dur,
+      });
+    }
+  }
+  return frames;
+}

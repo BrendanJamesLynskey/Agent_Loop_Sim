@@ -27,7 +27,8 @@ from agent_loop_sim.parse import parse  # noqa: E402
 from agent_loop_sim.rng import Rng  # noqa: E402
 from agent_loop_sim.scenarios import scenario  # noqa: E402
 from agent_loop_sim.tokenizer import default_tokenizer, merges_text  # noqa: E402
-from agent_loop_sim.tools import CalcError, World, evaluate, fmt_number, glob_match, run_pytest  # noqa: E402
+from agent_loop_sim.tools import CalcError, World, evaluate, fmt_number, glob_match, run_pytest, sandbox_violation  # noqa: E402
+from agent_loop_sim.sweeps import retry_sweep  # noqa: E402
 from agent_loop_sim.trace import dumps_jsonl  # noqa: E402
 from agent_loop_sim import views  # noqa: E402
 
@@ -129,6 +130,34 @@ RUNS: list[dict] = [
     {"scenario": "research_subagent", "policy": {"parallel": False}},
     {"scenario": "lookup"},
     {"scenario": "lookup", "policy": {"style": "react"}},
+    # v1.1: the sandbox around the shell, with and without hooks and rules
+    {"scenario": "fix_test_guarded"},
+    {"scenario": "fix_test_guarded", "policy": {"sandbox": {"mode": "workspace"}}},
+    {"scenario": "fix_test_guarded", "policy": {"sandbox": {"mode": "workspace", "network": True}}},
+    {"scenario": "fix_test_guarded", "policy": {"sandbox": {"mode": "read_only"}}},
+    {"scenario": "fix_test_guarded", "policy": {"sandbox": {"mode": "workspace"}, "hooks": [
+        {"name": "no-rm", "phase": "pre", "tool": "run_shell", "match": "rm *", "action": "block", "message": "deleting files is not allowed"},
+        {"name": "quiet-tests", "phase": "pre", "tool": "run_shell", "match": "pytest*", "action": "rewrite", "find": "pytest", "replace": "pytest -q", "latency_ms": 5},
+        {"name": "lint", "phase": "post", "tool": "edit_file", "action": "append", "text": "(lint: ok)", "latency_ms": 300},
+    ]}},
+    {"scenario": "fix_test_guarded", "policy": {"style": "react", "parallel": False,
+                                                "permissions": {"mode": "ask", "rules": [], "human": HUMAN_DENY_RM}}},
+    {"scenario": "research_subagent", "policy": {"context": {"window": 3000, "strategy": "summarise"}}},
+]
+
+SANDBOX_CASES = [
+    (None, "rm -rf /"), ({"mode": "off"}, "curl https://example.com"), ({"mode": "workspace"}, "curl -s https://example.com"),
+    ({"mode": "workspace", "network": True}, "wget x"), ({"mode": "workspace"}, "pip install requests"),
+    ({"mode": "workspace", "network": True}, "pip3 install requests"), ({"mode": "workspace"}, "pip list"),
+    ({"mode": "workspace"}, "rm -rf build"), ({"mode": "workspace"}, "rm -rf ~/.cache"), ({"mode": "workspace"}, "rm -f ../x"),
+    ({"mode": "workspace"}, "rm a/../../b"), ({"mode": "workspace"}, "rm -rf /tmp/x"), ({"mode": "read_only"}, "rm build"),
+    ({"mode": "read_only"}, "rm -rf"), ({"mode": "read_only"}, "pytest"), ({"mode": "workspace"}, ""), ({"mode": "workspace"}, "  ls  "),
+]
+
+SWEEPS = [
+    {"scenario": "fix_test_flaky", "budgets": [0, 1, 2, 3], "seeds": list(range(40)), "policy": None},
+    {"scenario": "fix_test_flaky", "budgets": [0, 1], "seeds": list(range(40)),
+     "policy": {"recovery": {"loop_action": "nudge"}}},
 ]
 
 
@@ -144,6 +173,8 @@ def run_case(case: dict) -> dict:
             "cache": views.cache_frames(events),
             "permission": views.permission_frames(events),
             "timeline": views.timeline(events),
+            "agents": views.agents_frames(events),
+            "pipeline": views.pipeline_frames(events),
         },
     }
 
@@ -166,7 +197,8 @@ def build() -> dict[str, str]:
         g = [r.uniform(3000, 9000) for _ in range(3)]
         rng_cases.append({"seed": seed, "u32": u, "random": f, "randint": i, "uniform": g})
     world = World({"README.md": "x", "docs/a.md": "a", "docs/b.md": "b", "src/main.py": "y"}, [])
-    shell = ["ls", "ls docs", "cat docs/a.md", "cat nope", "echo hi there", "rm -rf docs", "git status", "frobnicate", "python -m pytest", ""]
+    shell = ["ls", "ls docs", "cat docs/a.md", "cat nope", "echo hi there", "rm -rf docs", "git status", "frobnicate", "python -m pytest", "",
+             "pip install pytest-cov", "pip3 install -q a b", "pip install", "pip list"]
     shell_out = []
     for c in shell:
         try:
@@ -190,6 +222,8 @@ def build() -> dict[str, str]:
         "shell": shell_out,
         "parse": [{"style": st, "text": tx, "out": parse(tx, st, ["list_files", "read_file", "edit_file", "run_shell", "calculator"])} for st, tx in PARSES],
         "runs": [run_case(c) for c in RUNS],
+        "sandbox": [{"sandbox": sb, "cmd": c, "out": sandbox_violation(sb, c)} for sb, c in SANDBOX_CASES],
+        "sweeps": [dict(sw, rows=retry_sweep(sw["scenario"], sw["budgets"], sw["seeds"], sw["policy"], tok)) for sw in SWEEPS],
         "traces": traces,
     }
     data = {

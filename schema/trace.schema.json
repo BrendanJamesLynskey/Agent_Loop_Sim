@@ -486,7 +486,8 @@
             "error",
             "transient",
             "denied",
-            "blocked"
+            "blocked",
+            "sandboxed"
           ]
         },
         "tokens": {

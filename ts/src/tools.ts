@@ -342,6 +342,11 @@ export class World {
         }
       }
       [code, out] = [0, gone.length ? "removed " + gone.join(", ") : ""];
+    } else if ((cmd === "pip" || cmd === "pip3") && argv[1] === "install") {
+      const pkgs = argv.slice(2).filter((a) => !a.startsWith("-"));
+      [code, out] = pkgs.length
+        ? [0, "Successfully installed " + pkgs.join(" ") + " (simulated)"]
+        : [1, "ERROR: You must give at least one requirement to install"];
     } else if (cmd === "git" && argv[1] === "status") {
       const changed = Object.keys(this.files)
         .filter((p) => this.original[p] !== this.files[p])
@@ -388,6 +393,33 @@ export class World {
       throw e;
     }
   }
+}
+
+// ── the sandbox around the shell ──────────────────────────────────────────
+
+export const NETWORK_COMMANDS = ["curl", "wget"];
+export const SANDBOX_MODES = ["off", "workspace", "read_only"];
+
+/** What the sandbox stops in this shell command, or null if it may run (see tools.py). */
+export function sandboxViolation(sandbox: Obj | null | undefined, command: string): string | null {
+  if (sandbox === null || sandbox === undefined || (sandbox.mode ?? "off") === "off") return null;
+  const mode = sandbox.mode as string;
+  const argv = splitWs(command);
+  if (argv.length === 0) return null;
+  const cmd = argv[0]!;
+  const installs = (cmd === "pip" || cmd === "pip3") && argv[1] === "install";
+  if ((NETWORK_COMMANDS.includes(cmd) || installs) && !(sandbox.network ?? false))
+    return `${cmd}: network access is blocked by the sandbox`;
+  if (installs) return `${cmd}: cannot write to site-packages: outside the sandbox's writable roots`;
+  if (cmd === "rm") {
+    const targets = argv.slice(1).filter((a) => !a.startsWith("-"));
+    if (mode === "read_only" && targets.length > 0)
+      return `rm: cannot remove '${targets[0]}': read-only file system (sandbox)`;
+    for (const t of targets)
+      if (t.startsWith("/") || t.startsWith("~") || t === ".." || t.startsWith("../") || t.includes("/../"))
+        return `rm: cannot remove '${t}': outside the sandbox's writable roots`;
+  }
+  return null;
 }
 
 export function execute(world: World, name: string, args: Obj): string {

@@ -4,8 +4,8 @@ A deterministic simulator of an **agent harness**: the loop that turns a chat mo
 It runs the loop (model → tool calls → results → model), with every harness choice a switchable policy:
 the tool-calling style, parallel calls and stop conditions; permission rules, modes and a simulated human;
 context management (truncation, tool-result clipping, summarising compaction); prompt-cache-aware prompt
-layout; sub-agents; pre- and post-tool hooks; and error recovery (retries with back-off, malformed-call
-feedback, loop detection). Every run produces a versioned **event trace** (JSON Lines) that the
+layout; sub-agents; pre- and post-tool hooks; a sandbox around the shell; and error recovery (retries with
+back-off, malformed-call feedback, loop detection). Every run produces a versioned **event trace** (JSON Lines) that the
 companion sites animate.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
@@ -29,7 +29,8 @@ port at a pinned commit.
 | `accounting.py` / `accounting.ts` | prompt-cache simulation (prefix match, block size, minimum length, TTL), cost from a dated price table, latency (TTFT + tokens/s) |
 | `models.py` / `models.ts` | the model interface: `scripted`, `replay` (checks each prompt's fingerprint) and, Python only, `local` (llama.cpp's `llama-server`) |
 | `harness.py` / `harness.ts` | the loop and every policy |
-| `views.py` / `views.ts` | the animation frames the sites draw, derived from a trace |
+| `views.py` / `views.ts` | the animation frames the sites draw, derived from a trace (the loop, tool calls, the context budget, the cache, permissions, a timeline; since 1.1, every agent's context side by side and each call's path through permissions, hooks and the sandbox) |
+| `sweeps.py` / `sweeps.ts` | seeded sweeps: one scenario over many seeds per value of a knob (since 1.1: the retry budget) |
 | `schema/trace.schema.json` | JSON Schema of one trace event |
 
 ## Policies
@@ -50,8 +51,15 @@ events = run(scenario("fix_test_cleanup"), {
                "action": "rewrite", "find": "pytest", "replace": "pytest -q"}],
     "recovery": {"retries": 2, "backoff_ms": 500, "backoff_factor": 2,
                  "loop_repeats": 3, "loop_action": "stop", "malformed": "feedback"},
+    "sandbox": {"mode": "workspace", "network": False},     # off | workspace | read_only (1.1; optional)
 })
 ```
+
+The sandbox (1.1) wraps the shell only, as the public harnesses' sandboxes do; the file tools stay under
+the permission rules. `workspace` lets a command write inside the repository only and blocks the network;
+`read_only` blocks every write. A stopped command comes back as a failed `tool_result` of kind `sandboxed`.
+The checks look at the command line, which is all a fake shell has; a real sandbox is enforced by the
+operating system. Leaving `sandbox` out keeps every 1.0 run byte-identical (apart from the `engine` version).
 
 Permission rules: deny rules first, then the read-only mode, then ask rules, then allow rules, then the
 mode's default (reads allowed, writes ask). A rule's pattern is a glob over the call's subject (a path or a
@@ -69,11 +77,18 @@ make-up message by message. See `schema/trace.schema.json`; `traces/*.events.jso
 
 | Scenario | Task |
 | --- | --- |
-| `fix_test` (+ `_react`, `_malformed`, `_cleanup`, `_flaky`) | a tiny repository whose `add()` subtracts: find it, fix it, re-run the tests |
+| `fix_test` (+ `_react`, `_malformed`, `_cleanup`, `_flaky`, `_guarded`) | a tiny repository whose `add()` subtracts: find it, fix it, re-run the tests (`_guarded`, 1.1: then `pip install`, `rm -rf build` and `rm -rf ~/.cache/pytest`, for hooks and the sandbox) |
 | `research` (+ `_subagent`) | read four long design notes and work out two numbers (fills the context) |
 | `lookup` | search a small corpus and use the calculator |
 
 The notes' numbers are invented for the exercise (`tiny-7b` and `dev-gpu` are not real products).
+
+## Versions
+
+- **1.1.0** (2026-10-07): the shell sandbox (`policy.sandbox`, result kind `sandboxed`), `pip install` in the
+  shell simulator, the `fix_test_guarded` scenario, `views.agents_frames` / `pipeline_frames`,
+  `sweeps.retry_sweep` (finished, and finished with passing tests: `verified`). Every 1.0 fixture run is unchanged apart from the `engine` field.
+- **1.0.0** (2026-10-07): the first release.
 
 ## Recorded traces
 

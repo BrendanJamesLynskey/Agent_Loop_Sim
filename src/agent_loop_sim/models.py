@@ -57,7 +57,8 @@ class ScriptedModel:
 
     After a step's calls come back, the model moves to the next step, unless a call
     failed: then the step's ``on_error`` ("repeat", the default, or "skip") applies, or its
-    ``on_denied`` ("skip", the default, or "repeat") if a call was denied or blocked.
+    ``on_denied`` ("skip", the default, or "repeat") if a call was denied, blocked by a hook
+    or stopped by the sandbox.
     After malformed output or a loop-detection nudge it moves on.
     """
 
@@ -76,7 +77,7 @@ class ScriptedModel:
             if prev["kind"] == "results":
                 failed = [r for r in prev["results"] if not r["ok"]]
                 if failed:
-                    refused = any(r["kind"] in ("denied", "blocked") for r in failed)
+                    refused = any(r["kind"] in ("denied", "blocked", "sandboxed") for r in failed)
                     action = step.get("on_denied", "skip") if refused else step.get("on_error", "repeat")
                     if action == "repeat":
                         nxt = self.last

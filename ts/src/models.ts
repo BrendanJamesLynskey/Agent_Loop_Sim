@@ -52,7 +52,7 @@ export class ScriptedModel implements Model {
       if (prev.kind === "results") {
         const failed = (prev.results as Obj[]).filter((r) => !r.ok);
         if (failed.length > 0) {
-          const refused = failed.some((r) => r.kind === "denied" || r.kind === "blocked");
+          const refused = failed.some((r) => r.kind === "denied" || r.kind === "blocked" || r.kind === "sandboxed");
           const action = refused ? (step.on_denied ?? "skip") : (step.on_error ?? "repeat");
           if (action === "repeat") nxt = this.last;
         }

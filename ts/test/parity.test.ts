@@ -14,6 +14,7 @@ import {
   Rng,
   Tokenizer,
   World,
+  agentsFrames,
   budgetFrames,
   cacheFrames,
   dumps,
@@ -23,9 +24,12 @@ import {
   loopFrames,
   parse,
   permissionFrames,
+  pipelineFrames,
   replayTrace,
+  retrySweep,
   run,
   runPytest,
+  sandboxViolation,
   scenario,
   timeline,
   toolcallFrames,
@@ -120,6 +124,22 @@ describe("runs", () => {
       expect(cacheFrames(events)).toEqual(r.views.cache);
       expect(permissionFrames(events)).toEqual(r.views.permission);
       expect(timeline(events)).toEqual(r.views.timeline);
+      expect(agentsFrames(events)).toEqual(r.views.agents);
+      expect(pipelineFrames(events)).toEqual(r.views.pipeline);
+    });
+  }
+});
+
+describe("the sandbox around the shell", () => {
+  it("stops the same commands", () => {
+    for (const c of fx.sandbox as Obj[]) expect(sandboxViolation(c.sandbox, c.cmd), c.cmd).toEqual(c.out);
+  });
+});
+
+describe("seeded sweeps", () => {
+  for (const sw of fx.sweeps as Obj[]) {
+    it(`${sw.scenario} ${JSON.stringify(sw.policy ?? {})}`, () => {
+      expect(retrySweep(sw.scenario, sw.budgets, sw.seeds, sw.policy, tok)).toEqual(sw.rows);
     });
   }
 });

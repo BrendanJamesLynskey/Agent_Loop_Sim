@@ -2,7 +2,7 @@
 
 One turn: (compact the context if it is too full) → render the prompt → call the model →
 parse its output → for each tool call: check permissions (maybe ask the simulated human) →
-run the pre-tool hooks → execute (with injected failures, retries and back-off) → run the
+run the pre-tool hooks → execute (inside the shell sandbox, with injected failures, retries and back-off) → run the
 post-tool hooks → append the results → next turn. The run stops on a final answer, the
 turn limit, loop detection or a context overflow.
 
@@ -21,7 +21,7 @@ from .models import ReplayModel, ScriptedModel, summarise
 from .parse import parse
 from .rng import MASK, Rng
 from .tokenizer import Tokenizer, default_tokenizer
-from .tools import TOOL_SPECS, ToolError, World, execute, glob_match
+from .tools import TOOL_SPECS, ToolError, World, execute, glob_match, sandbox_violation
 from .jsonfmt import dumps
 
 DEFAULT_POLICY: dict[str, Any] = {
@@ -314,6 +314,11 @@ class Run:
             return {"ok": True, "kind": "ok", "text": text, "dur": self.t - start}
         d = 0.0
         attempt = 0
+        if name == "run_shell":
+            blocked = sandbox_violation(self.policy.get("sandbox"), args["command"])
+            if blocked is not None:
+                return {"ok": False, "kind": "sandboxed", "dur": float(spec["latency_ms"]),
+                        "text": f"exit code: 1\n{blocked}"}
         while True:
             d += spec["latency_ms"]
             if self.fault(name):

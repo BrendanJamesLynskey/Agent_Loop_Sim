@@ -379,3 +379,103 @@ def test_system_segment_and_render():
     seg, bare = system_segment("S", tools, "native")
     assert seg.startswith("<|im_start|>system\nS\n\n# Tools") and bare == "<|im_start|>system\nS<|im_end|>\n"
     assert render("S", tools, "react", []).endswith("<|im_start|>assistant\n")
+
+
+# ── v1.1: the sandbox, the chapter 6/7 views, seeded sweeps ──────────────────
+
+
+def _results(ev):
+    return {e["text"].split("\n")[-1].split(":")[0]: e["kind"] for e in ev if e["type"] == "tool_result"}
+
+
+def test_sandbox_rules():
+    from agent_loop_sim.tools import sandbox_violation
+
+    ws = {"mode": "workspace"}
+    assert sandbox_violation(None, "rm -rf /") is None
+    assert sandbox_violation({"mode": "off"}, "curl x") is None
+    assert "network" in sandbox_violation(ws, "curl -s https://example.com")
+    assert sandbox_violation({"mode": "workspace", "network": True}, "curl x") is None
+    assert "network" in sandbox_violation(ws, "pip install requests")
+    assert "site-packages" in sandbox_violation({"mode": "workspace", "network": True}, "pip install requests")
+    assert sandbox_violation(ws, "rm -rf build") is None
+    for bad in ["rm -rf ~/.cache", "rm -rf /tmp/x", "rm ../x", "rm a/../../b"]:
+        assert "outside" in sandbox_violation(ws, bad)
+    assert "read-only" in sandbox_violation({"mode": "read_only"}, "rm build")
+    assert sandbox_violation({"mode": "read_only"}, "pytest") is None
+
+
+def test_sandbox_stops_shell_calls_but_not_file_tools():
+    def kinds(pol):
+        ev = run(scenario("fix_test_guarded"), pol)
+        assert ev[-1]["status"] == "done"
+        return [(e["subject"], r["kind"]) for e, r in zip(
+            [e for e in ev if e["type"] == "tool_call"], [e for e in ev if e["type"] == "tool_result"])]
+
+    off = dict(kinds(None))
+    assert set(off.values()) == {"ok"}  # without a sandbox even rm -rf ~/.cache/pytest runs
+    ws = dict(kinds({"sandbox": {"mode": "workspace"}}))
+    assert ws["pip install pytest-cov"] == "sandboxed" and ws["rm -rf ~/.cache/pytest"] == "sandboxed"
+    assert ws["rm -rf build"] == "ok"
+    ro = dict(kinds({"sandbox": {"mode": "read_only"}}))
+    assert ro["rm -rf build"] == "sandboxed"
+    assert ro["calc.py"] == "ok"  # the edit is a file tool: outside the sandbox, governed by permissions
+    ev = run(scenario("fix_test_guarded"), {"sandbox": {"mode": "workspace"}})
+    sb = [e for e in ev if e["type"] == "tool_result" and e["kind"] == "sandboxed"]
+    assert all(not e["ok"] and e["text"].startswith("exit code: 1\n") and e["dur"] == 900 for e in sb)
+
+
+def test_agents_frames_side_by_side():
+    ev = run(scenario("research_subagent"))
+    fr = views.agents_frames(ev)
+    spawn = next(f for f in fr if f["phase"] == "spawn")
+    ret = next(f for f in fr if f["phase"] == "return")
+    assert spawn["child"] == "sub1" and set(spawn["parts"]) == {"main", "sub1"}
+    # the notes fill the child's context, never the parent's
+    assert ret["totals"]["sub1"] > 2 * ret["totals"]["main"]
+    assert max(f["totals"]["main"] for f in fr) < max(f["totals"].get("sub1", 0) for f in fr)
+    # sent and busy grow monotonically and end at the run's totals
+    end = ev[-1]
+    assert sum(fr[-1]["sent"].values()) == end["totals"]["input_tokens"]
+    assert fr[-1]["phase"] == "done"
+    # a run with one agent: the same parts as loop_frames at every shared phase
+    ev1 = run(scenario("fix_test"))
+    a = [f["totals"]["main"] for f in views.agents_frames(ev1)]
+    b = [f["total"] for f in views.loop_frames(ev1)]
+    assert a == b
+
+
+def test_pipeline_frames_follow_a_call_through_the_checkpoints():
+    pol = {"sandbox": {"mode": "workspace"}, "hooks": [
+        {"name": "no-rm", "phase": "pre", "tool": "run_shell", "match": "rm *", "action": "block", "message": "no"},
+        {"name": "quiet-tests", "phase": "pre", "tool": "run_shell", "match": "pytest*", "action": "rewrite",
+         "find": "pytest", "replace": "pytest -q"},
+    ]}
+    fr = views.pipeline_frames(run(scenario("fix_test_guarded"), pol))
+    by_call = {}
+    for f in fr:
+        by_call.setdefault(f["call"], []).append(f)
+    stages = {c: [f["stage"] for f in fs] for c, fs in by_call.items()}
+    assert all(s[0] == "call" and s[1] == "permission" and s[-1] == "result" for s in stages.values())
+    res = {fs[0]["subject"]: fs[-1] for fs in by_call.values()}
+    assert res["pytest"]["subject"] == "pytest -q" and res["pytest"]["ok"]
+    assert res["rm -rf build"]["kind"] == "blocked"
+    assert res["pip install pytest-cov"]["kind"] == "sandboxed"
+
+
+def test_retry_sweep_success_rises_with_the_budget():
+    from agent_loop_sim.sweeps import retry_sweep
+
+    rows = retry_sweep("fix_test_flaky", [0, 1, 2], list(range(30)))
+    s = [r["success"] for r in rows]
+    assert s[0] < s[1] <= s[2] == 1.0
+    assert all(len(r["statuses"]) == 30 and r["done"] == r["statuses"].count("done") for r in rows)
+    # a loop nudge moves the model on: the run ends "done" although its tests never passed again
+    from agent_loop_sim.sweeps import verified
+    nudged = run(scenario("fix_test_flaky"), {"recovery": {"retries": 0, "loop_action": "nudge"}}, seed=0)
+    assert nudged[-1]["status"] == "done" and not verified(nudged)
+    assert verified(run(scenario("fix_test")))
+    assert all(r["verified"] <= r["done"] for r in rows)
+    # each run in a row is the ordinary seeded run
+    ev = run(scenario("fix_test_flaky"), {"recovery": {"retries": 0}}, seed=4)
+    assert rows[0]["statuses"][4] == ev[-1]["status"]

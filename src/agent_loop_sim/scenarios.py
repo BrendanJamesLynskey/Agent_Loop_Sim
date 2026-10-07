@@ -3,7 +3,9 @@
 - ``fix_test``: a tiny repository whose ``add`` subtracts; find it, fix it, re-run the tests.
   Variants: ``fix_test_react`` (text tool calls), ``fix_test_malformed`` (one broken call),
   ``fix_test_cleanup`` (also tries ``rm -rf build`` and ``git status``, for permissions),
-  ``fix_test_flaky`` (the shell fails transiently).
+  ``fix_test_flaky`` (the shell fails transiently), ``fix_test_guarded`` (after the fix it
+  also installs a package, clears the build directory and a cache outside the repository:
+  calls for hooks and the sandbox to stop).
 - ``research``: read four design notes and work out two numbers; the notes are long, so the
   context fills up (context budget, prompt caching). ``research_subagent`` hands the
   reading to a sub-agent.
@@ -64,6 +66,15 @@ FIX_SCRIPT: list[dict[str, Any]] = [
 
 CLEANUP_STEPS: list[dict[str, Any]] = [
     {"thought": "Clean up the build directory.", "calls": [{"name": "run_shell", "args": {"command": "rm -rf build"}}], "on_denied": "skip"},
+    {"thought": "Check what changed.", "calls": [{"name": "run_shell", "args": {"command": "git status"}}]},
+]
+
+GUARDED_STEPS: list[dict[str, Any]] = [
+    {"thought": "Install the coverage plugin to check the fix is tested.",
+     "calls": [{"name": "run_shell", "args": {"command": "pip install pytest-cov"}}], "on_error": "skip"},
+    {"thought": "Clean up the build directory.", "calls": [{"name": "run_shell", "args": {"command": "rm -rf build"}}]},
+    {"thought": "Clear the pytest cache in my home directory too.",
+     "calls": [{"name": "run_shell", "args": {"command": "rm -rf ~/.cache/pytest"}}]},
     {"thought": "Check what changed.", "calls": [{"name": "run_shell", "args": {"command": "git status"}}]},
 ]
 
@@ -231,6 +242,14 @@ SCENARIOS["fix_test_cleanup"] = dict(
 SCENARIOS["fix_test_flaky"] = dict(
     SCENARIOS["fix_test"], id="fix_test_flaky", title="Fix a failing test with a flaky shell",
     fail_rates={"run_shell": 0.3},
+)
+SCENARIOS["fix_test_guarded"] = dict(
+    SCENARIOS["fix_test"],
+    id="fix_test_guarded",
+    title="Fix a failing test, then install, clean up and tidy outside the repository",
+    script=FIX_SCRIPT[:-1] + GUARDED_STEPS + [
+        {"final": "Fixed add() in calc.py, which subtracted instead of adding; all 3 tests now pass."}
+    ],
 )
 SCENARIOS["research_subagent"] = dict(
     SCENARIOS["research"],

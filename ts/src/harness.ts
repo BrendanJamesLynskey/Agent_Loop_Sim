@@ -10,7 +10,7 @@ import { ReplayModel, ScriptedModel, summarise, type Model } from "./models";
 import { parse } from "./parse";
 import { Rng } from "./rng";
 import type { Tokenizer } from "./tokenizer";
-import { ToolError, World, execute, globMatch } from "./tools";
+import { ToolError, World, execute, globMatch, sandboxViolation } from "./tools";
 
 export type Ev = Obj;
 
@@ -275,6 +275,10 @@ export class Run {
     }
     let d = 0;
     let attempt = 0;
+    if (name === "run_shell") {
+      const blocked = sandboxViolation(this.policy.sandbox, args.command);
+      if (blocked !== null) return { ok: false, kind: "sandboxed", dur: spec.latency_ms, text: `exit code: 1\n${blocked}` };
+    }
     for (;;) {
       d += spec.latency_ms;
       if (this.fault(name)) {

@@ -191,3 +191,104 @@ def timeline(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
             spans.append({"lane": "retry", "agent": e["agent"], "start": e["t"], "end": e["t"] + e["backoff"],
                           "label": f"back-off {e['attempt']}"})
     return spans
+
+
+def agents_frames(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Chapter 6: the parent's and every sub-agent's context side by side, over time.
+
+    One frame per model call (``call``, ``output``), tool call and result, compaction, error,
+    hand-off (``spawn``, ``return``) and the run's end, for whichever agent it belongs to.
+    Each frame carries every agent's context make-up so far (``parts``, by agent, in the
+    order the agents first appear), its total, and each agent's running count of input
+    tokens sent and model time used: the token saving and the latency it costs.
+    """
+    frames: list[dict[str, Any]] = []
+    parts: dict[str, list[dict[str, Any]]] = {}
+    sent: dict[str, int] = {}
+    busy: dict[str, float] = {}
+    result_kind = "observation" if _is_react(events) else "tool_result"
+
+    def snap(f: dict[str, Any]) -> None:
+        f["parts"] = {a: list(p) for a, p in parts.items()}
+        f["totals"] = {a: _total(p) for a, p in parts.items()}
+        f["sent"] = dict(sent)
+        f["busy"] = dict(busy)
+        frames.append(f)
+
+    for e in events:
+        ty = e["type"]
+        a = e["agent"]
+        if ty == "run_start":
+            parts[a] = []
+            sent[a] = 0
+            busy[a] = 0.0
+            continue
+        if ty == "handoff":
+            if e["direction"] == "spawn":
+                parts[e["child"]] = []
+                sent[e["child"]] = 0
+                busy[e["child"]] = 0.0
+                snap({"phase": "spawn", "agent": a, "child": e["child"], "t": e["t"], "prompt_tokens": e["prompt_tokens"]})
+            else:
+                snap({"phase": "return", "agent": a, "child": e["child"], "t": e["t"], "status": e["status"],
+                      "child_tokens": e["child_tokens"], "summary_tokens": e["summary_tokens"]})
+            continue
+        if ty == "model_call":
+            sent[a] = sent[a] + e["input_tokens"]
+            busy[a] = busy[a] + e["dur"]
+            if e["purpose"] != "act":
+                continue
+            parts[a] = agg(e["context"])
+            snap({"phase": "call", "agent": a, "turn": e["turn"], "t": e["t"], "input": e["input_tokens"]})
+            parts[a] = _add(_drop_prompt(parts[a]), "assistant", e["message_tokens"])
+            snap({"phase": "output", "agent": a, "turn": e["turn"], "t": e["t"] + e["dur"], "output": e["output_tokens"]})
+        elif ty == "tool_call":
+            snap({"phase": "tool", "agent": a, "turn": e["turn"], "t": e["t"], "name": e["name"], "subject": e["subject"]})
+        elif ty == "tool_result":
+            parts[a] = _add(parts[a], result_kind, e["tokens"])
+            snap({"phase": "result", "agent": a, "t": e["t"] + e["dur"], "name": e["name"], "ok": e["ok"], "tokens": e["tokens"]})
+        elif ty == "compaction":
+            parts[a] = _drop_prompt(agg(e["context"]))
+            snap({"phase": "compact", "agent": a, "turn": e["turn"], "t": e["t"], "before": e["before"], "after": e["after"]})
+        elif ty == "error":
+            if e["message_tokens"] > 0:
+                parts[a] = _add(parts[a], "error" if e["kind"] == "malformed" else "nudge", e["message_tokens"])
+            snap({"phase": "error", "agent": a, "turn": e["turn"], "t": e["t"], "kind": e["kind"], "detail": e["detail"]})
+        elif ty == "run_end":
+            snap({"phase": "done", "agent": a, "t": e["t"], "status": e["status"]})
+    return frames
+
+
+def pipeline_frames(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Chapter 7: each tool call on its way through the harness's checkpoints.
+
+    Stages, in the order the harness runs them: ``call`` (parsed from the model's output),
+    ``permission`` (the rule table's decision, and the human's answer to an ask), ``hook``
+    (a pre-tool hook blocks or rewrites it; a post-tool hook appends to the result),
+    ``result`` (what came back: run, refused by a rule, blocked by a hook, or stopped at the
+    sandbox boundary). Each frame also says what the call's subject is by then (a rewrite
+    changes it).
+    """
+    frames: list[dict[str, Any]] = []
+    subject: dict[str, str] = {}
+    for e in events:
+        ty = e["type"]
+        if ty == "tool_call":
+            subject[e["call"]] = e["subject"]
+            frames.append({"stage": "call", "agent": e["agent"], "call": e["call"], "name": e["name"],
+                           "subject": e["subject"], "t": e["t"]})
+        elif ty == "permission_check":
+            frames.append({"stage": "permission", "agent": e["agent"], "call": e["call"], "subject": subject[e["call"]],
+                           "decision": e["decision"], "reason": e["reason"], "answer": e["answer"], "wait": e["wait"],
+                           "t": e["t"]})
+        elif ty == "hook":
+            if e["action"] == "rewrite":
+                subject[e["call"]] = e["subject"]
+            frames.append({"stage": "hook", "agent": e["agent"], "call": e["call"], "subject": subject[e["call"]],
+                           "hook": e["hook"], "phase": e["phase"], "action": e["action"], "result": e["result"],
+                           "t": e["t"]})
+        elif ty == "tool_result":
+            frames.append({"stage": "result", "agent": e["agent"], "call": e["call"], "name": e["name"],
+                           "subject": subject[e["call"]], "ok": e["ok"], "kind": e["kind"], "text": e["text"],
+                           "t": e["t"] + e["dur"]})
+    return frames
