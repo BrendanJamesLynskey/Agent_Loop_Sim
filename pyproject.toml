@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-loop-sim"
+version = "1.0.0"
+description = "A deterministic agent-harness simulator: the loop, tool calls, permissions, context management, prompt caching, sub-agents, hooks and error recovery, with a real tokenizer, replayable traces and a TypeScript port that matches it exactly."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Brendan Lynskey" }]
+dependencies = ["regex>=2023.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "jsonschema>=4.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+agent_loop_sim = ["data/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+pythonpath = ["src"]

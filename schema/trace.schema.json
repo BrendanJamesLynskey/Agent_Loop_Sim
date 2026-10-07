@@ -1,0 +1,839 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BrendanJamesLynskey/Agent_Loop_Sim/blob/main/schema/trace.schema.json",
+  "title": "Agent_Loop_Sim trace event, version 1",
+  "description": "One line of a trace file (JSON Lines). Every event has v (the format version), seq (its index in the run), t (simulated milliseconds since the run started), agent (main, or sub1, sub2... for sub-agents) and type.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/run_start"
+    },
+    {
+      "$ref": "#/$defs/model_call"
+    },
+    {
+      "$ref": "#/$defs/tool_call"
+    },
+    {
+      "$ref": "#/$defs/permission_check"
+    },
+    {
+      "$ref": "#/$defs/hook"
+    },
+    {
+      "$ref": "#/$defs/retry"
+    },
+    {
+      "$ref": "#/$defs/tool_result"
+    },
+    {
+      "$ref": "#/$defs/compaction"
+    },
+    {
+      "$ref": "#/$defs/error"
+    },
+    {
+      "$ref": "#/$defs/handoff"
+    },
+    {
+      "$ref": "#/$defs/checkpoint"
+    },
+    {
+      "$ref": "#/$defs/run_end"
+    }
+  ],
+  "$defs": {
+    "run_start": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "run_start"
+        },
+        "engine": {
+          "type": "string"
+        },
+        "scenario": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "backend": {
+          "enum": [
+            "scripted",
+            "replay",
+            "local"
+          ]
+        },
+        "style": {
+          "enum": [
+            "native",
+            "react"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "policy": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "engine",
+        "scenario",
+        "task",
+        "backend",
+        "style",
+        "seed",
+        "tools",
+        "policy"
+      ],
+      "additionalProperties": false
+    },
+    "model_call": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "model_call"
+        },
+        "turn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purpose": {
+          "enum": [
+            "act",
+            "summary"
+          ]
+        },
+        "input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cached_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cost": {
+          "type": "number"
+        },
+        "ttft": {
+          "type": "number"
+        },
+        "dur": {
+          "type": "number"
+        },
+        "window": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "context": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "integer"
+                ]
+              },
+              "kind": {
+                "enum": [
+                  "system",
+                  "tools",
+                  "task",
+                  "assistant",
+                  "tool_result",
+                  "observation",
+                  "error",
+                  "nudge",
+                  "summary",
+                  "prompt",
+                  "summary_input"
+                ]
+              },
+              "tokens": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "tokens"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "message_tokens": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "turn",
+        "purpose",
+        "input_tokens",
+        "cached_tokens",
+        "output_tokens",
+        "cost",
+        "ttft",
+        "dur",
+        "window",
+        "context",
+        "text",
+        "message_tokens"
+      ],
+      "additionalProperties": false
+    },
+    "tool_call": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "tool_call"
+        },
+        "turn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "call": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object"
+        },
+        "subject": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "turn",
+        "call",
+        "name",
+        "args",
+        "subject"
+      ],
+      "additionalProperties": false
+    },
+    "permission_check": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "permission_check"
+        },
+        "call": {
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "allow",
+            "ask",
+            "deny"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "answer": {
+          "enum": [
+            "approve",
+            "deny",
+            null
+          ]
+        },
+        "wait": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "call",
+        "decision",
+        "reason",
+        "answer",
+        "wait"
+      ],
+      "additionalProperties": false
+    },
+    "hook": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "hook"
+        },
+        "call": {
+          "type": "string"
+        },
+        "hook": {
+          "type": "string"
+        },
+        "phase": {
+          "enum": [
+            "pre",
+            "post"
+          ]
+        },
+        "action": {
+          "enum": [
+            "block",
+            "rewrite",
+            "append"
+          ]
+        },
+        "result": {
+          "enum": [
+            "blocked",
+            "rewritten",
+            "appended"
+          ]
+        },
+        "subject": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "call",
+        "hook",
+        "phase",
+        "action",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "retry": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "retry"
+        },
+        "call": {
+          "type": "string"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "backoff": {
+          "type": "number"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "call",
+        "attempt",
+        "backoff",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "tool_result": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "tool_result"
+        },
+        "call": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "ok",
+            "error",
+            "transient",
+            "denied",
+            "blocked"
+          ]
+        },
+        "tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dur": {
+          "type": "number"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "call",
+        "name",
+        "ok",
+        "kind",
+        "tokens",
+        "dur",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "compaction": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "compaction"
+        },
+        "turn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "strategy": {
+          "enum": [
+            "truncate",
+            "clip",
+            "summarise"
+          ]
+        },
+        "before": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "after": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "clipped": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "facts_lost": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "integer"
+                ]
+              },
+              "kind": {
+                "enum": [
+                  "system",
+                  "tools",
+                  "task",
+                  "assistant",
+                  "tool_result",
+                  "observation",
+                  "error",
+                  "nudge",
+                  "summary",
+                  "prompt",
+                  "summary_input"
+                ]
+              },
+              "tokens": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "tokens"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "turn",
+        "strategy",
+        "before",
+        "after",
+        "removed",
+        "clipped",
+        "facts_lost",
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "error"
+        },
+        "turn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "enum": [
+            "malformed",
+            "loop",
+            "context_overflow"
+          ]
+        },
+        "detail": {
+          "type": "string"
+        },
+        "message_tokens": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "turn",
+        "kind",
+        "detail",
+        "message_tokens"
+      ],
+      "additionalProperties": false
+    },
+    "handoff": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "handoff"
+        },
+        "direction": {
+          "enum": [
+            "spawn",
+            "return"
+          ]
+        },
+        "child": {
+          "type": "string"
+        },
+        "prompt_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "type": "string"
+        },
+        "child_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "summary_tokens": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "direction",
+        "child"
+      ],
+      "additionalProperties": false
+    },
+    "checkpoint": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "checkpoint"
+        },
+        "turn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "context_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "messages": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tool_calls": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "turn",
+        "context_tokens",
+        "messages",
+        "tool_calls"
+      ],
+      "additionalProperties": false
+    },
+    "run_end": {
+      "type": "object",
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "t": {
+          "type": "number"
+        },
+        "agent": {
+          "type": "string"
+        },
+        "type": {
+          "const": "run_end"
+        },
+        "status": {
+          "enum": [
+            "done",
+            "max_turns",
+            "loop",
+            "context_overflow",
+            "malformed"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "elapsed": {
+          "type": "number"
+        },
+        "totals": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "v",
+        "seq",
+        "t",
+        "agent",
+        "type",
+        "status",
+        "answer",
+        "elapsed",
+        "totals"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

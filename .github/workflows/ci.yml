@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Two halves of one engine:
+#   - the Python reference: its tests, and the parity fixtures and engine data it writes
+#     are up to date (the fixtures include replays of the recorded traces);
+#   - the TypeScript port: it reproduces every fixture exactly, and typechecks.
+# No job calls a language model: recorded traces are replayed.
+
+jobs:
+  python:
+    name: Python reference (${{ matrix.python }})
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[dev]"
+      - name: Tests (tokenizer, tools, parsing, accounting, every policy, trace replays)
+        run: pytest
+      - name: Fixtures and engine data are up to date
+        run: python scripts/make_fixtures.py --check
+
+  typescript:
+    name: TypeScript port (exact parity)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: ts/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - name: Parity with the Python fixtures (no tolerance)
+        run: pnpm test

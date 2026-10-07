@@ -1,0 +1,1134 @@
+{
+ "version": "1.0.0",
+ "tools": {
+  "list_files": {
+   "name": "list_files",
+   "description": "List the files in the repository, optionally under a directory.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string",
+      "description": "Directory to list; omit for all files."
+     }
+    },
+    "required": []
+   },
+   "read_only": true,
+   "subject": "path",
+   "latency_ms": 40
+  },
+  "read_file": {
+   "name": "read_file",
+   "description": "Read a text file and return its contents.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string",
+      "description": "Path of the file to read."
+     }
+    },
+    "required": [
+     "path"
+    ]
+   },
+   "read_only": true,
+   "subject": "path",
+   "latency_ms": 60
+  },
+  "write_file": {
+   "name": "write_file",
+   "description": "Create or overwrite a text file with the given content.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string",
+      "description": "Path of the file to write."
+     },
+     "content": {
+      "type": "string",
+      "description": "The complete new contents of the file."
+     }
+    },
+    "required": [
+     "path",
+     "content"
+    ]
+   },
+   "read_only": false,
+   "subject": "path",
+   "latency_ms": 80
+  },
+  "edit_file": {
+   "name": "edit_file",
+   "description": "Replace the first occurrence of old_text with new_text in a file.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string",
+      "description": "Path of the file to edit."
+     },
+     "old_text": {
+      "type": "string",
+      "description": "Exact text to find."
+     },
+     "new_text": {
+      "type": "string",
+      "description": "Text to put in its place."
+     }
+    },
+    "required": [
+     "path",
+     "old_text",
+     "new_text"
+    ]
+   },
+   "read_only": false,
+   "subject": "path",
+   "latency_ms": 80
+  },
+  "run_shell": {
+   "name": "run_shell",
+   "description": "Run a shell command in the repository (a sandbox) and return its exit code and output.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "command": {
+      "type": "string",
+      "description": "The command line to run."
+     }
+    },
+    "required": [
+     "command"
+    ]
+   },
+   "read_only": false,
+   "subject": "command",
+   "latency_ms": 900
+  },
+  "search": {
+   "name": "search",
+   "description": "Search the documentation for a query and return the best matching passages.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "What to look for."
+     }
+    },
+    "required": [
+     "query"
+    ]
+   },
+   "read_only": true,
+   "subject": "query",
+   "latency_ms": 350
+  },
+  "calculator": {
+   "name": "calculator",
+   "description": "Evaluate an arithmetic expression with + - * / and parentheses.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "expression": {
+      "type": "string",
+      "description": "For example (14.4 / 900) * 1000."
+     }
+    },
+    "required": [
+     "expression"
+    ]
+   },
+   "read_only": true,
+   "subject": "expression",
+   "latency_ms": 5
+  },
+  "task": {
+   "name": "task",
+   "description": "Hand a self-contained sub-task to a sub-agent with a fresh context; it returns a short report.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "prompt": {
+      "type": "string",
+      "description": "The sub-task, with everything the sub-agent needs to know."
+     }
+    },
+    "required": [
+     "prompt"
+    ]
+   },
+   "read_only": true,
+   "subject": "prompt",
+   "latency_ms": 0
+  }
+ },
+ "prices": {
+  "claude-sonnet-4.6": {
+   "label": "Claude Sonnet 4.6 (API list price)",
+   "input": 3,
+   "output": 15,
+   "cache_read": 0.3,
+   "cache_write": 3.75,
+   "min_tokens": 1024,
+   "block": 1,
+   "ttl_ms": 300000,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+   "source_cache": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+   "accessed": "2026-10-07"
+  },
+  "claude-haiku-4.5": {
+   "label": "Claude Haiku 4.5 (API list price)",
+   "input": 1,
+   "output": 5,
+   "cache_read": 0.1,
+   "cache_write": 1.25,
+   "min_tokens": 4096,
+   "block": 1,
+   "ttl_ms": 300000,
+   "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+   "source_cache": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+   "accessed": "2026-10-07"
+  },
+  "gpt-5-mini": {
+   "label": "GPT-5 mini (API list price, standard tier)",
+   "input": 0.25,
+   "output": 2,
+   "cache_read": 0.025,
+   "cache_write": 0.25,
+   "min_tokens": 1024,
+   "block": 128,
+   "ttl_ms": 1800000,
+   "source": "https://developers.openai.com/api/docs/pricing",
+   "source_cache": "https://developers.openai.com/api/docs/guides/prompt-caching",
+   "accessed": "2026-10-07"
+  },
+  "local": {
+   "label": "Local model (no per-token price)",
+   "input": 0,
+   "output": 0,
+   "cache_read": 0,
+   "cache_write": 0,
+   "min_tokens": 0,
+   "block": 1,
+   "ttl_ms": 1e+18,
+   "source": "",
+   "source_cache": "",
+   "accessed": "2026-10-07"
+  }
+ },
+ "latency": {
+  "hosted": {
+   "label": "Hosted API (illustrative)",
+   "overhead_ms": 400,
+   "prefill_tps": 5000,
+   "decode_tps": 80,
+   "source": "illustrative round numbers; see the LLM Inference Explained site for where they come from"
+  },
+  "local-i7": {
+   "label": "Qwen2.5-1.5B Q4_K_M, llama.cpp, i7-3770 CPU (measured)",
+   "overhead_ms": 50,
+   "prefill_tps": 42.7,
+   "decode_tps": 16.5,
+   "source": "prefill and decode rates: medians of the recorded traces' llama.cpp timings (traces/*.json; prefill over calls with at least 100 uncached prompt tokens); the 50 ms overhead is assumed"
+  }
+ },
+ "default_policy": {
+  "style": "native",
+  "max_turns": 20,
+  "parallel": true,
+  "max_output": 512,
+  "context": {
+   "window": 32768,
+   "strategy": "none",
+   "trigger": 0.8,
+   "target": 0.5,
+   "keep_last": 4,
+   "clip_lines": 6
+  },
+  "cache": {
+   "enabled": true,
+   "price": "claude-sonnet-4.6",
+   "layout": "stable"
+  },
+  "latency": "hosted",
+  "permissions": {
+   "mode": "auto",
+   "rules": [],
+   "human": {
+    "latency_ms": [
+     3000,
+     9000
+    ],
+    "deny": []
+   }
+  },
+  "hooks": [],
+  "recovery": {
+   "retries": 2,
+   "backoff_ms": 500,
+   "backoff_factor": 2,
+   "loop_repeats": 3,
+   "loop_action": "stop",
+   "malformed": "feedback"
+  },
+  "subagents": {
+   "system": "You are a sub-agent. Complete the sub-task with the tools, then reply with a short report of what you found.",
+   "max_turns": 10
+  }
+ },
+ "human_seed_offset": 2654435769,
+ "scenarios": {
+  "fix_test": {
+   "id": "fix_test",
+   "title": "Fix a failing test",
+   "system": "You are a coding agent working in a small Python repository. Use the tools to look at files, run the tests and change code. Make the smallest change that fixes the problem. When you are done, reply with a one-sentence summary and no tool call.",
+   "task": "The tests in this repository fail. Find out why and fix the code.",
+   "tools": [
+    "list_files",
+    "read_file",
+    "edit_file",
+    "run_shell"
+   ],
+   "files": {
+    "README.md": "# tinycalc\n\nThree arithmetic helpers and their tests. Run the tests with `pytest`.\n",
+    "calc.py": "\"\"\"Tiny calculator functions.\"\"\"\n\n\ndef add(a, b):\n    return a - b\n\n\ndef sub(a, b):\n    return a - b\n\n\ndef mul(a, b):\n    return a * b\n",
+    "test_calc.py": "from calc import add, sub, mul\n\n\ndef test_add():\n    assert add(2, 3) == 5\n\n\ndef test_sub():\n    assert sub(7, 4) == 3\n\n\ndef test_mul():\n    assert mul(6, 7) == 42\n",
+    "build/cache.txt": "compiled artefacts from the last run\n"
+   },
+   "facts": [],
+   "script": [
+    {
+     "thought": "First, see what is in the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "thought": "Run the tests to see what fails.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "test_add fails; read the implementation.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "add subtracts instead of adding. Fix that line.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a + b"
+       }
+      }
+     ],
+     "on_error": "skip"
+    },
+    {
+     "thought": "Run the tests again.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "final": "Fixed add() in calc.py, which subtracted instead of adding; all 3 tests now pass."
+    }
+   ],
+   "seed": 7
+  },
+  "research": {
+   "id": "research",
+   "title": "Read the design notes and do the sums",
+   "system": "You are a research assistant. Use the tools to read the documents you need and the calculator for arithmetic. When you have the answer, reply with it and no tool call.",
+   "task": "The service runs the tiny-7b model on one dev-gpu board. Using the notes in docs/, work out (1) how many milliseconds one decode step takes if it must read every weight once from memory, and (2) how much memory, in GB, the KV cache needs for 8 users with 4096 tokens each, and whether it fits.",
+   "tools": [
+    "list_files",
+    "read_file",
+    "calculator"
+   ],
+   "files": {
+    "docs/gpu.md": "# The dev-gpu board\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nThe dev-gpu board has 24 GB of memory.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nThe dev-gpu memory bandwidth is 900 GB/s.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n",
+    "docs/model.md": "# The tiny-7b model\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nThe tiny-7b model has 7.2 billion parameters, stored in 2 bytes each.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nThe KV cache of tiny-7b needs 0.5 MB per token.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n",
+    "docs/serving.md": "# How the service runs\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nThe service keeps 2 GB of memory free for activations.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nThe service batches up to 8 users at a time.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n",
+    "docs/meetings.md": "# Meeting notes\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nThe team meets on Tuesdays.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nThe note about the dev-gpu board was last updated in March.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n"
+   },
+   "facts": [
+    {
+     "id": "mem",
+     "text": "The dev-gpu board has 24 GB of memory.",
+     "important": true
+    },
+    {
+     "id": "bw",
+     "text": "The dev-gpu memory bandwidth is 900 GB/s.",
+     "important": true
+    },
+    {
+     "id": "params",
+     "text": "The tiny-7b model has 7.2 billion parameters, stored in 2 bytes each.",
+     "important": true
+    },
+    {
+     "id": "kv",
+     "text": "The KV cache of tiny-7b needs 0.5 MB per token.",
+     "important": true
+    },
+    {
+     "id": "free",
+     "text": "The service keeps 2 GB of memory free for activations.",
+     "important": true
+    },
+    {
+     "id": "batch",
+     "text": "The service batches up to 8 users at a time.",
+     "important": false
+    },
+    {
+     "id": "tuesday",
+     "text": "The team meets on Tuesdays.",
+     "important": false
+    },
+    {
+     "id": "march",
+     "text": "The note about the dev-gpu board was last updated in March.",
+     "important": false
+    }
+   ],
+   "script": [
+    {
+     "thought": "Find the notes.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {
+        "path": "docs"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Read about the board.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "docs/gpu.md"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Read about the model.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "docs/model.md"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Read about the service.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "docs/serving.md"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Check the meeting notes for anything newer.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "docs/meetings.md"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Weights: 7.2e9 x 2 bytes = 14.4 GB, read at 900 GB/s.",
+     "calls": [
+      {
+       "name": "calculator",
+       "args": {
+        "expression": "7.2 * 2 / 900 * 1000"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "KV cache: 8 users x 4096 tokens x 0.5 MB, in GB.",
+     "calls": [
+      {
+       "name": "calculator",
+       "args": {
+        "expression": "8 * 4096 * 0.5 / 1000"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Memory left for it: 24 - 14.4 - 2 GB.",
+     "calls": [
+      {
+       "name": "calculator",
+       "args": {
+        "expression": "24 - 14.4 - 2"
+       }
+      }
+     ]
+    },
+    {
+     "final": "(1) About 16 ms per decode step: 14.4 GB of weights at 900 GB/s. (2) The KV cache needs about 16.4 GB for 8 users at 4096 tokens, but only 7.6 GB is left after the weights and the 2 GB reserve, so it does not fit; about 3 users would."
+    }
+   ],
+   "seed": 11
+  },
+  "lookup": {
+   "id": "lookup",
+   "title": "Search and calculate",
+   "system": "You are a research assistant. Use the tools to read the documents you need and the calculator for arithmetic. When you have the answer, reply with it and no tool call.",
+   "task": "How many milliseconds does it take to read every weight of the tiny-7b model once from the memory of a dev-gpu board? Use the search tool to find the numbers and the calculator for the arithmetic.",
+   "tools": [
+    "search",
+    "calculator"
+   ],
+   "corpus": [
+    {
+     "id": "gpu-1",
+     "title": "dev-gpu board: memory",
+     "text": "The dev-gpu board has 24 GB of memory. The dev-gpu memory bandwidth is 900 GB/s."
+    },
+    {
+     "id": "gpu-2",
+     "title": "dev-gpu board: compute",
+     "text": "The dev-gpu board does 120 trillion 16-bit operations per second."
+    },
+    {
+     "id": "model-1",
+     "title": "tiny-7b model card",
+     "text": "The tiny-7b model has 7.2 billion parameters, stored in 2 bytes each."
+    },
+    {
+     "id": "model-2",
+     "title": "tiny-7b context",
+     "text": "tiny-7b supports a context window of 32768 tokens."
+    },
+    {
+     "id": "svc-1",
+     "title": "service limits",
+     "text": "The service batches up to 8 users at a time and keeps 2 GB free."
+    },
+    {
+     "id": "misc-1",
+     "title": "team calendar",
+     "text": "The team meets on Tuesdays; planning is on the first Monday of the month."
+    }
+   ],
+   "facts": [],
+   "script": [
+    {
+     "thought": "Find the board's memory bandwidth.",
+     "calls": [
+      {
+       "name": "search",
+       "args": {
+        "query": "dev-gpu memory bandwidth"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Find the model's size.",
+     "calls": [
+      {
+       "name": "search",
+       "args": {
+        "query": "tiny-7b parameters bytes"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "14.4 GB at 900 GB/s, in milliseconds.",
+     "calls": [
+      {
+       "name": "calculator",
+       "args": {
+        "expression": "7.2 * 2 / 900 * 1000"
+       }
+      }
+     ]
+    },
+    {
+     "final": "About 16 ms: 7.2 billion parameters x 2 bytes = 14.4 GB, read at 900 GB/s."
+    }
+   ],
+   "seed": 3
+  },
+  "fix_test_react": {
+   "id": "fix_test_react",
+   "title": "Fix a failing test (ReAct)",
+   "system": "You are a coding agent working in a small Python repository. Use the tools to look at files, run the tests and change code. Make the smallest change that fixes the problem. When you are done, reply with a one-sentence summary and no tool call.",
+   "task": "The tests in this repository fail. Find out why and fix the code.",
+   "tools": [
+    "list_files",
+    "read_file",
+    "edit_file",
+    "run_shell"
+   ],
+   "files": {
+    "README.md": "# tinycalc\n\nThree arithmetic helpers and their tests. Run the tests with `pytest`.\n",
+    "calc.py": "\"\"\"Tiny calculator functions.\"\"\"\n\n\ndef add(a, b):\n    return a - b\n\n\ndef sub(a, b):\n    return a - b\n\n\ndef mul(a, b):\n    return a * b\n",
+    "test_calc.py": "from calc import add, sub, mul\n\n\ndef test_add():\n    assert add(2, 3) == 5\n\n\ndef test_sub():\n    assert sub(7, 4) == 3\n\n\ndef test_mul():\n    assert mul(6, 7) == 42\n",
+    "build/cache.txt": "compiled artefacts from the last run\n"
+   },
+   "facts": [],
+   "script": [
+    {
+     "thought": "First, see what is in the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "thought": "Run the tests to see what fails.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "test_add fails; read the implementation.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "add subtracts instead of adding. Fix that line.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a + b"
+       }
+      }
+     ],
+     "on_error": "skip"
+    },
+    {
+     "thought": "Run the tests again.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "final": "Fixed add() in calc.py, which subtracted instead of adding; all 3 tests now pass."
+    }
+   ],
+   "seed": 7,
+   "policy": {
+    "style": "react"
+   }
+  },
+  "fix_test_malformed": {
+   "id": "fix_test_malformed",
+   "title": "Fix a failing test, with one malformed call",
+   "system": "You are a coding agent working in a small Python repository. Use the tools to look at files, run the tests and change code. Make the smallest change that fixes the problem. When you are done, reply with a one-sentence summary and no tool call.",
+   "task": "The tests in this repository fail. Find out why and fix the code.",
+   "tools": [
+    "list_files",
+    "read_file",
+    "edit_file",
+    "run_shell"
+   ],
+   "files": {
+    "README.md": "# tinycalc\n\nThree arithmetic helpers and their tests. Run the tests with `pytest`.\n",
+    "calc.py": "\"\"\"Tiny calculator functions.\"\"\"\n\n\ndef add(a, b):\n    return a - b\n\n\ndef sub(a, b):\n    return a - b\n\n\ndef mul(a, b):\n    return a * b\n",
+    "test_calc.py": "from calc import add, sub, mul\n\n\ndef test_add():\n    assert add(2, 3) == 5\n\n\ndef test_sub():\n    assert sub(7, 4) == 3\n\n\ndef test_mul():\n    assert mul(6, 7) == 42\n",
+    "build/cache.txt": "compiled artefacts from the last run\n"
+   },
+   "facts": [],
+   "script": [
+    {
+     "thought": "First, see what is in the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "raw": {
+      "native": "Run the tests to see what fails.\n<tool_call>\n{\"name\": \"run_shell\", \"arguments\": {\"command\": \"pytest\"}\n</tool_call>",
+      "react": "Thought: Run the tests to see what fails.\nAction: run_shell\nAction Input: {\"command\": \"pytest\""
+     }
+    },
+    {
+     "thought": "Run the tests to see what fails.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "test_add fails; read the implementation.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "add subtracts instead of adding. Fix that line.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a + b"
+       }
+      }
+     ],
+     "on_error": "skip"
+    },
+    {
+     "thought": "Run the tests again.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "final": "Fixed add() in calc.py, which subtracted instead of adding; all 3 tests now pass."
+    }
+   ],
+   "seed": 7
+  },
+  "fix_test_cleanup": {
+   "id": "fix_test_cleanup",
+   "title": "Fix a failing test, then tidy up",
+   "system": "You are a coding agent working in a small Python repository. Use the tools to look at files, run the tests and change code. Make the smallest change that fixes the problem. When you are done, reply with a one-sentence summary and no tool call.",
+   "task": "The tests in this repository fail. Find out why and fix the code.",
+   "tools": [
+    "list_files",
+    "read_file",
+    "edit_file",
+    "run_shell"
+   ],
+   "files": {
+    "README.md": "# tinycalc\n\nThree arithmetic helpers and their tests. Run the tests with `pytest`.\n",
+    "calc.py": "\"\"\"Tiny calculator functions.\"\"\"\n\n\ndef add(a, b):\n    return a - b\n\n\ndef sub(a, b):\n    return a - b\n\n\ndef mul(a, b):\n    return a * b\n",
+    "test_calc.py": "from calc import add, sub, mul\n\n\ndef test_add():\n    assert add(2, 3) == 5\n\n\ndef test_sub():\n    assert sub(7, 4) == 3\n\n\ndef test_mul():\n    assert mul(6, 7) == 42\n",
+    "build/cache.txt": "compiled artefacts from the last run\n"
+   },
+   "facts": [],
+   "script": [
+    {
+     "thought": "First, see what is in the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "thought": "Run the tests to see what fails.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "test_add fails; read the implementation.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "add subtracts instead of adding. Fix that line.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a + b"
+       }
+      }
+     ],
+     "on_error": "skip"
+    },
+    {
+     "thought": "Run the tests again.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Clean up the build directory.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "rm -rf build"
+       }
+      }
+     ],
+     "on_denied": "skip"
+    },
+    {
+     "thought": "Check what changed.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "git status"
+       }
+      }
+     ]
+    },
+    {
+     "final": "Fixed add() in calc.py, which subtracted instead of adding; all 3 tests now pass."
+    }
+   ],
+   "seed": 7
+  },
+  "fix_test_flaky": {
+   "id": "fix_test_flaky",
+   "title": "Fix a failing test with a flaky shell",
+   "system": "You are a coding agent working in a small Python repository. Use the tools to look at files, run the tests and change code. Make the smallest change that fixes the problem. When you are done, reply with a one-sentence summary and no tool call.",
+   "task": "The tests in this repository fail. Find out why and fix the code.",
+   "tools": [
+    "list_files",
+    "read_file",
+    "edit_file",
+    "run_shell"
+   ],
+   "files": {
+    "README.md": "# tinycalc\n\nThree arithmetic helpers and their tests. Run the tests with `pytest`.\n",
+    "calc.py": "\"\"\"Tiny calculator functions.\"\"\"\n\n\ndef add(a, b):\n    return a - b\n\n\ndef sub(a, b):\n    return a - b\n\n\ndef mul(a, b):\n    return a * b\n",
+    "test_calc.py": "from calc import add, sub, mul\n\n\ndef test_add():\n    assert add(2, 3) == 5\n\n\ndef test_sub():\n    assert sub(7, 4) == 3\n\n\ndef test_mul():\n    assert mul(6, 7) == 42\n",
+    "build/cache.txt": "compiled artefacts from the last run\n"
+   },
+   "facts": [],
+   "script": [
+    {
+     "thought": "First, see what is in the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "thought": "Run the tests to see what fails.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "test_add fails; read the implementation.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "add subtracts instead of adding. Fix that line.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a + b"
+       }
+      }
+     ],
+     "on_error": "skip"
+    },
+    {
+     "thought": "Run the tests again.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "final": "Fixed add() in calc.py, which subtracted instead of adding; all 3 tests now pass."
+    }
+   ],
+   "seed": 7,
+   "fail_rates": {
+    "run_shell": 0.3
+   }
+  },
+  "research_subagent": {
+   "id": "research_subagent",
+   "title": "Read the design notes with a sub-agent",
+   "system": "You are a research assistant. Use the tools to read the documents you need and the calculator for arithmetic. When you have the answer, reply with it and no tool call.",
+   "task": "The service runs the tiny-7b model on one dev-gpu board. Using the notes in docs/, work out (1) how many milliseconds one decode step takes if it must read every weight once from memory, and (2) how much memory, in GB, the KV cache needs for 8 users with 4096 tokens each, and whether it fits.",
+   "tools": [
+    "list_files",
+    "read_file",
+    "calculator",
+    "task"
+   ],
+   "files": {
+    "docs/gpu.md": "# The dev-gpu board\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nThe dev-gpu board has 24 GB of memory.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nThe dev-gpu memory bandwidth is 900 GB/s.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n",
+    "docs/model.md": "# The tiny-7b model\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nThe tiny-7b model has 7.2 billion parameters, stored in 2 bytes each.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nThe KV cache of tiny-7b needs 0.5 MB per token.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n",
+    "docs/serving.md": "# How the service runs\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nThe service keeps 2 GB of memory free for activations.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nThe service batches up to 8 users at a time.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n",
+    "docs/meetings.md": "# Meeting notes\n\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nThe team meets on Tuesdays.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nThe note about the dev-gpu board was last updated in March.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\nThis note is part of the team's design notes. It is kept short on purpose, but it has grown over time as people added details.\nMost of the text below is background: why a choice was made, who asked for it, and what was tried first.\nWhen a number matters for capacity planning, it is written as a plain sentence so that it can be found by search.\nOlder revisions of this note are in the history of the repository, and the meeting notes say when each change was agreed.\nIf anything here disagrees with the measurements, the measurements win, and the note should be fixed.\nQuestions about this note go to the platform channel; please do not edit the numbers without a measurement to back them.\n"
+   },
+   "facts": [
+    {
+     "id": "mem",
+     "text": "The dev-gpu board has 24 GB of memory.",
+     "important": true
+    },
+    {
+     "id": "bw",
+     "text": "The dev-gpu memory bandwidth is 900 GB/s.",
+     "important": true
+    },
+    {
+     "id": "params",
+     "text": "The tiny-7b model has 7.2 billion parameters, stored in 2 bytes each.",
+     "important": true
+    },
+    {
+     "id": "kv",
+     "text": "The KV cache of tiny-7b needs 0.5 MB per token.",
+     "important": true
+    },
+    {
+     "id": "free",
+     "text": "The service keeps 2 GB of memory free for activations.",
+     "important": true
+    },
+    {
+     "id": "batch",
+     "text": "The service batches up to 8 users at a time.",
+     "important": false
+    },
+    {
+     "id": "tuesday",
+     "text": "The team meets on Tuesdays.",
+     "important": false
+    },
+    {
+     "id": "march",
+     "text": "The note about the dev-gpu board was last updated in March.",
+     "important": false
+    }
+   ],
+   "script": [
+    {
+     "thought": "Hand the reading to a sub-agent so the notes stay out of my context.",
+     "calls": [
+      {
+       "name": "task",
+       "args": {
+        "prompt": "Read every note in docs/ and report, one per line, every number about the dev-gpu board's memory and bandwidth, the tiny-7b model's size and KV cache, and the service's memory reserve."
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Weights: 7.2e9 x 2 bytes = 14.4 GB, read at 900 GB/s.",
+     "calls": [
+      {
+       "name": "calculator",
+       "args": {
+        "expression": "7.2 * 2 / 900 * 1000"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "KV cache: 8 users x 4096 tokens x 0.5 MB, in GB.",
+     "calls": [
+      {
+       "name": "calculator",
+       "args": {
+        "expression": "8 * 4096 * 0.5 / 1000"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Memory left for it: 24 - 14.4 - 2 GB.",
+     "calls": [
+      {
+       "name": "calculator",
+       "args": {
+        "expression": "24 - 14.4 - 2"
+       }
+      }
+     ]
+    },
+    {
+     "final": "(1) About 16 ms per decode step: 14.4 GB of weights at 900 GB/s. (2) The KV cache needs about 16.4 GB for 8 users at 4096 tokens, but only 7.6 GB is left after the weights and the 2 GB reserve, so it does not fit; about 3 users would."
+    }
+   ],
+   "seed": 11,
+   "subagents": [
+    [
+     {
+      "thought": "Find the notes.",
+      "calls": [
+       {
+        "name": "list_files",
+        "args": {
+         "path": "docs"
+        }
+       }
+      ]
+     },
+     {
+      "thought": "Read about the board.",
+      "calls": [
+       {
+        "name": "read_file",
+        "args": {
+         "path": "docs/gpu.md"
+        }
+       }
+      ]
+     },
+     {
+      "thought": "Read about the model.",
+      "calls": [
+       {
+        "name": "read_file",
+        "args": {
+         "path": "docs/model.md"
+        }
+       }
+      ]
+     },
+     {
+      "thought": "Read about the service.",
+      "calls": [
+       {
+        "name": "read_file",
+        "args": {
+         "path": "docs/serving.md"
+        }
+       }
+      ]
+     },
+     {
+      "thought": "Check the meeting notes for anything newer.",
+      "calls": [
+       {
+        "name": "read_file",
+        "args": {
+         "path": "docs/meetings.md"
+        }
+       }
+      ]
+     },
+     {
+      "final": "The dev-gpu board has 24 GB of memory.\nThe dev-gpu memory bandwidth is 900 GB/s.\nThe tiny-7b model has 7.2 billion parameters, stored in 2 bytes each.\nThe KV cache of tiny-7b needs 0.5 MB per token.\nThe service keeps 2 GB of memory free for activations."
+     }
+    ]
+   ]
+  }
+ }
+}
