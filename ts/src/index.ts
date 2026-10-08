@@ -14,3 +14,4 @@ export { Run, run, replayTrace, totals, decide, merge, clockText, type Ev } from
 export { loopFrames, toolcallFrames, budgetFrames, cacheFrames, permissionFrames, timeline, agentsFrames, pipelineFrames, agg, KIND_ORDER, type Part } from "./views";
 export { retrySweep, verified } from "./sweeps";
 export { VERSION, TOOL_SPECS, PRICES, LATENCY, DEFAULT_POLICY, SCENARIOS, scenario, type Obj } from "./data";
+export * as protocols from "./protocols/index";

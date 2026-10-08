@@ -1,0 +1,5645 @@
+{
+ "sdk": "mcp 2.3.0",
+ "server": "conformance/sdk_server.py",
+ "note": "Recorded over stdio by scripts/record_sdk.py; request IDs renumbered in order of appearance.",
+ "scenarios": {
+  "legacy_tour": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2025-11-25",
+      "capabilities": {},
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "ping"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {}
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "type": "object",
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "addOutput"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "type": "object",
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "read_docOutput"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "type": "object",
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "countOutput"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "type": "object",
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "delete_fileOutput"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "type": "object",
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "summariseOutput"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "type": "object",
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "failOutput"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "method": "tools/call",
+     "params": {
+      "name": "add",
+      "arguments": {
+       "a": 2,
+       "b": 3
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "result": {
+      "content": [
+       {
+        "text": "5",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "structuredContent": {
+       "result": 5
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "method": "resources/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "result": {
+      "resources": [
+       {
+        "description": "The project README.",
+        "mimeType": "text/markdown",
+        "name": "readme",
+        "uri": "docs://readme"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "method": "resources/read",
+     "params": {
+      "uri": "docs://readme"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "result": {
+      "contents": [
+       {
+        "mimeType": "text/markdown",
+        "text": "# Demo\nA tiny project.",
+        "uri": "docs://readme"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c7",
+     "method": "prompts/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c7",
+     "result": {
+      "prompts": [
+       {
+        "arguments": [
+         {
+          "name": "code",
+          "required": true
+         }
+        ],
+        "description": "Review a piece of code.",
+        "name": "review"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c8",
+     "method": "prompts/get",
+     "params": {
+      "name": "review",
+      "arguments": {
+       "code": "x = 1"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c8",
+     "result": {
+      "description": "Review a piece of code.",
+      "messages": [
+       {
+        "content": {
+         "text": "Please review:\nx = 1",
+         "type": "text"
+        },
+        "role": "user"
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "modern_tour": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "add",
+      "arguments": {
+       "a": 2,
+       "b": 3
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "5",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "resultType": "complete",
+      "structuredContent": {
+       "result": 5
+      },
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "resources/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "cacheScope": "private",
+      "resources": [
+       {
+        "description": "The project README.",
+        "mimeType": "text/markdown",
+        "name": "readme",
+        "uri": "docs://readme"
+       }
+      ],
+      "resultType": "complete",
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "method": "resources/read",
+     "params": {
+      "uri": "docs://readme",
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "result": {
+      "cacheScope": "private",
+      "contents": [
+       {
+        "mimeType": "text/markdown",
+        "text": "# Demo\nA tiny project.",
+        "uri": "docs://readme"
+       }
+      ],
+      "resultType": "complete",
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "method": "prompts/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "result": {
+      "cacheScope": "private",
+      "prompts": [
+       {
+        "arguments": [
+         {
+          "name": "code",
+          "required": true
+         }
+        ],
+        "description": "Review a piece of code.",
+        "name": "review"
+       }
+      ],
+      "resultType": "complete",
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "method": "prompts/get",
+     "params": {
+      "name": "review",
+      "arguments": {
+       "code": "x = 1"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "result": {
+      "description": "Review a piece of code.",
+      "messages": [
+       {
+        "content": {
+         "text": "Please review:\nx = 1",
+         "type": "text"
+        },
+        "role": "user"
+       }
+      ],
+      "resultType": "complete",
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "auto_tour": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "server/discover",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "cacheScope": "private",
+      "capabilities": {
+       "prompts": {
+        "listChanged": true
+       },
+       "resources": {
+        "listChanged": true,
+        "subscribe": true
+       },
+       "tools": {
+        "listChanged": true
+       }
+      },
+      "resultType": "complete",
+      "supportedVersions": [
+       "2026-07-28"
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/call",
+     "params": {
+      "name": "add",
+      "arguments": {
+       "a": 2,
+       "b": 3
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "content": [
+       {
+        "text": "5",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "resultType": "complete",
+      "structuredContent": {
+       "result": 5
+      },
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "legacy_three_ways": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2025-11-25",
+      "capabilities": {},
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "type": "object",
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "addOutput"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "type": "object",
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "read_docOutput"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "type": "object",
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "countOutput"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "type": "object",
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "delete_fileOutput"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "type": "object",
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "summariseOutput"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "type": "object",
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "failOutput"
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/call",
+     "params": {
+      "name": "read_doc",
+      "arguments": {
+       "uri": "docs://readme"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "content": [
+       {
+        "text": "# Demo\nA tiny project.",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "structuredContent": {
+       "result": "# Demo\nA tiny project."
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "method": "resources/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "result": {
+      "resources": [
+       {
+        "description": "The project README.",
+        "mimeType": "text/markdown",
+        "name": "readme",
+        "uri": "docs://readme"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "method": "resources/read",
+     "params": {
+      "uri": "docs://readme"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "result": {
+      "contents": [
+       {
+        "mimeType": "text/markdown",
+        "text": "# Demo\nA tiny project.",
+        "uri": "docs://readme"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "method": "prompts/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "result": {
+      "prompts": [
+       {
+        "arguments": [
+         {
+          "name": "code",
+          "required": true
+         }
+        ],
+        "description": "Review a piece of code.",
+        "name": "review"
+       }
+      ]
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c7",
+     "method": "prompts/get",
+     "params": {
+      "name": "review",
+      "arguments": {
+       "code": "# Demo\nA tiny project."
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c7",
+     "result": {
+      "description": "Review a piece of code.",
+      "messages": [
+       {
+        "content": {
+         "text": "Please review:\n# Demo\nA tiny project.",
+         "type": "text"
+        },
+        "role": "user"
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "modern_three_ways": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "read_doc",
+      "arguments": {
+       "uri": "docs://readme"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "# Demo\nA tiny project.",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "resultType": "complete",
+      "structuredContent": {
+       "result": "# Demo\nA tiny project."
+      },
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "resources/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "cacheScope": "private",
+      "resources": [
+       {
+        "description": "The project README.",
+        "mimeType": "text/markdown",
+        "name": "readme",
+        "uri": "docs://readme"
+       }
+      ],
+      "resultType": "complete",
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "method": "resources/read",
+     "params": {
+      "uri": "docs://readme",
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "result": {
+      "cacheScope": "private",
+      "contents": [
+       {
+        "mimeType": "text/markdown",
+        "text": "# Demo\nA tiny project.",
+        "uri": "docs://readme"
+       }
+      ],
+      "resultType": "complete",
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "method": "prompts/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c5",
+     "result": {
+      "cacheScope": "private",
+      "prompts": [
+       {
+        "arguments": [
+         {
+          "name": "code",
+          "required": true
+         }
+        ],
+        "description": "Review a piece of code.",
+        "name": "review"
+       }
+      ],
+      "resultType": "complete",
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "method": "prompts/get",
+     "params": {
+      "name": "review",
+      "arguments": {
+       "code": "# Demo\nA tiny project."
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c6",
+     "result": {
+      "description": "Review a piece of code.",
+      "messages": [
+       {
+        "content": {
+         "text": "Please review:\n# Demo\nA tiny project.",
+         "type": "text"
+        },
+        "role": "user"
+       }
+      ],
+      "resultType": "complete",
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "legacy_progress": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2025-11-25",
+      "capabilities": {},
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "count",
+      "arguments": {
+       "n": 3
+      },
+      "_meta": {
+       "progressToken": "c2"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/progress",
+     "params": {
+      "progressToken": "c2",
+      "progress": 1,
+      "total": 3
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/progress",
+     "params": {
+      "progressToken": "c2",
+      "progress": 2,
+      "total": 3
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/progress",
+     "params": {
+      "progressToken": "c2",
+      "progress": 3,
+      "total": 3
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "counted to 3",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "structuredContent": {
+       "result": "counted to 3"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "type": "object",
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "addOutput"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "type": "object",
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "read_docOutput"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "type": "object",
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "countOutput"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "type": "object",
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "delete_fileOutput"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "type": "object",
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "summariseOutput"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "type": "object",
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "failOutput"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "modern_progress": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/call",
+     "params": {
+      "name": "count",
+      "arguments": {
+       "n": 3
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {},
+       "progressToken": "c1"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/progress",
+     "params": {
+      "progressToken": "c1",
+      "progress": 1,
+      "total": 3
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/progress",
+     "params": {
+      "progressToken": "c1",
+      "progress": 2,
+      "total": 3
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/progress",
+     "params": {
+      "progressToken": "c1",
+      "progress": 3,
+      "total": 3
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "content": [
+       {
+        "text": "counted to 3",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "resultType": "complete",
+      "structuredContent": {
+       "result": "counted to 3"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "legacy_errors": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2025-11-25",
+      "capabilities": {},
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "fail",
+      "arguments": {
+       "reason": "disk full"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "Error executing tool fail",
+        "type": "text"
+       }
+      ],
+      "isError": true
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/call",
+     "params": {
+      "name": "nope",
+      "arguments": {}
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "content": [
+       {
+        "text": "Unknown tool: nope",
+        "type": "text"
+       }
+      ],
+      "isError": true
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "method": "resources/read",
+     "params": {
+      "uri": "docs://missing"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "error": {
+      "code": -32602,
+      "message": "Unknown resource: docs://missing",
+      "data": {
+       "uri": "docs://missing"
+      }
+     }
+    }
+   }
+  ],
+  "modern_errors": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/call",
+     "params": {
+      "name": "fail",
+      "arguments": {
+       "reason": "disk full"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "content": [
+       {
+        "text": "Error executing tool fail",
+        "type": "text"
+       }
+      ],
+      "isError": true,
+      "resultType": "complete",
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "nope",
+      "arguments": {},
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "Unknown tool: nope",
+        "type": "text"
+       }
+      ],
+      "isError": true,
+      "resultType": "complete",
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "resources/read",
+     "params": {
+      "uri": "docs://missing",
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "error": {
+      "code": -32602,
+      "message": "Unknown resource: docs://missing",
+      "data": {
+       "uri": "docs://missing"
+      }
+     }
+    }
+   }
+  ],
+  "legacy_elicit_accept": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2025-11-25",
+      "capabilities": {
+       "elicitation": {
+        "form": {},
+        "url": {}
+       }
+      },
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "delete_file",
+      "arguments": {
+       "path": "build/"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "s1",
+     "method": "elicitation/create",
+     "params": {
+      "mode": "form",
+      "message": "Delete build/?",
+      "requestedSchema": {
+       "type": "object",
+       "properties": {
+        "confirm": {
+         "type": "boolean"
+        }
+       },
+       "required": [
+        "confirm"
+       ]
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "s1",
+     "result": {
+      "action": "accept",
+      "content": {
+       "confirm": true
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "deleted build/",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "structuredContent": {
+       "result": "deleted build/"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "type": "object",
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "addOutput"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "type": "object",
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "read_docOutput"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "type": "object",
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "countOutput"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "type": "object",
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "delete_fileOutput"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "type": "object",
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "summariseOutput"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "type": "object",
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "failOutput"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "legacy_elicit_decline": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2025-11-25",
+      "capabilities": {
+       "elicitation": {
+        "form": {},
+        "url": {}
+       }
+      },
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "delete_file",
+      "arguments": {
+       "path": "build/"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "s1",
+     "method": "elicitation/create",
+     "params": {
+      "mode": "form",
+      "message": "Delete build/?",
+      "requestedSchema": {
+       "type": "object",
+       "properties": {
+        "confirm": {
+         "type": "boolean"
+        }
+       },
+       "required": [
+        "confirm"
+       ]
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "s1",
+     "result": {
+      "action": "decline"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "kept build/",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "structuredContent": {
+       "result": "kept build/"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "type": "object",
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "addOutput"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "type": "object",
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "read_docOutput"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "type": "object",
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "countOutput"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "type": "object",
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "delete_fileOutput"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "type": "object",
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "summariseOutput"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "type": "object",
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "failOutput"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "modern_elicit_accept": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/call",
+     "params": {
+      "name": "delete_file",
+      "arguments": {
+       "path": "build/"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "elicitation": {
+         "form": {},
+         "url": {}
+        }
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "inputRequests": {
+       "confirm": {
+        "method": "elicitation/create",
+        "params": {
+         "message": "Delete build/?",
+         "mode": "form",
+         "requestedSchema": {
+          "properties": {
+           "confirm": {
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "confirm"
+          ],
+          "type": "object"
+         }
+        }
+       }
+      },
+      "resultType": "input_required",
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "inputResponses": {
+       "confirm": {
+        "action": "accept",
+        "content": {
+         "confirm": true
+        }
+       }
+      },
+      "name": "delete_file",
+      "arguments": {
+       "path": "build/"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "elicitation": {
+         "form": {},
+         "url": {}
+        }
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "deleted build/",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "resultType": "complete",
+      "structuredContent": {
+       "result": "deleted build/"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "elicitation": {
+         "form": {},
+         "url": {}
+        }
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "modern_elicit_decline": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/call",
+     "params": {
+      "name": "delete_file",
+      "arguments": {
+       "path": "build/"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "elicitation": {
+         "form": {},
+         "url": {}
+        }
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "inputRequests": {
+       "confirm": {
+        "method": "elicitation/create",
+        "params": {
+         "message": "Delete build/?",
+         "mode": "form",
+         "requestedSchema": {
+          "properties": {
+           "confirm": {
+            "type": "boolean"
+           }
+          },
+          "required": [
+           "confirm"
+          ],
+          "type": "object"
+         }
+        }
+       }
+      },
+      "resultType": "input_required",
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "inputResponses": {
+       "confirm": {
+        "action": "decline"
+       }
+      },
+      "name": "delete_file",
+      "arguments": {
+       "path": "build/"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "elicitation": {
+         "form": {},
+         "url": {}
+        }
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "kept build/",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "resultType": "complete",
+      "structuredContent": {
+       "result": "kept build/"
+      },
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "elicitation": {
+         "form": {},
+         "url": {}
+        }
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "legacy_sampling": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2025-11-25",
+      "capabilities": {
+       "sampling": {}
+      },
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "name": "summarise",
+      "arguments": {
+       "text": "A tiny project with one test."
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "s1",
+     "method": "sampling/createMessage",
+     "params": {
+      "messages": [
+       {
+        "role": "user",
+        "content": {
+         "type": "text",
+         "text": "Summarise: A tiny project with one test."
+        }
+       }
+      ],
+      "maxTokens": 50
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "s1",
+     "result": {
+      "role": "assistant",
+      "content": {
+       "type": "text",
+       "text": "A tiny demo project."
+      },
+      "model": "scripted-model",
+      "stopReason": "endTurn"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "A tiny demo project.",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "structuredContent": {
+       "result": "A tiny demo project."
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "type": "object",
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "addOutput"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "type": "object",
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "read_docOutput"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "type": "object",
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "countOutput"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "type": "object",
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "delete_fileOutput"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "type": "object",
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "summariseOutput"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "type": "object",
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "failOutput"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ],
+  "modern_sampling": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/call",
+     "params": {
+      "name": "summarise",
+      "arguments": {
+       "text": "A tiny project with one test."
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "sampling": {}
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "inputRequests": {
+       "summary": {
+        "method": "sampling/createMessage",
+        "params": {
+         "maxTokens": 50,
+         "messages": [
+          {
+           "content": {
+            "text": "Summarise: A tiny project with one test.",
+            "type": "text"
+           },
+           "role": "user"
+          }
+         ]
+        }
+       }
+      },
+      "resultType": "input_required",
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/call",
+     "params": {
+      "inputResponses": {
+       "summary": {
+        "role": "assistant",
+        "content": {
+         "type": "text",
+         "text": "A tiny demo project."
+        },
+        "model": "scripted-model",
+        "stopReason": "endTurn"
+       }
+      },
+      "name": "summarise",
+      "arguments": {
+       "text": "A tiny project with one test."
+      },
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "sampling": {}
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "content": [
+       {
+        "text": "A tiny demo project.",
+        "type": "text"
+       }
+      ],
+      "isError": false,
+      "resultType": "complete",
+      "structuredContent": {
+       "result": "A tiny demo project."
+      },
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       },
+       "io.modelcontextprotocol/clientCapabilities": {
+        "sampling": {}
+       }
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "raw_errors": [
+   {
+    "dir": "c2s",
+    "raw": "{not json"
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2099-01-01",
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "error": {
+      "code": -32022,
+      "message": "Unsupported protocol version",
+      "data": {
+       "supported": [
+        "2026-07-28"
+       ],
+       "requested": "2099-01-01"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "no/such/method",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "error": {
+      "code": -32601,
+      "message": "Method not found",
+      "data": "no/such/method"
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "error": {
+      "code": -32602,
+      "message": "params._meta must be an object carrying the required 'io.modelcontextprotocol/protocolVersion' and 'io.modelcontextprotocol/clientCapabilities' envelope keys"
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "method": "tools/list",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c4",
+     "result": {
+      "cacheScope": "private",
+      "resultType": "complete",
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "addOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "read_docOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "countOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "delete_fileOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "summariseOutput",
+         "type": "object"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "title": "failOutput",
+         "type": "object"
+        }
+       }
+      ],
+      "ttlMs": 0,
+      "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+        "name": "fixture-server",
+        "version": "1.0.0"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "raw_handshake": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "error": {
+      "code": -32602,
+      "message": "Invalid request parameters",
+      "data": ""
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "1999-01-01",
+      "capabilities": {},
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2025-11-25",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "method": "server/discover",
+     "params": {
+      "_meta": {
+       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+       "io.modelcontextprotocol/clientCapabilities": {}
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c3",
+     "error": {
+      "code": -32600,
+      "message": "this connection serves the handshake protocol era; requests carrying the 2026-07-28 envelope are not accepted on it"
+     }
+    }
+   }
+  ],
+  "raw_old_version": [
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "method": "initialize",
+     "params": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {},
+      "clientInfo": {
+       "name": "fixture-client",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c1",
+     "result": {
+      "capabilities": {
+       "prompts": {
+        "listChanged": false
+       },
+       "resources": {
+        "listChanged": false,
+        "subscribe": false
+       },
+       "tools": {
+        "listChanged": false
+       }
+      },
+      "protocolVersion": "2024-11-05",
+      "serverInfo": {
+       "name": "fixture-server",
+       "version": "1.0.0"
+      }
+     }
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "method": "notifications/initialized"
+    }
+   },
+   {
+    "dir": "c2s",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "method": "tools/list"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "jsonrpc": "2.0",
+     "id": "c2",
+     "result": {
+      "tools": [
+       {
+        "description": "Add two integers.",
+        "inputSchema": {
+         "properties": {
+          "a": {
+           "title": "A",
+           "type": "integer"
+          },
+          "b": {
+           "title": "B",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "a",
+          "b"
+         ],
+         "type": "object",
+         "title": "addArguments"
+        },
+        "name": "add",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "addOutput"
+        }
+       },
+       {
+        "description": "Read a document by URI.",
+        "inputSchema": {
+         "properties": {
+          "uri": {
+           "title": "Uri",
+           "type": "string"
+          }
+         },
+         "required": [
+          "uri"
+         ],
+         "type": "object",
+         "title": "read_docArguments"
+        },
+        "name": "read_doc",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "read_docOutput"
+        }
+       },
+       {
+        "description": "Count to n, reporting progress.",
+        "inputSchema": {
+         "properties": {
+          "n": {
+           "title": "N",
+           "type": "integer"
+          }
+         },
+         "required": [
+          "n"
+         ],
+         "type": "object",
+         "title": "countArguments"
+        },
+        "name": "count",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "countOutput"
+        }
+       },
+       {
+        "description": "Delete a file after the user confirms.",
+        "inputSchema": {
+         "properties": {
+          "path": {
+           "title": "Path",
+           "type": "string"
+          }
+         },
+         "required": [
+          "path"
+         ],
+         "type": "object",
+         "title": "delete_fileArguments"
+        },
+        "name": "delete_file",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "delete_fileOutput"
+        }
+       },
+       {
+        "description": "Summarise text with the client's model.",
+        "inputSchema": {
+         "properties": {
+          "text": {
+           "title": "Text",
+           "type": "string"
+          }
+         },
+         "required": [
+          "text"
+         ],
+         "type": "object",
+         "title": "summariseArguments"
+        },
+        "name": "summarise",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "summariseOutput"
+        }
+       },
+       {
+        "description": "Always fails (to show a tool error).",
+        "inputSchema": {
+         "properties": {
+          "reason": {
+           "title": "Reason",
+           "type": "string"
+          }
+         },
+         "required": [
+          "reason"
+         ],
+         "type": "object",
+         "title": "failArguments"
+        },
+        "name": "fail",
+        "outputSchema": {
+         "properties": {
+          "result": {
+           "title": "Result",
+           "type": "string"
+          }
+         },
+         "required": [
+          "result"
+         ],
+         "type": "object",
+         "title": "failOutput"
+        }
+       }
+      ]
+     }
+    }
+   }
+  ]
+ }
+}

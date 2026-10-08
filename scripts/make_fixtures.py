@@ -31,6 +31,11 @@ from agent_loop_sim.tools import CalcError, World, evaluate, fmt_number, glob_ma
 from agent_loop_sim.sweeps import retry_sweep  # noqa: E402
 from agent_loop_sim.trace import dumps_jsonl  # noqa: E402
 from agent_loop_sim import views  # noqa: E402
+from agent_loop_sim.protocols import mcp as pmcp  # noqa: E402
+from agent_loop_sim.protocols import oauth as poauth  # noqa: E402
+from agent_loop_sim.protocols import scenarios as pscen  # noqa: E402
+from agent_loop_sim.protocols import transport as ptrans  # noqa: E402
+from agent_loop_sim.protocols import views as pviews  # noqa: E402
 
 TEXTS = [
     "Hello, world! It's a test. They'll've DON'T  x\n\n  y\t\tz   \n",
@@ -186,6 +191,47 @@ def calc_case(src: str) -> dict:
         return {"src": src, "ok": False, "out": str(e)}
 
 
+def protocol_fixtures(tok) -> tuple[dict, dict]:
+    """The protocols module (engine 1.2.0): every scenario's wire messages, annotated log,
+    sequence-chart frames and framing on both transports; the views; the OAuth variants."""
+    plays = []
+    for sc in pscen.SCENARIOS + pscen.ENGINE_SCENARIOS:
+        p = pmcp.play(sc)
+        entry = {"name": sc["name"], "wire": p["wire"], "log": p["log"], "sequence": pviews.sequence_frames(p),
+                 "negotiation": pviews.negotiation(p),
+                 "stdio": ptrans.frame_session(p["log"], p["wire"], "stdio")}
+        if sc["mode"] != "raw":
+            entry["http"] = ptrans.frame_session(p["log"], p["wire"], "http")
+        plays.append(entry)
+    pk = [{"verifier": v, "challenge": poauth.pkce_challenge(v), "sha256": poauth.sha256_hex(v)}
+          for v in ["dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk", "", "abc", "a" * 64, "a" * 55, "a" * 56,
+                    "ünïcödé 日本 🙂"]]
+    fx = {
+        "engine": VERSION,
+        "plays": plays,
+        "journeys": {n: pviews.journey(pmcp.play(pscen.protocol_scenario(n))) for n in ["legacy_tour", "modern_tour"]},
+        "three_ways": {n: pviews.three_ways(pmcp.play(pscen.protocol_scenario(n)), tok)
+                       for n in ["legacy_three_ways", "modern_three_ways"]},
+        "integration": [pviews.integration_frames(n, m) for n, m in [(1, 1), (3, 4), (5, 6)]],
+        "stream_drop": [ptrans.stream_drop(era, n, d) for era in ["handshake", "modern"] for n, d in [(5, 2), (6, 1), (4, 3)]],
+        "oauth": [poauth.run_oauth(v) for v in poauth.VARIANTS] + [poauth.run_oauth("ok", 42)],
+        "pkce": pk,
+        "pct": [{"s": x, "out": poauth.pct(x)} for x in ["https://mcp.example.com/mcp", "a b+c", "files:read files:write", "ü~-._", ""]],
+        "rng_strings": [poauth.random_string(Rng(sd), 43) for sd in [0, 7, 42]],
+    }
+    data = {
+        "version": VERSION,
+        "fixture_server": pmcp.FIXTURE_SERVER,
+        "extra_tool": pmcp.EXTRA_TOOL,
+        "scenarios": pscen.SCENARIOS,
+        "engine_scenarios": pscen.ENGINE_SCENARIOS,
+        "transports": ptrans.TRANSPORTS,
+        "work_ms": ptrans.WORK_MS,
+        "oauth_variants": poauth.VARIANTS,
+    }
+    return fx, data
+
+
 def build() -> dict[str, str]:
     tok = default_tokenizer()
     rng_cases = []
@@ -235,8 +281,11 @@ def build() -> dict[str, str]:
         "human_seed_offset": HUMAN_SEED_OFFSET,
         "scenarios": SCENARIOS,
     }
+    pfx, pdata = protocol_fixtures(tok)
     files = {
         "fixtures/engine_fixtures.json": json.dumps(fx, ensure_ascii=False, separators=(",", ":")) + "\n",
+        "fixtures/protocols_fixtures.json": json.dumps(pfx, ensure_ascii=False, separators=(",", ":")) + "\n",
+        "ts/src/protocols_data.json": json.dumps(pdata, ensure_ascii=False, indent=1) + "\n",
         "ts/src/engine_data.json": json.dumps(data, ensure_ascii=False, indent=1) + "\n",
     }
     for tid, tr in traces.items():

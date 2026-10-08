@@ -6,7 +6,9 @@ the tool-calling style, parallel calls and stop conditions; permission rules, mo
 context management (truncation, tool-result clipping, summarising compaction); prompt-cache-aware prompt
 layout; sub-agents; pre- and post-tool hooks; a sandbox around the shell; and error recovery (retries with
 back-off, malformed-call feedback, loop detection). Every run produces a versioned **event trace** (JSON Lines) that the
-companion sites animate.
+companion sites animate. Since 1.2 it also models **agent protocols** on the wire: MCP's client and server state
+machines over JSON-RPC 2.0 in both protocol eras, its transports and its OAuth 2.1 authorisation, checked
+message for message against the official MCP Python SDK.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -14,8 +16,9 @@ companion sites animate.
 - **No live model anywhere** in CI or on the sites. Teaching scenarios use a scripted model; three **real
   traces**, recorded once from a small open-weights model on a CPU, are replayed token-exactly.
 
-Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.app)**, which vendors the TS
-port at a pinned commit.
+Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.app)** and
+**[Agent Protocols Explained](https://agent-protocols-explained.vercel.app)**, which vendor the TS port at a
+pinned commit.
 
 ## The pieces
 
@@ -32,6 +35,10 @@ port at a pinned commit.
 | `views.py` / `views.ts` | the animation frames the sites draw, derived from a trace (the loop, tool calls, the context budget, the cache, permissions, a timeline; since 1.1, every agent's context side by side and each call's path through permissions, hooks and the sandbox) |
 | `sweeps.py` / `sweeps.ts` | seeded sweeps: one scenario over many seeds per value of a knob (since 1.1: the retry budget) |
 | `schema/trace.schema.json` | JSON Schema of one trace event |
+| `protocols/mcp.py` / `protocols/mcp.ts` | MCP's client and server as state machines exchanging JSON-RPC 2.0 messages, in both protocol eras (below) |
+| `protocols/transport.py` / `.ts` | framing, bytes and timing on stdio and Streamable HTTP; a dropped SSE stream resumed (2025-11-25) or re-sent (2026-07-28) |
+| `protocols/oauth.py` / `.ts` | the OAuth 2.1 flow MCP requires, as a state machine, with mis-configured variants that fail where the spec says |
+| `protocols/views.py` / `.ts` | frames for the Protocols site: sequence charts, version and capability negotiation, a tool call end to end, N×M vs N+M |
 
 ## Policies
 
@@ -83,8 +90,47 @@ make-up message by message. See `schema/trace.schema.json`; `traces/*.events.jso
 
 The notes' numbers are invented for the exercise (`tiny-7b` and `dev-gpu` are not real products).
 
+## Protocols (since 1.2)
+
+**The spec revision modelled is MCP [2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28)**
+(the current revision on [modelcontextprotocol.io](https://modelcontextprotocol.io/specification/versioning),
+accessed 2026-10-08), together with the handshake era it replaced (2024-11-05 → 2025-11-25):
+
+| | Handshake era (≤ 2025-11-25) | 2026-07-28 |
+| --- | --- | --- |
+| Start | `initialize` → result (agreed version, server capabilities) → `notifications/initialized` | nothing: every request carries `_meta` with the version, the client's info and capabilities; `server/discover` is optional |
+| Results | plain | every result has `resultType`; list and read results add `ttlMs` / `cacheScope`; the server names itself in `_meta` |
+| Server needs the user or a model | the server sends its own request (`elicitation/create`, `sampling/createMessage`) and waits | the result is `resultType: "input_required"` with `inputRequests`; the client retries with `inputResponses` (multi round-trip requests) |
+| Streamable HTTP | sessions (`Mcp-Session-Id`), SSE events with IDs, resume with `Last-Event-ID` | no sessions, no resumption; `Mcp-Method` / `Mcp-Name` headers mirror the body |
+
+**Conformance with the official SDK.** `conformance/sdk_server.py` is a small server written with the
+[MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) (`mcp` 2.3.0, pinned in the
+`conformance` extra). `scripts/record_sdk.py` runs the SDK's own `Client` against it over stdio, through a tee
+that logs every line, for each scenario in `protocols/scenarios.py` (18: both eras, `auto` discovery, progress,
+errors, elicitation accepted and declined, sampling, malformed and out-of-era requests, an old client) and writes
+`fixtures/sdk_exchanges.json`. The engine must produce the same messages, compared as parsed JSON with request
+IDs and progress tokens renumbered in order of appearance (`mcp.normalise`). CI re-records live and checks
+live recording = committed recording = engine; the TS port is checked against the same recording.
+
+Things the recordings taught the model (each is SDK 2.3.0 behaviour, not a spec rule): the stdio server sends
+nothing back for a line that is not JSON (JSON-RPC 2.0 would answer `-32700`); a connection is locked to the era
+of its first valid request; after a tool result with `structuredContent` the client lists the tools (to validate
+the output against `outputSchema`) if it has not yet; `server/discover` advertises `listChanged: true` while
+`initialize` reports the server's own `false`.
+
+**Engine-only** (not in the SDK recordings): pagination (`server.page_size`, the fixture server does not
+paginate), cancellation (`notifications/cancelled`, whose timing a recording cannot pin down), a
+`notifications/tools/list_changed` after the server gains a tool, the HTTP framing and timing, and OAuth
+(`protocols/oauth.py`: protected-resource metadata, authorisation-server metadata, issuer check, PKCE S256
+with real SHA-256 (the RFC 7636 test vector is in the tests), Client ID Metadata Documents or Dynamic Client
+Registration, `resource`, `iss`, audience and scope checks, and variants: no PKCE support, PKCE skipped, wrong
+verifier, issuer mismatch, `iss` mix-up, wrong audience, insufficient scope, token passthrough).
+
 ## Versions
 
+- **1.2.0** (2026-10-08): the `protocols` package (MCP state machines in both eras, transports, OAuth 2.1,
+  views), the SDK conformance recordings and their CI job. Every 1.1 fixture is unchanged apart from the
+  `engine` field.
 - **1.1.0** (2026-10-07): the shell sandbox (`policy.sandbox`, result kind `sandboxed`), `pip install` in the
   shell simulator, the `fix_test_guarded` scenario, `views.agents_frames` / `pipeline_frames`,
   `sweeps.retry_sweep` (finished, and finished with passing tests: `verified`). Every 1.0 fixture run is unchanged apart from the `engine` field.
@@ -126,6 +172,11 @@ in Python and in TypeScript.
 - The prompt cache is a simple prefix model (longest common prefix with a live entry, rounded down to a
   block, above a minimum, with a TTL), not any provider's implementation.
 - The shell, test runner and search are simulators of the few commands the scenarios use.
+- **Protocols**: transport latencies (`transport.TRANSPORTS`: a 0.05 ms pipe and 150 ms process start for
+  stdio; 20 ms one way, 50 Mbit/s and 80 ms to connect for HTTP), server work times and the user's and model's
+  answer times (`transport.WORK_MS`) are illustrative. HTTP header sets are the minimal ones the spec requires
+  plus Host and Content-Length. OAuth tokens are opaque strings with their claims kept beside them; the hosts
+  (`*.example.com`) are invented.
 
 ## Run it
 
@@ -135,6 +186,9 @@ python -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python scripts/make_fixtures.py --check  # fixtures, engine data and replays up to date
 cd ts && pnpm install && pnpm test                 # the port, against the fixtures
 ```
+
+MCP SDK conformance: `.venv/bin/pip install -e ".[conformance]"`, then
+`python scripts/record_sdk.py --check` (records the SDK live and compares), or without `--check` to re-record.
 
 Recording (offline, needs a local `llama-server` on port 8080):
 `python scripts/record_trace.py fix_test qwen-fix-test-native --style native`, then

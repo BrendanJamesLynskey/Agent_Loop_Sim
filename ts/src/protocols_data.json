@@ -1,0 +1,1076 @@
+{
+ "version": "1.2.0",
+ "fixture_server": {
+  "info": {
+   "name": "fixture-server",
+   "version": "1.0.0"
+  },
+  "tools": [
+   {
+    "description": "Add two integers.",
+    "inputSchema": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "title": "A",
+       "type": "integer"
+      },
+      "b": {
+       "title": "B",
+       "type": "integer"
+      }
+     },
+     "required": [
+      "a",
+      "b"
+     ],
+     "title": "addArguments"
+    },
+    "name": "add",
+    "outputSchema": {
+     "properties": {
+      "result": {
+       "title": "Result",
+       "type": "integer"
+      }
+     },
+     "required": [
+      "result"
+     ],
+     "title": "addOutput",
+     "type": "object"
+    }
+   },
+   {
+    "description": "Read a document by URI.",
+    "inputSchema": {
+     "type": "object",
+     "properties": {
+      "uri": {
+       "title": "Uri",
+       "type": "string"
+      }
+     },
+     "required": [
+      "uri"
+     ],
+     "title": "read_docArguments"
+    },
+    "name": "read_doc",
+    "outputSchema": {
+     "properties": {
+      "result": {
+       "title": "Result",
+       "type": "string"
+      }
+     },
+     "required": [
+      "result"
+     ],
+     "title": "read_docOutput",
+     "type": "object"
+    }
+   },
+   {
+    "description": "Count to n, reporting progress.",
+    "inputSchema": {
+     "type": "object",
+     "properties": {
+      "n": {
+       "title": "N",
+       "type": "integer"
+      }
+     },
+     "required": [
+      "n"
+     ],
+     "title": "countArguments"
+    },
+    "name": "count",
+    "outputSchema": {
+     "properties": {
+      "result": {
+       "title": "Result",
+       "type": "string"
+      }
+     },
+     "required": [
+      "result"
+     ],
+     "title": "countOutput",
+     "type": "object"
+    }
+   },
+   {
+    "description": "Delete a file after the user confirms.",
+    "inputSchema": {
+     "type": "object",
+     "properties": {
+      "path": {
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     "required": [
+      "path"
+     ],
+     "title": "delete_fileArguments"
+    },
+    "name": "delete_file",
+    "outputSchema": {
+     "properties": {
+      "result": {
+       "title": "Result",
+       "type": "string"
+      }
+     },
+     "required": [
+      "result"
+     ],
+     "title": "delete_fileOutput",
+     "type": "object"
+    }
+   },
+   {
+    "description": "Summarise text with the client's model.",
+    "inputSchema": {
+     "type": "object",
+     "properties": {
+      "text": {
+       "title": "Text",
+       "type": "string"
+      }
+     },
+     "required": [
+      "text"
+     ],
+     "title": "summariseArguments"
+    },
+    "name": "summarise",
+    "outputSchema": {
+     "properties": {
+      "result": {
+       "title": "Result",
+       "type": "string"
+      }
+     },
+     "required": [
+      "result"
+     ],
+     "title": "summariseOutput",
+     "type": "object"
+    }
+   },
+   {
+    "description": "Always fails (to show a tool error).",
+    "inputSchema": {
+     "type": "object",
+     "properties": {
+      "reason": {
+       "title": "Reason",
+       "type": "string"
+      }
+     },
+     "required": [
+      "reason"
+     ],
+     "title": "failArguments"
+    },
+    "name": "fail",
+    "outputSchema": {
+     "properties": {
+      "result": {
+       "title": "Result",
+       "type": "string"
+      }
+     },
+     "required": [
+      "result"
+     ],
+     "title": "failOutput",
+     "type": "object"
+    }
+   }
+  ],
+  "resources": [
+   {
+    "description": "The project README.",
+    "mimeType": "text/markdown",
+    "name": "readme",
+    "uri": "docs://readme"
+   }
+  ],
+  "texts": {
+   "docs://readme": "# Demo\nA tiny project."
+  },
+  "prompts": [
+   {
+    "arguments": [
+     {
+      "name": "code",
+      "required": true
+     }
+    ],
+    "description": "Review a piece of code.",
+    "name": "review"
+   }
+  ]
+ },
+ "extra_tool": {
+  "description": "Deploy the project.",
+  "inputSchema": {
+   "type": "object",
+   "properties": {
+    "target": {
+     "title": "Target",
+     "type": "string"
+    }
+   },
+   "required": [
+    "target"
+   ],
+   "title": "deployArguments"
+  },
+  "name": "deploy",
+  "outputSchema": {
+   "properties": {
+    "result": {
+     "title": "Result",
+     "type": "string"
+    }
+   },
+   "required": [
+    "result"
+   ],
+   "title": "deployOutput",
+   "type": "object"
+  }
+ },
+ "scenarios": [
+  {
+   "name": "legacy_tour",
+   "title": "2025-11-25: handshake, then list and use each primitive",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "ping"
+    },
+    {
+     "op": "list_tools"
+    },
+    {
+     "op": "call_tool",
+     "name": "add",
+     "arguments": {
+      "a": 2,
+      "b": 3
+     }
+    },
+    {
+     "op": "list_resources"
+    },
+    {
+     "op": "read_resource",
+     "uri": "docs://readme"
+    },
+    {
+     "op": "list_prompts"
+    },
+    {
+     "op": "get_prompt",
+     "name": "review",
+     "arguments": {
+      "code": "x = 1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "modern_tour",
+   "title": "2026-07-28: no handshake; every request carries _meta",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "list_tools"
+    },
+    {
+     "op": "call_tool",
+     "name": "add",
+     "arguments": {
+      "a": 2,
+      "b": 3
+     }
+    },
+    {
+     "op": "list_resources"
+    },
+    {
+     "op": "read_resource",
+     "uri": "docs://readme"
+    },
+    {
+     "op": "list_prompts"
+    },
+    {
+     "op": "get_prompt",
+     "name": "review",
+     "arguments": {
+      "code": "x = 1"
+     }
+    }
+   ]
+  },
+  {
+   "name": "auto_tour",
+   "title": "auto: server/discover first, then requests",
+   "mode": "auto",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "list_tools"
+    },
+    {
+     "op": "call_tool",
+     "name": "add",
+     "arguments": {
+      "a": 2,
+      "b": 3
+     }
+    }
+   ]
+  },
+  {
+   "name": "legacy_three_ways",
+   "title": "The README three ways: a tool the model calls, a resource the app attaches, a prompt the user picks",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "list_tools"
+    },
+    {
+     "op": "call_tool",
+     "name": "read_doc",
+     "arguments": {
+      "uri": "docs://readme"
+     }
+    },
+    {
+     "op": "list_resources"
+    },
+    {
+     "op": "read_resource",
+     "uri": "docs://readme"
+    },
+    {
+     "op": "list_prompts"
+    },
+    {
+     "op": "get_prompt",
+     "name": "review",
+     "arguments": {
+      "code": "# Demo\nA tiny project."
+     }
+    }
+   ]
+  },
+  {
+   "name": "modern_three_ways",
+   "title": "The same three ways in 2026-07-28",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "list_tools"
+    },
+    {
+     "op": "call_tool",
+     "name": "read_doc",
+     "arguments": {
+      "uri": "docs://readme"
+     }
+    },
+    {
+     "op": "list_resources"
+    },
+    {
+     "op": "read_resource",
+     "uri": "docs://readme"
+    },
+    {
+     "op": "list_prompts"
+    },
+    {
+     "op": "get_prompt",
+     "name": "review",
+     "arguments": {
+      "code": "# Demo\nA tiny project."
+     }
+    }
+   ]
+  },
+  {
+   "name": "legacy_progress",
+   "title": "2025-11-25: progress notifications",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "count",
+     "arguments": {
+      "n": 3
+     },
+     "progress": true
+    }
+   ]
+  },
+  {
+   "name": "modern_progress",
+   "title": "2026-07-28: progress notifications",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "count",
+     "arguments": {
+      "n": 3
+     },
+     "progress": true
+    }
+   ]
+  },
+  {
+   "name": "legacy_errors",
+   "title": "2025-11-25: a tool error, an unknown tool, an unknown resource",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "fail",
+     "arguments": {
+      "reason": "disk full"
+     }
+    },
+    {
+     "op": "call_tool",
+     "name": "nope",
+     "arguments": {}
+    },
+    {
+     "op": "read_resource",
+     "uri": "docs://missing"
+    }
+   ]
+  },
+  {
+   "name": "modern_errors",
+   "title": "2026-07-28: the same errors",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "fail",
+     "arguments": {
+      "reason": "disk full"
+     }
+    },
+    {
+     "op": "call_tool",
+     "name": "nope",
+     "arguments": {}
+    },
+    {
+     "op": "read_resource",
+     "uri": "docs://missing"
+    }
+   ]
+  },
+  {
+   "name": "legacy_elicit_accept",
+   "title": "2025-11-25: the server asks the user (elicitation/create), who accepts",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": true,
+    "sampling": false
+   },
+   "answers": {
+    "elicit": [
+     {
+      "action": "accept",
+      "content": {
+       "confirm": true
+      }
+     }
+    ]
+   },
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "delete_file",
+     "arguments": {
+      "path": "build/"
+     }
+    }
+   ]
+  },
+  {
+   "name": "legacy_elicit_decline",
+   "title": "2025-11-25: the user declines",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": true,
+    "sampling": false
+   },
+   "answers": {
+    "elicit": [
+     {
+      "action": "decline"
+     }
+    ]
+   },
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "delete_file",
+     "arguments": {
+      "path": "build/"
+     }
+    }
+   ]
+  },
+  {
+   "name": "modern_elicit_accept",
+   "title": "2026-07-28: input_required, then a retry carrying the answer",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": true,
+    "sampling": false
+   },
+   "answers": {
+    "elicit": [
+     {
+      "action": "accept",
+      "content": {
+       "confirm": true
+      }
+     }
+    ]
+   },
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "delete_file",
+     "arguments": {
+      "path": "build/"
+     }
+    }
+   ]
+  },
+  {
+   "name": "modern_elicit_decline",
+   "title": "2026-07-28: the user declines",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": true,
+    "sampling": false
+   },
+   "answers": {
+    "elicit": [
+     {
+      "action": "decline"
+     }
+    ]
+   },
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "delete_file",
+     "arguments": {
+      "path": "build/"
+     }
+    }
+   ]
+  },
+  {
+   "name": "legacy_sampling",
+   "title": "2025-11-25: the server asks the client's model (sampling/createMessage)",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": true
+   },
+   "answers": {
+    "sample": [
+     {
+      "role": "assistant",
+      "content": {
+       "type": "text",
+       "text": "A tiny demo project."
+      },
+      "model": "scripted-model",
+      "stopReason": "endTurn"
+     }
+    ]
+   },
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "summarise",
+     "arguments": {
+      "text": "A tiny project with one test."
+     }
+    }
+   ]
+  },
+  {
+   "name": "modern_sampling",
+   "title": "2026-07-28: sampling as an input request",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": true
+   },
+   "answers": {
+    "sample": [
+     {
+      "role": "assistant",
+      "content": {
+       "type": "text",
+       "text": "A tiny demo project."
+      },
+      "model": "scripted-model",
+      "stopReason": "endTurn"
+     }
+    ]
+   },
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "summarise",
+     "arguments": {
+      "text": "A tiny project with one test."
+     }
+    }
+   ]
+  },
+  {
+   "name": "raw_errors",
+   "title": "Malformed JSON (no reply), an unsupported version, an unknown method, no _meta, then a good request",
+   "mode": "raw",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "raw",
+     "line": "{not json",
+     "reply": false
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/list",
+      "params": {
+       "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2099-01-01",
+        "io.modelcontextprotocol/clientCapabilities": {}
+       }
+      }
+     }
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "no/such/method",
+      "params": {
+       "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {}
+       }
+      }
+     }
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "tools/list"
+     }
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 4,
+      "method": "tools/list",
+      "params": {
+       "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {}
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "raw_handshake",
+   "title": "A request before the handshake, an unknown version (the server offers its own), then a 2026-07-28 request on a handshake connection",
+   "mode": "raw",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/list"
+     }
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "initialize",
+      "params": {
+       "protocolVersion": "1999-01-01",
+       "capabilities": {},
+       "clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       }
+      }
+     }
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "method": "notifications/initialized"
+     },
+     "reply": false
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "server/discover",
+      "params": {
+       "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {}
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "raw_old_version",
+   "title": "A client asking for the first revision, 2024-11-05: the server agrees",
+   "mode": "raw",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "initialize",
+      "params": {
+       "protocolVersion": "2024-11-05",
+       "capabilities": {},
+       "clientInfo": {
+        "name": "fixture-client",
+        "version": "1.0.0"
+       }
+      }
+     }
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "method": "notifications/initialized"
+     },
+     "reply": false
+    },
+    {
+     "op": "raw",
+     "msg": {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "tools/list"
+     }
+    }
+   ]
+  }
+ ],
+ "engine_scenarios": [
+  {
+   "name": "legacy_paged",
+   "title": "Pagination: tools/list in pages of two, following nextCursor",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "list_tools"
+    }
+   ],
+   "server": {
+    "page_size": 2
+   }
+  },
+  {
+   "name": "modern_paged",
+   "title": "Pagination in 2026-07-28",
+   "mode": "2026-07-28",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "list_tools"
+    }
+   ],
+   "server": {
+    "page_size": 4
+   }
+  },
+  {
+   "name": "legacy_cancel",
+   "title": "Cancellation: the client sends notifications/cancelled after two progress updates",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "call_tool",
+     "name": "count",
+     "arguments": {
+      "n": 5
+     },
+     "progress": true,
+     "cancel_after": 2
+    }
+   ]
+  },
+  {
+   "name": "legacy_list_changed",
+   "title": "The server gains a tool and says so; the client lists again",
+   "mode": "legacy",
+   "client": {
+    "info": {
+     "name": "fixture-client",
+     "version": "1.0.0"
+    },
+    "elicitation": false,
+    "sampling": false
+   },
+   "answers": {},
+   "steps": [
+    {
+     "op": "list_tools"
+    },
+    {
+     "op": "add_tool"
+    },
+    {
+     "op": "call_tool",
+     "name": "deploy",
+     "arguments": {
+      "target": "staging"
+     }
+    }
+   ],
+   "server": {
+    "list_changed": true
+   }
+  }
+ ],
+ "transports": {
+  "stdio": {
+   "label": "stdio",
+   "one_way_ms": 0.05,
+   "mbit_per_s": 4000,
+   "startup_ms": 150
+  },
+  "http": {
+   "label": "Streamable HTTP",
+   "one_way_ms": 20,
+   "mbit_per_s": 50,
+   "startup_ms": 80
+  }
+ },
+ "work_ms": {
+  "default": 1,
+  "tools/call": 3,
+  "count_step": 200,
+  "human": 4000,
+  "model": 1500
+ },
+ "oauth_variants": {
+  "ok": "Everything configured correctly (Client ID Metadata Document registration)",
+  "dcr": "Dynamic Client Registration instead (deprecated in 2026-07-28, still allowed)",
+  "no_pkce_support": "The authorisation server's metadata does not advertise PKCE",
+  "pkce_skipped": "The client leaves out the PKCE challenge",
+  "wrong_verifier": "The token request carries the wrong code verifier",
+  "issuer_mismatch": "The metadata names a different issuer from the one asked",
+  "iss_mismatch": "The authorisation response comes back with a different iss (mix-up)",
+  "wrong_audience": "The client presents a token minted for another server",
+  "insufficient_scope": "The token's scope is too narrow for the tool being called",
+  "token_passthrough": "The MCP server forwards the client's token to an upstream API"
+ }
+}

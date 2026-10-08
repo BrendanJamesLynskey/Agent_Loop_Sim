@@ -8,8 +8,10 @@ on:
 # Two halves of one engine:
 #   - the Python reference: its tests, and the parity fixtures and engine data it writes
 #     are up to date (the fixtures include replays of the recorded traces);
-#   - the TypeScript port: it reproduces every fixture exactly, and typechecks.
-# No job calls a language model: recorded traces are replayed.
+#   - the TypeScript port: it reproduces every fixture exactly, and typechecks;
+#   - MCP conformance: the official MCP Python SDK's client and server are run and recorded, and the
+#     engine must produce the same JSON-RPC messages.
+# No job calls a language model: recorded traces are replayed; sampling answers are scripted.
 
 jobs:
   python:
@@ -28,6 +30,20 @@ jobs:
         run: pytest
       - name: Fixtures and engine data are up to date
         run: python scripts/make_fixtures.py --check
+
+  conformance:
+    name: MCP SDK conformance (live recording)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev,conformance]"
+      - name: Record the official SDK's client and server; compare with the committed recording and the engine
+        run: python scripts/record_sdk.py --check
+      - name: Protocol tests
+        run: pytest tests/test_protocols.py
 
   typescript:
     name: TypeScript port (exact parity)

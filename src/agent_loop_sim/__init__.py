@@ -1,4 +1,4 @@
 """Agent_Loop_Sim: a deterministic agent-harness simulator (Python reference; a TS port in ts/)."""
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 TRACE_VERSION = 1
