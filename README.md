@@ -250,7 +250,7 @@ Every number is in [`fixtures/context2_results.md`](fixtures/context2_results.md
   of 22 for 67,498.
 - **`tradeoff`**: 50 questions over a document set in one prompt (with and without the prompt cache) against the
   reranked top k chunks, priced by `accounting`. With Claude Sonnet 4.6's list prices, a 1M-token set costs
-  $150.05 uncached and $18.49 cached for the 50 questions; top-5 retrieval costs $0.18 with the answer in the prompt
+  $150.04 uncached and $18.49 cached for the 50 questions; top-5 retrieval costs $0.18 with the answer in the prompt
   for 0.995 of the questions.
 
 ## Versions
