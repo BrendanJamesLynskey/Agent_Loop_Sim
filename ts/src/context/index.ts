@@ -24,7 +24,7 @@ export {
   knapsackPick,
   place,
   positions,
-  useP,
+  answerP,
   packAll,
   packingEval,
   packingView,

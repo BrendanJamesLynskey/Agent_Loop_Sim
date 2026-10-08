@@ -148,7 +148,7 @@ def positions(cands: list[dict[str, Any]], order: list[int]) -> list[float]:
     return out
 
 
-def use_p(cands: list[dict[str, Any]], order: list[int], pc: dict[str, float] | None = None) -> float:
+def answer_p(cands: list[dict[str, Any]], order: list[int], pc: dict[str, float] | None = None) -> float:
     """The position curve's p at the best-placed chunk that holds the answer (0 if none is packed)."""
     best = 0.0
     for i, x in zip(order, positions(cands, order)):
@@ -188,7 +188,7 @@ def packing_eval(r: Retriever, budgets: list[int], n: int = CANDIDATES,
                 a["tokens"] += _sum(cands, ch, "tokens")
                 a["value"] += _sum(cands, ch, "value")
                 for pl in PLACEMENTS:
-                    a[pl] += use_p(cands, place(cands, ch, pl), pc) if ch else 0.0
+                    a[pl] += answer_p(cands, place(cands, ch, pl), pc) if ch else 0.0
     nq = len(qs)
     for b in budgets:
         for p in PACKERS:
@@ -233,6 +233,6 @@ def packing_view(r: Retriever, qi: int, budget: int, n: int = CANDIDATES,
     for pl in PLACEMENTS:
         order = place(cands, ch, pl)
         out["placements"][pl] = {"order": order, "positions": positions(cands, order) if order else [],
-                                 "p": use_p(cands, order, pc) if order else 0.0}
+                                 "p": answer_p(cands, order, pc) if order else 0.0}
     out["curve"] = position_curve(pc)
     return out

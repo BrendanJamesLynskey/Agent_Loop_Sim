@@ -132,7 +132,7 @@ export function positions(cands: Cand[], order: number[]): number[] {
   return out;
 }
 
-export function useP(cands: Cand[], order: number[], pc: Record<string, number> = POSITION): number {
+export function answerP(cands: Cand[], order: number[], pc: Record<string, number> = POSITION): number {
   let best = 0.0;
   const xs = positions(cands, order);
   order.forEach((i, j) => {
@@ -180,7 +180,7 @@ export function packingEval(r: Retriever, budgets: number[], n = CANDIDATES, pc:
         a.answered! += ch.some((i) => cands[i]!.relevant) ? 1 : 0;
         a.tokens! += sumOf(cands, ch, "tokens");
         a.value! += sumOf(cands, ch, "value");
-        for (const pl of PLACEMENTS) a[pl]! += ch.length ? useP(cands, place(cands, ch, pl), pc) : 0.0;
+        for (const pl of PLACEMENTS) a[pl]! += ch.length ? answerP(cands, place(cands, ch, pl), pc) : 0.0;
       }
     }
   }
@@ -247,7 +247,7 @@ export function packingView(r: Retriever, qi: number, budget: number, n = CANDID
     out.placements[pl] = {
       order,
       positions: order.length ? positions(cands, order) : [],
-      p: order.length ? useP(cands, order, pc) : 0.0,
+      p: order.length ? answerP(cands, order, pc) : 0.0,
     };
   }
   out.curve = positionCurve(pc);
