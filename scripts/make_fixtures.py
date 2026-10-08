@@ -31,8 +31,11 @@ from agent_loop_sim.tools import CalcError, World, evaluate, fmt_number, glob_ma
 from agent_loop_sim.sweeps import retry_sweep  # noqa: E402
 from agent_loop_sim.trace import dumps_jsonl  # noqa: E402
 from agent_loop_sim import views  # noqa: E402
+from agent_loop_sim.protocols import a2a as pa2a  # noqa: E402
+from agent_loop_sim.protocols import gateway as pgw  # noqa: E402
 from agent_loop_sim.protocols import mcp as pmcp  # noqa: E402
 from agent_loop_sim.protocols import oauth as poauth  # noqa: E402
+from agent_loop_sim.protocols import security as psec  # noqa: E402
 from agent_loop_sim.protocols import scenarios as pscen  # noqa: E402
 from agent_loop_sim.protocols import transport as ptrans  # noqa: E402
 from agent_loop_sim.protocols import views as pviews  # noqa: E402
@@ -228,8 +231,37 @@ def protocol_fixtures(tok) -> tuple[dict, dict]:
         "transports": ptrans.TRANSPORTS,
         "work_ms": ptrans.WORK_MS,
         "oauth_variants": poauth.VARIANTS,
+        "a2a": {"card": pa2a.CARD, "times": pa2a.TIMES, "states": pa2a.STATES, "transitions": pa2a.TRANSITIONS,
+                "errors": pa2a.ERRORS, "scenarios": pa2a.A2A_SCENARIOS},
+        "gateway": {"servers": pgw.SERVERS, "call": pgw.CALL, "allow": pgw.ALLOW},
     }
     return fx, data
+
+
+def protocol_fixtures_2(tok) -> dict:
+    """Added in engine 1.3.0 (a separate file, so the 1.2.0 fixtures stay as they were): every
+    A2A scenario (wire, log, card, chart frames, summary), the A2A helpers, the gateway under
+    each policy, each attack with and without its defence, and the OAuth variants as chart frames."""
+    a2a = []
+    for name in pa2a.A2A_SCENARIOS:
+        p = pa2a.play(pa2a.a2a_scenario(name))
+        a2a.append({"name": name, "wire": p["wire"], "log": p["log"], "card": p["card"],
+                    "frames": pviews.a2a_frames(p), "summary": pviews.a2a_summary(p),
+                    "normalised": pa2a.normalise(p["wire"])})
+    r = Rng(3)
+    return {
+        "engine": VERSION,
+        "a2a": a2a,
+        "uuid4": [pa2a.uuid4(r) for _ in range(5)],
+        "timestamps": [pa2a.timestamp(ms) for ms in [0, 1, 999, 1000, 61001, 3599999, 3600000, 7891]],
+        "sorted_compact": [pa2a.sorted_compact(x) for x in [pa2a.CARD, {"b": [1, {"d": None, "c": True}], "a": "x"}, [], {}]],
+        "card_etag": pa2a.card_etag(pa2a.CARD),
+        "gateway": [pgw.gateway_run(pol, tok) for pol in pgw.POLICIES],
+        "security": [dict(psec.run_security(a, d), frames=pviews.flow_frames(psec.run_security(a, d)))
+                     for a in psec.ATTACKS for d in [False, True]],
+        "tool_hashes": [psec.tool_hash(psec.NOTES_TOOL), psec.tool_hash(dict(psec.NOTES_TOOL, description=psec.HIDDEN))],
+        "oauth_frames": {v: pviews.flow_frames(poauth.run_oauth(v)) for v in poauth.VARIANTS},
+    }
 
 
 def build() -> dict[str, str]:
@@ -285,6 +317,8 @@ def build() -> dict[str, str]:
     files = {
         "fixtures/engine_fixtures.json": json.dumps(fx, ensure_ascii=False, separators=(",", ":")) + "\n",
         "fixtures/protocols_fixtures.json": json.dumps(pfx, ensure_ascii=False, separators=(",", ":")) + "\n",
+        "fixtures/protocols2_fixtures.json": json.dumps(protocol_fixtures_2(tok), ensure_ascii=False,
+                                                        separators=(",", ":")) + "\n",
         "ts/src/protocols_data.json": json.dumps(pdata, ensure_ascii=False, indent=1) + "\n",
         "ts/src/engine_data.json": json.dumps(data, ensure_ascii=False, indent=1) + "\n",
     }

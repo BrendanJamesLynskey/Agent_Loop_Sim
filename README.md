@@ -8,7 +8,8 @@ layout; sub-agents; pre- and post-tool hooks; a sandbox around the shell; and er
 back-off, malformed-call feedback, loop detection). Every run produces a versioned **event trace** (JSON Lines) that the
 companion sites animate. Since 1.2 it also models **agent protocols** on the wire: MCP's client and server state
 machines over JSON-RPC 2.0 in both protocol eras, its transports and its OAuth 2.1 authorisation, checked
-message for message against the official MCP Python SDK.
+message for message against the official MCP Python SDK; since 1.3, **A2A** (agent to agent) checked the same way
+against the official A2A Python SDK, an MCP gateway, and three protocol attacks with their defences.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -38,7 +39,10 @@ pinned commit.
 | `protocols/mcp.py` / `protocols/mcp.ts` | MCP's client and server as state machines exchanging JSON-RPC 2.0 messages, in both protocol eras (below) |
 | `protocols/transport.py` / `.ts` | framing, bytes and timing on stdio and Streamable HTTP; a dropped SSE stream resumed (2025-11-25) or re-sent (2026-07-28) |
 | `protocols/oauth.py` / `.ts` | the OAuth 2.1 flow MCP requires, as a state machine, with mis-configured variants that fail where the spec says |
-| `protocols/views.py` / `.ts` | frames for the Protocols site: sequence charts, version and capability negotiation, a tool call end to end, N×M vs N+M |
+| `protocols/views.py` / `.ts` | frames for the Protocols site: sequence charts, version and capability negotiation, a tool call end to end, N×M vs N+M; since 1.3, A2A charts and summaries, and any step-by-step flow (OAuth, attacks) as a chart |
+| `protocols/a2a.py` / `.ts` | A2A 1.0: an orchestrating agent (client) and a remote research agent (server) over the JSON-RPC binding with SSE; the task life cycle (since 1.3) |
+| `protocols/gateway.py` / `.ts` | an MCP gateway over four servers: tool-name collisions, prefixing, an allow-list, the tool list's token cost, routing (since 1.3) |
+| `protocols/security.py` / `.ts` | tool poisoning, a confused deputy and state-handle hijacking, each with and without its defence (since 1.3) |
 
 ## Policies
 
@@ -126,8 +130,43 @@ with real SHA-256 (the RFC 7636 test vector is in the tests), Client ID Metadata
 Registration, `resource`, `iss`, audience and scope checks, and variants: no PKCE support, PKCE skipped, wrong
 verifier, issuer mismatch, `iss` mix-up, wrong audience, insufficient scope, token passthrough).
 
+## A2A, gateways and attacks (since 1.3)
+
+**The A2A version modelled is 1.0** ([specification](https://a2a-protocol.org/latest/specification/), release
+[v1.0.1](https://github.com/a2aproject/A2A/releases/tag/v1.0.1) of 2026-05-28, accessed 2026-10-08): the Agent
+Card at `/.well-known/agent-card.json` (with the weak `ETag` the SDK sends), the JSON-RPC binding's PascalCase
+methods (`SendMessage`, `SendStreamingMessage`, `GetTask`, `CancelTask`, `SubscribeToTask`,
+`GetExtendedAgentCard`), the `A2A-Version` header (an empty one means 0.3), `TASK_STATE_*` states (terminal:
+completed, failed, canceled, rejected; interrupted: input required, auth required), multi-turn follow-ups with
+`taskId`/`contextId`, SSE streams of `task` → `statusUpdate` / `artifactUpdate` (chunks with `append` and
+`lastChunk`) that close on a terminal state, and the error codes -32001…-32009 with `google.rpc.ErrorInfo` details.
+Not modelled: push notifications, `ListTasks`, the gRPC and HTTP+JSON bindings, signed cards.
+
+**Conformance with the official A2A SDK.** `conformance/a2a_sdk_server.py` is the research agent written with the
+[A2A Python SDK](https://github.com/a2aproject/a2a-python) (`a2a-sdk[http-server]` 1.2.2, pinned in the
+`conformance` extra). `scripts/record_a2a_sdk.py` drives it with the engine's own orchestrator, in process
+(Starlette's test client, no socket), for each of the 8 scenarios in `a2a.A2A_SCENARIOS` (blocking and streamed
+delegation, input required, auth required with the user signing in outside A2A, cancel and the errors after it, a
+rejection, a direct message, and five errors) and writes `fixtures/a2a_sdk_exchanges.json` (56 messages). The
+engine's agent must give the same messages once UUIDs are renumbered and timestamps blanked (`a2a.normalise`); CI
+re-records live in the conformance job. SDK 1.2.2 behaviour the recordings taught the model: cancelling a task that
+is waiting for input (so nothing is running for it) writes `TASK_STATE_CANCELED` over its stored status and keeps
+the status message; a message to a finished task is refused with "Task … is in terminal state: …"; a status message
+moves into the history when the next message arrives.
+
+**The gateway** (`gateway.py`) lists four downstream servers and merges their tools under three policies: `flat`
+(same names collide: the first server wins and `search` goes to the wrong server), `prefix` (`web.search`, as the
+spec's tools page recommends for aggregators) and `filtered` (an allow-list). Token counts of the merged list use
+the vendored tokenizer. **The attacks** (`security.py`) are inert walk-throughs against `*.example.com`: a tool whose
+description changes after approval (defence: pin a hash of the approved definition), the OAuth proxy confused
+deputy from MCP's security best practices (defence: per-client consent at the proxy), and state-handle hijacking
+(defence: key the state by the verified token's user).
+
 ## Versions
 
+- **1.3.0** (2026-10-08): `protocols/a2a.py` (A2A 1.0) and its SDK conformance recordings, `protocols/gateway.py`,
+  `protocols/security.py`, `views.a2a_frames` / `a2a_summary` / `flow_frames`; new fixture file
+  `fixtures/protocols2_fixtures.json`. Every 1.2 fixture is unchanged apart from the `engine` field.
 - **1.2.0** (2026-10-08): the `protocols` package (MCP state machines in both eras, transports, OAuth 2.1,
   views), the SDK conformance recordings and their CI job. Every 1.1 fixture is unchanged apart from the
   `engine` field.
@@ -177,6 +216,10 @@ in Python and in TypeScript.
   answer times (`transport.WORK_MS`) are illustrative. HTTP header sets are the minimal ones the spec requires
   plus Host and Content-Length. OAuth tokens are opaque strings with their claims kept beside them; the hosts
   (`*.example.com`) are invented.
+- **A2A**: the research agent's replies are scripted; network, work, model and sign-in times (`a2a.TIMES`: 20 ms
+  one way, 40 ms to start, 600 ms per artifact chunk, 1.2 s for the orchestrator's model, 4 s for a person to sign
+  in) are illustrative. IDs come from the seeded generator and timestamps from a simulated clock.
+- **Gateway and attacks**: the servers, tools, handles, secrets and tokens are invented placeholders.
 
 ## Run it
 
@@ -187,8 +230,9 @@ python -m venv .venv && .venv/bin/pip install -e ".[dev]"
 cd ts && pnpm install && pnpm test                 # the port, against the fixtures
 ```
 
-MCP SDK conformance: `.venv/bin/pip install -e ".[conformance]"`, then
-`python scripts/record_sdk.py --check` (records the SDK live and compares), or without `--check` to re-record.
+SDK conformance: `.venv/bin/pip install -e ".[conformance]"`, then `python scripts/record_sdk.py --check` (MCP)
+and `python scripts/record_a2a_sdk.py --check` (A2A): each records its SDK live and compares; without `--check`
+they re-record.
 
 Recording (offline, needs a local `llama-server` on port 8080):
 `python scripts/record_trace.py fix_test qwen-fix-test-native --style native`, then

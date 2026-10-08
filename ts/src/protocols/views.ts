@@ -259,3 +259,105 @@ export function threeWays(played: Obj, tok: Tokenizer): Obj[] {
   }
   return rows;
 }
+
+// --- added in engine 1.3.0: agent to agent, and step-by-step flows (OAuth, attacks) -----------
+
+const unquote = (s: string) => s.replace(/^"+|"+$/g, "");
+
+function a2aLabel(w: Obj): string {
+  if ("http" in w) {
+    const h = w.http;
+    if ("method" in h) return "GET /.well-known/agent-card.json";
+    const b = h.body;
+    return "agent card: " + String(b.name) + ", " + String((b.skills as Obj[]).length) + " skills" + (b.capabilities.streaming ? ", streams" : "");
+  }
+  const msg = w.msg;
+  if ("method" in msg) {
+    const p: Obj = msg.params ?? {};
+    const m = p.message;
+    if (m !== null && typeof m === "object" && !Array.isArray(m)) {
+      const text = ((m.parts ?? []) as Obj[]).map((x) => x.text ?? "").join(" ");
+      return msg.method + ' "' + unquote(short(text, 30)) + '"' + ("taskId" in m ? " (same task)" : "");
+    }
+    return msg.method;
+  }
+  if ("error" in msg) {
+    const e = msg.error;
+    return String(e.code) + " " + unquote(short(e.message, 48));
+  }
+  const r = msg.result;
+  if ("statusUpdate" in r) return "statusUpdate " + (r.statusUpdate.status.state as string).replace("TASK_STATE_", "");
+  if ("artifactUpdate" in r) {
+    const a = r.artifactUpdate;
+    return "artifactUpdate" + (a.append ? " (append" + (a.lastChunk ? ", last" : "") + ")" : " (first chunk)");
+  }
+  if ("message" in r) return 'Message "' + unquote(short(r.message.parts[0].text ?? "", 28)) + '"';
+  const t = "task" in r ? r.task : r;
+  let s = "Task " + (t.status.state as string).replace("TASK_STATE_", "");
+  if (t.artifacts && (t.artifacts as Obj[]).length > 0) s += " + artifact";
+  return s;
+}
+
+export function a2aFrames(played: Obj): Obj[] {
+  const out: Obj[] = [];
+  (played.wire as Obj[]).forEach((w, i) => {
+    const lg = played.log[i];
+    if (w.dir === "host") {
+      out.push({ from: "client", to: "user", label: "ask the user to sign in", virtual: true, kind: "gate", wire: null, dir: "host", bytes: 0, sse: false, t: lg.t, client: "asking the user", server: lg.server, task: lg.task });
+      out.push({ from: "user", to: "client", label: "signed in (outside A2A)", virtual: true, kind: "gate", wire: null, dir: "host", bytes: 0, sse: false, t: lg.t, client: lg.client, server: lg.server, task: lg.task });
+      return;
+    }
+    const c2s = w.dir === "c2s";
+    let kind = lg.kind as string;
+    if (kind === "http") kind = c2s ? "request" : "result";
+    out.push({ from: c2s ? "client" : "server", to: c2s ? "server" : "client", label: a2aLabel(w), virtual: false, kind, wire: i, dir: w.dir, bytes: lg.bytes, sse: Boolean(w.sse), t: lg.t, client: lg.client, server: lg.server, task: lg.task });
+  });
+  out.forEach((f, k) => (f.step = k));
+  return out;
+}
+
+export function a2aSummary(played: Obj): Obj {
+  let msgs = 0;
+  let nbytes = 0;
+  let first: number | null = null;
+  const states: string[] = [];
+  (played.wire as Obj[]).forEach((w, i) => {
+    const lg = played.log[i];
+    if (w.dir === "host") return;
+    msgs += 1;
+    nbytes += lg.bytes as number;
+    if (w.dir === "s2c" && "msg" in w && "result" in w.msg && first === null) {
+      const r = w.msg.result;
+      const t = r !== null && typeof r === "object" ? r.task : undefined;
+      if ("artifactUpdate" in r || (t !== null && typeof t === "object" && t.artifacts && (t.artifacts as Obj[]).length > 0)) first = lg.t;
+    }
+    if (lg.task !== null && (states.length === 0 || states[states.length - 1] !== lg.task)) states.push(lg.task);
+  });
+  const last = played.log[played.log.length - 1].t;
+  return { messages: msgs, bytes: nbytes, first_result_ms: first, end_ms: last, states };
+}
+
+export function flowFrames(run: Obj): Obj[] {
+  const out: Obj[] = [];
+  for (const s of run.steps as Obj[]) {
+    const k = s.kind;
+    let kind: string;
+    let virtual: boolean;
+    if (k === "http") {
+      const st = s.status;
+      kind = st === null ? "request" : st >= 400 ? "error" : "result";
+      virtual = false;
+    } else if (k === "check") {
+      kind = s.ok ? "check" : "fail";
+      virtual = true;
+    } else if (k === "attack") {
+      kind = "attack";
+      virtual = true;
+    } else {
+      kind = "gate";
+      virtual = true;
+    }
+    out.push({ from: s.from, to: s.to, label: s.label, kind, virtual, seq: s.seq, ok: s.ok, step: out.length });
+  }
+  return out;
+}
