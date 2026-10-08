@@ -221,8 +221,46 @@ On this corpus BM25 beats the small embedder: SQuAD's questions were written by 
 so they share its words. Fixed 128- and 256-token chunks cut 5 and 4 answers in two; 512-token chunks exceed the
 embedder's 256 word pieces (73 of 77 are truncated), and dense recall@5 falls to 0.755.
 
+## Packing, compaction, memory and long context (since 1.5)
+
+Four more modules in `context/`, each ported statement for statement to `ts/src/context/` and checked against
+[`fixtures/context2_fixtures.json`](fixtures/context2_fixtures.json) with no tolerance (every frame of every run).
+Every number is in [`fixtures/context2_results.md`](fixtures/context2_results.md), the recorded run.
+
+- **`packing`**: what to put in a token budget. The candidates are a question's reranked top 20 chunks; a chunk's
+  value is the nDCG gain of its rank, 1/log2(rank + 1); its weight is its token count. Three packers: `top`
+  (reranked order, skip what does not fit), `density` (value per token) and `optimal` (0/1 knapsack by dynamic
+  programming, checked against brute force in the tests). Then **where** to put the packed chunks: a U-shaped
+  position curve in the spirit of Liu et al., *Lost in the Middle* ([arXiv:2307.03172](https://arxiv.org/abs/2307.03172)),
+  with **illustrative** parameters, and four placements (`best-first`, `best-last`, `ends`, `middle`). At 512
+  tokens the answer is in the window for 0.965 of the questions with `top`, 0.940 with `optimal`: the knapsack
+  maximises the value it was given, which is not the same thing as holding the answer.
+- **`window`** gains a **lossy summariser** (`summariser="lossy"`, `loss`, `seed`): each compaction rewrites the
+  summary and keeps each line with probability 1 − loss, drawn from the shared seeded generator. `compaction_study`
+  runs a 36-question task over 20 seeds and measures survival: at loss 0.25 the share of facts left after five
+  compactions is 0.251 (budget 1,500) against the model's 0.237, and the agent answers 10.70 of 36 on average;
+  searching again for what was lost (`compact+retrieve`) answers all 36 for about twice the tokens. The
+  truncation caption now names the question whose fact is lost ("the fact for question 2 is lost").
+- **`memory`**: six sessions of three questions, then probes in later sessions (each question again, plus
+  "neighbour" questions whose answer was in a chunk the agent read but was not asked about). Policies: none,
+  transcript, scratchpad (a notes file), episodic (Generative Agents scoring, recency 0.995 per hour + importance
+  + relevance; Park et al., [arXiv:2304.03442](https://arxiv.org/abs/2304.03442)), semantic (facts extracted by a
+  scripted extractor, retrieved by cosine), each with forgetting caps and consolidation (merging a re-read chunk or
+  a fact extracted twice). Semantic memory recalls 19 of 22 probes for 2,231 memory tokens; the full transcript 22
+  of 22 for 67,498.
+- **`tradeoff`**: 50 questions over a document set in one prompt (with and without the prompt cache) against the
+  reranked top k chunks, priced by `accounting`. With Claude Sonnet 4.6's list prices, a 1M-token set costs
+  $150.05 uncached and $18.49 cached for the 50 questions; top-5 retrieval costs $0.18 with the answer in the prompt
+  for 0.995 of the questions.
+
 ## Versions
 
+- **1.5.0** (2026-10-08): `context/packing.py`, `context/memory.py`, `context/tradeoff.py`; a lossy summariser
+  and `compaction_study` in `context/window.py`; new fixture files `fixtures/context2_fixtures.json` and
+  `fixtures/context2_results.md`. Every 1.4 fixture is unchanged apart from the `engine` field, except one
+  deliberate wording change: the window task's truncation caption said "(facts lost: 2)", meaning question 2,
+  and now says "(the fact for question 2 is lost)" or "(it held no fact)" (99 captions in
+  `context_fixtures.json`; no number changed).
 - **1.4.0** (2026-10-08): the `context` package (corpus, chunkers, retrieval, evaluation, the window task,
   views), its data and offline build script, `Tokenizer.pieces`; new fixture files `fixtures/context_fixtures.json`
   and `fixtures/context_results.md`. Every 1.3 fixture is unchanged apart from the `engine` field.
@@ -284,8 +322,15 @@ in Python and in TypeScript.
 - **Gateway and attacks**: the servers, tools, handles, secrets and tokens are invented placeholders.
 - **Context**: the corpus and questions are real (SQuAD) and the embeddings and reranker scores are real model
   outputs; the window task is a scripted agent (BM25 search, at most three reads a question) with budgets of 1,000
-  to 3,000 tokens, scaled down so a twelve-question task overflows them, and its summariser is perfect (it keeps
-  one line per fact), so compaction here loses nothing by construction.
+  to 3,000 tokens, scaled down so a twelve-question task overflows them, and its default summariser is perfect (it
+  keeps one line per fact), so compaction there loses nothing by construction. The lossy summariser's loss rates
+  (0.1, 0.25, 0.5) are illustrative.
+- **Packing, memory, long context (1.5)**: the position curve's parameters (start 0.75, middle 0.55, end 0.65,
+  trough at the middle) are illustrative, shaped like the U that *Lost in the Middle* reports, not its numbers;
+  chunk values are a rank gain, not a probability. The memory agent, its importance ratings (8, 3, 5) and its
+  extractor are scripted. The long-context comparison uses the dated list prices and the `hosted` latency profile;
+  sets larger than the corpus are hypothetical (the same arithmetic), and whether a model accepts such a prompt,
+  and any long-prompt surcharge, are not modelled.
 
 ## Run it
 

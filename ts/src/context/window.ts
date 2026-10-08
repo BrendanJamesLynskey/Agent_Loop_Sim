@@ -2,11 +2,13 @@
  * The window as working memory: a long research task under a token budget. A port of
  * agent_loop_sim/context/window.py, statement for statement.
  */
+import { Rng } from "../rng";
 import type { Obj } from "./corpus";
 import { relevant } from "./evaluate";
 import { rank, type Retriever } from "./retrieval";
 
 export const POLICIES = ["unbounded", "truncate", "compact", "retrieve", "compact+retrieve"];
+export const SUMMARISERS = ["perfect", "lossy"];
 export const MAX_READS = 3;
 export const SYSTEM =
   "You are a research agent. Answer every question in the task. Use the search tool to read the " +
@@ -59,8 +61,25 @@ function note(r: Retriever, qi: number): string {
   return `- ${q.question} -> ${q.answer}\n`;
 }
 
-export function windowRun(r: Retriever, questions: number[], budget: number, policy: string): Obj {
+function factsFor(questions: number[], facts: number[]): string {
+  const n = facts.map((f) => String(questions.indexOf(f) + 1));
+  if (n.length === 1) return `the fact for question ${n[0]}`;
+  return `the facts for questions ${n.slice(0, -1).join(", ")} and ${n[n.length - 1]}`;
+}
+
+export function windowRun(
+  r: Retriever,
+  questions: number[],
+  budget: number,
+  policy: string,
+  summariser = "perfect",
+  loss = 0.25,
+  seed = 23,
+): Obj {
   if (!POLICIES.includes(policy)) throw new Error(`unknown policy '${policy}'`);
+  if (!SUMMARISERS.includes(summariser)) throw new Error(`unknown summariser '${summariser}'`);
+  const rng = new Rng(seed);
+  const fates = new Map<number, boolean[]>();
   const tok = r.corpus.tok;
   const Q = r.corpus.questions;
   const task = "Task: answer these questions.\n" + questions.map((qi, i) => `${i + 1}. ${Q[qi]!.question}\n`).join("");
@@ -109,11 +128,11 @@ export function windowRun(r: Retriever, questions: number[], budget: number, pol
       } else {
         items.splice(k, 1);
         st.dropped += 1;
-        const lost = it.facts.map((f) => String(questions.indexOf(f) + 1)).join(", ") || "none";
+        const lost = it.facts.length ? `${factsFor(questions, it.facts)} is lost` : "it held no fact";
         frame(
           "truncate",
           qi,
-          `window over budget (${used(items) + it.tokens} > ${budget}): the oldest read, ${it.id}, ` + `is dropped (facts lost: ${lost})`,
+          `window over budget (${used(items) + it.tokens} > ${budget}): the oldest read, ${it.id}, ` + `is dropped (${lost})`,
         );
       }
     }
@@ -127,8 +146,20 @@ export function windowRun(r: Retriever, questions: number[], budget: number, pol
     }
     const old = reads.slice(0, -1);
     const prev = items.find((it) => it.kind === "summary");
-    const lines = prev ? [...prev.lines!] : [];
+    let lines = prev ? [...prev.lines!] : [];
     for (const it of old) for (const f of it.facts) if (!lines.includes(f)) lines.push(f);
+    const dropped: number[] = [];
+    if (summariser === "lossy") {
+      const kept: number[] = [];
+      for (const f of lines) {
+        const keepIt = rng.random() >= loss;
+        if (!fates.has(f)) fates.set(f, []);
+        fates.get(f)!.push(keepIt);
+        if (keepIt) kept.push(f);
+        else dropped.push(f);
+      }
+      lines = kept;
+    }
     const text = summaryText(lines);
     call(text);
     st.compactions += 1;
@@ -137,7 +168,13 @@ export function windowRun(r: Retriever, questions: number[], budget: number, pol
     const keep = items.filter((it) => it.kind === "system" || it.kind === "task");
     const summ: Item = { id: "summary", kind: "summary", tokens: tok.count(text), facts: [...lines], lines };
     items.splice(0, items.length, ...keep, summ, reads[reads.length - 1]!);
-    frame("compact", qi, `compaction: ${old.length} reads (${oldTokens} tokens) ` + `become a ${summ.tokens}-token summary of ${lines.length} facts`);
+    frame(
+      "compact",
+      qi,
+      `compaction: ${old.length} reads (${oldTokens} tokens) ` +
+        `become a ${summ.tokens}-token summary of ${lines.length} facts` +
+        (dropped.length ? `; the summariser drops ${factsFor(questions, dropped)}` : ""),
+    );
     truncate(qi);
   };
 
@@ -178,7 +215,7 @@ export function windowRun(r: Retriever, questions: number[], budget: number, pol
   frame("answer", null, `the agent answers ${answered.length} of ${questions.length} questions from its window`);
   let peak = 0;
   for (const f of frames) if (f.used > peak) peak = f.used;
-  return {
+  const out: Obj = {
     policy,
     budget,
     questions,
@@ -191,5 +228,56 @@ export function windowRun(r: Retriever, questions: number[], budget: number, pol
     dropped: st.dropped,
     peak,
     frames,
+  };
+  if (summariser === "lossy") {
+    out.summariser = summariser;
+    out.loss = loss;
+    out.seed = seed;
+    out.answered = answered;
+    out.fates = [...fates.keys()].sort((a, b) => a - b).map((f) => [f, fates.get(f)!]);
+  }
+  return out;
+}
+
+export function compactionStudy(r: Retriever, questions: number[], budget: number, policy: string, loss: number, seeds: number[]): Obj {
+  const answeredAt = questions.map(() => 0);
+  let rec = 0;
+  let spent = 0;
+  const faced: number[] = [];
+  const kept: number[] = [];
+  for (const sd of seeds) {
+    const w = windowRun(r, questions, budget, policy, "lossy", loss, sd);
+    rec += w.recalled;
+    spent += w.spent;
+    for (const qi of w.answered as number[]) answeredAt[questions.indexOf(qi)]! += 1;
+    for (const [, fate] of w.fates as [number, boolean[]][]) {
+      fate.forEach((k, j) => {
+        while (faced.length <= j) {
+          faced.push(0);
+          kept.push(0);
+        }
+        faced[j]! += 1;
+        if (k) kept[j]! += 1;
+      });
+    }
+  }
+  const survival: Obj[] = [];
+  let s = 1.0;
+  let t = 1.0;
+  for (let j = 0; j < faced.length; j++) {
+    s *= kept[j]! / faced[j]!;
+    t *= 1 - loss;
+    survival.push({ n: j + 1, faced: faced[j], kept: kept[j], measured: s, model: t });
+  }
+  const n = seeds.length;
+  return {
+    policy,
+    budget,
+    loss,
+    runs: n,
+    recalled: rec / n,
+    spent: spent / n,
+    by_position: answeredAt.map((a) => a / n),
+    survival,
   };
 }

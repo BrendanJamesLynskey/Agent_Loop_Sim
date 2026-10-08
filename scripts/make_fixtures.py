@@ -41,6 +41,7 @@ from agent_loop_sim.protocols import scenarios as pscen  # noqa: E402
 from agent_loop_sim.protocols import transport as ptrans  # noqa: E402
 from agent_loop_sim.protocols import views as pviews  # noqa: E402
 from context_fixtures import context_fixtures  # noqa: E402
+from context2_fixtures import context2_fixtures  # noqa: E402
 
 TEXTS = [
     "Hello, world! It's a test. They'll've DON'T  x\n\n  y\t\tz   \n",
@@ -327,6 +328,9 @@ def build() -> dict[str, str]:
     cfx, cmd = context_fixtures()
     files["fixtures/context_fixtures.json"] = json.dumps(cfx, ensure_ascii=False, separators=(",", ":")) + "\n"
     files["fixtures/context_results.md"] = cmd
+    c2fx, c2md = context2_fixtures()
+    files["fixtures/context2_fixtures.json"] = json.dumps(c2fx, ensure_ascii=False, separators=(",", ":")) + "\n"
+    files["fixtures/context2_results.md"] = c2md
     for tid, tr in traces.items():
         files[f"traces/{tid}.events.jsonl"] = dumps_jsonl(tr["events"])
     return files
