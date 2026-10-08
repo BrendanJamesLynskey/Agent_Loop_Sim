@@ -135,4 +135,17 @@ export class Tokenizer {
   count(text: string): number {
     return this.encode(text).length;
   }
+
+  /** The pre-tokenizer's pieces of plain (NFC, special-token-free) text as [start, end, tokens]
+   * (engine 1.4.0, for the context module's chunkers). Offsets are UTF-16 code units, equal to the
+   * Python reference's code points for text without astral characters (the corpus has none). */
+  pieces(text: string): [number, number, number][] {
+    const out: [number, number, number][] = [];
+    for (const m of text.matchAll(this.pre)) {
+      let word = "";
+      for (const byte of this.utf8.encode(m[0])) word += this.byteChar[byte];
+      out.push([m.index!, m.index! + m[0].length, this.bpe(word).length]);
+    }
+    return out;
+  }
 }

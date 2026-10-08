@@ -9,7 +9,9 @@ back-off, malformed-call feedback, loop detection). Every run produces a version
 companion sites animate. Since 1.2 it also models **agent protocols** on the wire: MCP's client and server state
 machines over JSON-RPC 2.0 in both protocol eras, its transports and its OAuth 2.1 authorisation, checked
 message for message against the official MCP Python SDK; since 1.3, **A2A** (agent to agent) checked the same way
-against the official A2A Python SDK, an MCP gateway, and three protocol attacks with their defences.
+against the official A2A Python SDK, an MCP gateway, and three protocol attacks with their defences; since 1.4,
+**context engineering**: chunking, BM25, dense retrieval over shipped int8 embeddings, hybrid fusion and a recorded
+reranker, measured with recall@k, MRR and nDCG on a fixed, openly licensed corpus, and the window as working memory.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -18,8 +20,9 @@ against the official A2A Python SDK, an MCP gateway, and three protocol attacks 
   traces**, recorded once from a small open-weights model on a CPU, are replayed token-exactly.
 
 Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.app)** and
-**[Agent Protocols Explained](https://agent-protocols-explained.vercel.app)**, which vendor the TS port at a
-pinned commit.
+**[Agent Protocols Explained](https://agent-protocols-explained.vercel.app)** and
+**[Agent Context Explained](https://agent-context-explained.vercel.app)**, which vendor the TS port at a pinned
+commit.
 
 ## The pieces
 
@@ -42,6 +45,13 @@ pinned commit.
 | `protocols/views.py` / `.ts` | frames for the Protocols site: sequence charts, version and capability negotiation, a tool call end to end, N×M vs N+M; since 1.3, A2A charts and summaries, and any step-by-step flow (OAuth, attacks) as a chart |
 | `protocols/a2a.py` / `.ts` | A2A 1.0: an orchestrating agent (client) and a remote research agent (server) over the JSON-RPC binding with SSE; the task life cycle (since 1.3) |
 | `protocols/gateway.py` / `.ts` | an MCP gateway over four servers: tool-name collisions, prefixing, an allow-list, the tool list's token cost, routing (since 1.3) |
+| `context/corpus.py` / `.ts` | the fixed corpus, its labelled questions, six chunking configurations and the shipped vectors (since 1.4) |
+| `context/chunking.py` / `.ts` | fixed (with optional overlap), recursive and semantic chunkers, cutting only between tokenizer pieces |
+| `context/retrieval.py` / `.ts` | BM25, dense retrieval (int8, int4, binary), RRF and weighted fusion, the recorded reranker |
+| `context/evaluate.py` / `.ts` | relevance from answer spans; recall@k, MRR@10, nDCG@10 |
+| `context/window.py` / `.ts` | a long research task under a token budget: truncate, compact, search again |
+| `context/views.py` / `.ts` | frames for the Context site: BM25 term by term, nearest neighbours, RRF rank by rank and the rerank, chunk boundaries |
+| `context/mathx.py` / `.ts` | fdlibm's natural logarithm, bit for bit in both languages (for BM25's IDF and nDCG) |
 | `protocols/security.py` / `.ts` | tool poisoning, a confused deputy and state-handle hijacking, each with and without its defence (since 1.3) |
 
 ## Policies
@@ -162,8 +172,60 @@ description changes after approval (defence: pin a hash of the approved definiti
 deputy from MCP's security best practices (defence: per-client consent at the proxy), and state-handle hijacking
 (defence: key the state by the verified token's user).
 
+## Context (since 1.4)
+
+**The corpus** is six articles of the **SQuAD v1.1 development set** (Rajpurkar et al., *SQuAD: 100,000+ Questions
+for Machine Comprehension of Text*, EMNLP 2016, [arXiv:1606.05250](https://arxiv.org/abs/1606.05250); licensed
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)): Computational complexity theory, Packet
+switching, Steam engine, Oxygen, Prime number and Apollo program, 37,499 Qwen2.5 tokens, with 200 of their 1,160
+questions picked by the seeded generator (seed 23). Each question keeps its first gold answer's character span,
+so relevance needs no judgement: **a chunk is relevant when it contains the whole answer**, and a chunker that
+cuts an answer in two loses that question. `data/context/corpus.json` is the derived corpus (CC BY-SA 4.0; the
+changes are listed in `manifest.json`).
+
+**The models run offline, once** (`scripts/build_context_data.py`, CPU, ONNX Runtime 1.30.0, two threads):
+- embeddings: [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+  at revision `1110a24` (Apache-2.0; MiniLM, [arXiv:2002.10957](https://arxiv.org/abs/2002.10957); trained with the
+  Sentence-BERT recipe, [arXiv:1908.10084](https://arxiv.org/abs/1908.10084)), `onnx/model.onnx` SHA-256
+  `6fd5d72f…6452`, mean pooling then L2 normalisation, 384 dimensions, 256 word pieces at most;
+- reranker: [`cross-encoder/ms-marco-MiniLM-L6-v2`](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2)
+  at revision `233902d` (Apache-2.0; trained on MS MARCO, [arXiv:1611.09268](https://arxiv.org/abs/1611.09268)),
+  `onnx/model.onnx` SHA-256 `5d3e70fd…4d4a`.
+
+What ships (`src/agent_loop_sim/data/context/`, 1.7 MB, each file's SHA-256 in `manifest.json`): the **int8
+embeddings** of the 200 questions, of all 1,234 sentences and of every chunk of the six configurations (each
+vector scaled so its largest component is ±127); the cross-encoder's score for each question's **candidate pool**
+(the RRF top 30 with the BM25 and dense top 10s of the default chunking: 6,226 pairs; scoring all 41,600 pairs
+would take hours on this CPU); and a 2-D PCA of the default chunks. Each embedding file names the chunks it embeds
+(a SHA-256 of their spans), and the tests require the engine's chunkers to produce exactly those chunks.
+
+**Everything else is recomputed from those files by the engine, identically in both languages**: chunk
+boundaries (from Qwen2.5 pre-tokenizer pieces; the semantic chunker reads the int8 sentence vectors), BM25 (with
+its IDF through `mathx.ln`, a transcription of fdlibm's logarithm, because libm's and V8's `log` differ in the
+last bit for some inputs), integer cosines, int4 and binary re-quantisation, fusion, the rerank, and every metric.
+The TS tests compare every evaluation (each question's first relevant rank and the means) with no tolerance. The
+only numbers that need the unquantised vectors are the float32 baselines, recorded by the offline run in
+`manifest.json` and labelled as such.
+
+Results (all in [`fixtures/context_results.md`](fixtures/context_results.md), the recorded run):
+
+| default chunking (recursive, 256 tokens) | recall@1 | recall@5 | MRR@10 | nDCG@10 |
+| --- | --- | --- | --- | --- |
+| BM25 (k1 1.2, b 0.75) | 0.785 | 0.985 | 0.869 | 0.899 |
+| dense, int8 | 0.705 | 0.950 | 0.806 | 0.849 |
+| dense, binary | 0.600 | 0.870 | 0.720 | 0.778 |
+| RRF (k 60) | 0.810 | 0.980 | 0.883 | 0.912 |
+| RRF, then the cross-encoder on the top 20 | 0.890 | 0.995 | 0.937 | 0.952 |
+
+On this corpus BM25 beats the small embedder: SQuAD's questions were written by people looking at the paragraph,
+so they share its words. Fixed 128- and 256-token chunks cut 5 and 4 answers in two; 512-token chunks exceed the
+embedder's 256 word pieces (73 of 77 are truncated), and dense recall@5 falls to 0.755.
+
 ## Versions
 
+- **1.4.0** (2026-10-08): the `context` package (corpus, chunkers, retrieval, evaluation, the window task,
+  views), its data and offline build script, `Tokenizer.pieces`; new fixture files `fixtures/context_fixtures.json`
+  and `fixtures/context_results.md`. Every 1.3 fixture is unchanged apart from the `engine` field.
 - **1.3.0** (2026-10-08): `protocols/a2a.py` (A2A 1.0) and its SDK conformance recordings, `protocols/gateway.py`,
   `protocols/security.py`, `views.a2a_frames` / `a2a_summary` / `flow_frames`; new fixture file
   `fixtures/protocols2_fixtures.json`. Every 1.2 fixture is unchanged apart from the `engine` field.
@@ -220,6 +282,10 @@ in Python and in TypeScript.
   one way, 40 ms to start, 600 ms per artifact chunk, 1.2 s for the orchestrator's model, 4 s for a person to sign
   in) are illustrative. IDs come from the seeded generator and timestamps from a simulated clock.
 - **Gateway and attacks**: the servers, tools, handles, secrets and tokens are invented placeholders.
+- **Context**: the corpus and questions are real (SQuAD) and the embeddings and reranker scores are real model
+  outputs; the window task is a scripted agent (BM25 search, at most three reads a question) with budgets of 1,000
+  to 3,000 tokens, scaled down so a twelve-question task overflows them, and its summariser is perfect (it keeps
+  one line per fact), so compaction here loses nothing by construction.
 
 ## Run it
 
@@ -234,12 +300,18 @@ SDK conformance: `.venv/bin/pip install -e ".[conformance]"`, then `python scrip
 and `python scripts/record_a2a_sdk.py --check` (A2A): each records its SDK live and compares; without `--check`
 they re-record.
 
+Context data (offline, downloads the SQuAD file and two ONNX models, about 190 MB):
+`.venv/bin/pip install -e ".[offline]"`, then
+`python scripts/build_context_data.py --cache ~/.cache/agent-context-offline` and `python scripts/make_fixtures.py`.
+
 Recording (offline, needs a local `llama-server` on port 8080):
 `python scripts/record_trace.py fix_test qwen-fix-test-native --style native`, then
 `python scripts/tokenizer_check.py` and `python scripts/make_fixtures.py`.
 
 ## Licence
 
-MIT (`LICENSE`). The vendored Qwen2.5 merges file is Apache-2.0; see `NOTICE`.
+MIT (`LICENSE`). The vendored Qwen2.5 merges file is Apache-2.0; the context corpus (`data/context/corpus.json`)
+is derived from SQuAD and is CC BY-SA 4.0; the embeddings and reranker scores are outputs of Apache-2.0 models;
+see `NOTICE`.
 
 Part of the [LLMs](https://github.com/BrendanJamesLynskey/LLMs) collection.

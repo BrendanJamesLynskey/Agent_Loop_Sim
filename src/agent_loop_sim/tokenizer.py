@@ -133,6 +133,17 @@ class Tokenizer:
     def count(self, text: str) -> int:
         return len(self.encode(text))
 
+    def pieces(self, text: str) -> list[list[int]]:
+        """The pre-tokenizer's pieces of plain (NFC, special-token-free) text as
+        ``[start, end, tokens]``: character offsets and each piece's token count. Added in
+        engine 1.4.0 for the context module's chunkers, which cut only between pieces, so a
+        chunk's token count is the sum of its pieces' counts."""
+        out: list[list[int]] = []
+        for m in self.pre.finditer(text):
+            word = "".join(self.byte_char[b] for b in m.group(0).encode("utf-8"))
+            out.append([m.start(), m.end(), len(self._bpe(word))])
+        return out
+
 
 def merges_text() -> str:
     return resources.files("agent_loop_sim").joinpath("data/qwen2.5-merges.txt").read_text(encoding="utf-8")

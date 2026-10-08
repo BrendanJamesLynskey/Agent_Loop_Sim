@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-loop-sim"
-version = "1.3.0"
+version = "1.4.0"
 description = "A deterministic agent-harness simulator: the loop, tool calls, permissions, context management, prompt caching, sub-agents, hooks and error recovery, plus MCP protocol state machines checked against the official SDK, with a real tokenizer, replayable traces and a TypeScript port that matches it exactly."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,12 +15,13 @@ dependencies = ["regex>=2023.0"]
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "jsonschema>=4.0"]
 conformance = ["mcp==2.3.0", "a2a-sdk[http-server]==1.2.2"]
+offline = ["onnxruntime==1.30.0", "tokenizers==0.23.2", "huggingface_hub==1.33.0", "numpy==2.5.3"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-agent_loop_sim = ["data/*"]
+agent_loop_sim = ["data/*", "data/context/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
