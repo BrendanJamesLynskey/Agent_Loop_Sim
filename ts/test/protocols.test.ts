@@ -16,7 +16,7 @@ const sdk = JSON.parse(readFileSync(join(ROOT, "fixtures/sdk_exchanges.json"), "
 const tok = new Tokenizer(readFileSync(join(ROOT, "src/agent_loop_sim/data/qwen2.5-merges.txt"), "utf8"));
 
 describe("engine version", () => {
-  it("matches the fixtures", () => expect(fx.engine).toBe("1.4.0"));
+  it("matches the fixtures", () => expect(fx.engine).toBe("1.5.0"));
 });
 
 describe("the official MCP SDK's recordings", () => {

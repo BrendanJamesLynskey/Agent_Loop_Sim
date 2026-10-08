@@ -10,8 +10,11 @@ When the window passes its budget the policy acts:
 - ``unbounded``: nothing (the budget is ignored; the reference for cost);
 - ``truncate``: the oldest reads are dropped until the window fits;
 - ``compact``: one extra model call summarises every read but the latest into one line per fact
-  ("question -> answer", a scripted summariser that keeps exactly the facts in those reads), then
-  the oldest summary lines are dropped if it still does not fit;
+  ("question -> answer"), then the oldest summary lines are dropped if it still does not fit. The
+  scripted summariser is ``perfect`` (it keeps exactly the facts in those reads) or, since engine
+  1.5, ``lossy``: each compaction rewrites the whole summary and keeps each line with probability
+  ``1 - loss`` (a seeded draw, the same in Python and TS), so a fact summarised n times survives
+  with probability (1 - loss)^n;
 - ``retrieve``: truncate, and at the end search again for every fact no longer in the window;
 - ``compact+retrieve``: both.
 
@@ -22,10 +25,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..rng import Rng
 from .retrieval import Retriever, rank
 from .evaluate import relevant
 
 POLICIES = ["unbounded", "truncate", "compact", "retrieve", "compact+retrieve"]
+SUMMARISERS = ["perfect", "lossy"]
 MAX_READS = 3
 SYSTEM = ("You are a research agent. Answer every question in the task. Use the search tool to read the "
           "corpus; you can only answer from what is in your context.")
@@ -72,9 +77,25 @@ def _note(r: Retriever, qi: int) -> str:
     return f"- {q['question']} -> {q['answer']}\n"
 
 
-def window_run(r: Retriever, questions: list[int], budget: int, policy: str) -> dict[str, Any]:
+def _facts_for(questions: list[int], facts: list[int]) -> str:
+    """"the fact for question 2", "the facts for questions 2 and 5", "the facts for questions 2, 5 and 7"
+    (1-based positions in the task)."""
+    n = [str(questions.index(f) + 1) for f in facts]
+    if len(n) == 1:
+        return f"the fact for question {n[0]}"
+    return f"the facts for questions {', '.join(n[:-1])} and {n[-1]}"
+
+
+def window_run(r: Retriever, questions: list[int], budget: int, policy: str, summariser: str = "perfect",
+               loss: float = 0.25, seed: int = 23) -> dict[str, Any]:
+    """One run of the task. ``summariser``, ``loss`` and ``seed`` matter only to the compact policies;
+    a ``lossy`` run also reports, for every fact that reached a summary, what each compaction did to it."""
     if policy not in POLICIES:
         raise ValueError(f"unknown policy {policy!r}")
+    if summariser not in SUMMARISERS:
+        raise ValueError(f"unknown summariser {summariser!r}")
+    rng = Rng(seed)
+    fates: dict[int, list[bool]] = {}
     tok = r.corpus.tok
     task = "Task: answer these questions.\n" + "".join(f"{i + 1}. {r.corpus.questions[qi]['question']}\n"
                                                        for i, qi in enumerate(questions))
@@ -112,9 +133,9 @@ def window_run(r: Retriever, questions: list[int], budget: int, policy: str) -> 
             else:
                 items.pop(k)
                 st["dropped"] += 1
-                lost = ", ".join(str(questions.index(f) + 1) for f in it["facts"]) or "none"
+                lost = f"{_facts_for(questions, it['facts'])} is lost" if it["facts"] else "it held no fact"
                 frame("truncate", qi, f"window over budget ({_used(items) + it['tokens']} > {budget}): the oldest read, {it['id']}, "
-                                      f"is dropped (facts lost: {lost})")
+                                      f"is dropped ({lost})")
 
     def compact(qi: int | None) -> None:
         reads = [it for it in items if it["kind"] == "read"]
@@ -128,6 +149,17 @@ def window_run(r: Retriever, questions: list[int], budget: int, policy: str) -> 
             for f in it["facts"]:
                 if f not in lines:
                     lines.append(f)
+        dropped: list[int] = []
+        if summariser == "lossy":
+            kept: list[int] = []
+            for f in lines:
+                keep_it = rng.random() >= loss
+                fates.setdefault(f, []).append(keep_it)
+                if keep_it:
+                    kept.append(f)
+                else:
+                    dropped.append(f)
+            lines = kept
         text = "Summary of earlier reads:\n" + "".join(_note(r, x) for x in lines)
         call(text)
         st["compactions"] += 1
@@ -138,7 +170,8 @@ def window_run(r: Retriever, questions: list[int], budget: int, policy: str) -> 
         summ = {"id": "summary", "kind": "summary", "tokens": tok.count(text), "facts": list(lines), "lines": lines}
         items[:] = keep + [summ] + [reads[-1]]
         frame("compact", qi, f"compaction: {len(old)} reads ({old_tokens} tokens) "
-                             f"become a {summ['tokens']}-token summary of {len(lines)} facts")
+                             f"become a {summ['tokens']}-token summary of {len(lines)} facts"
+                             + (f"; the summariser drops {_facts_for(questions, dropped)}" if dropped else ""))
         truncate(qi)
 
     def read(qi: int, c: int, phase: str) -> bool:
@@ -179,7 +212,52 @@ def window_run(r: Retriever, questions: list[int], budget: int, policy: str) -> 
             answered.append(qi)
     call("Answers:\n" + "".join(f"{questions.index(qi) + 1}. {r.corpus.questions[qi]['answer']}\n" for qi in answered))
     frame("answer", None, f"the agent answers {len(answered)} of {len(questions)} questions from its window")
-    return {"policy": policy, "budget": budget, "questions": questions, "recalled": len(answered),
-            "spent": st["spent"], "out": st["out"], "calls": st["calls"], "reads": st["reads"],
-            "compactions": st["compactions"], "dropped": st["dropped"], "peak": max(f["used"] for f in frames),
-            "frames": frames}
+    out = {"policy": policy, "budget": budget, "questions": questions, "recalled": len(answered),
+           "spent": st["spent"], "out": st["out"], "calls": st["calls"], "reads": st["reads"],
+           "compactions": st["compactions"], "dropped": st["dropped"], "peak": max(f["used"] for f in frames),
+           "frames": frames}
+    if summariser == "lossy":
+        out["summariser"] = summariser
+        out["loss"] = loss
+        out["seed"] = seed
+        out["answered"] = answered
+        # each fact that reached a summary: [question, [kept at its 1st compaction, kept at its 2nd, ...]]
+        out["fates"] = [[f, fates[f]] for f in sorted(fates)]
+    return out
+
+
+def compaction_study(r: Retriever, questions: list[int], budget: int, policy: str, loss: float,
+                     seeds: list[int]) -> dict[str, Any]:
+    """What survives a lossy summariser, over many seeded runs of one task: the mean facts answered
+    and input tokens, the share of runs answering each question (by its place in the task), and the
+    survival curve: S(n) = product over j <= n of (facts kept at their j-th compaction / facts that
+    reached a j-th compaction), against the model's (1 - loss)^n."""
+    answered_at = [0 for _ in questions]
+    rec = 0
+    spent = 0
+    faced: list[int] = []
+    kept: list[int] = []
+    for sd in seeds:
+        w = window_run(r, questions, budget, policy, "lossy", loss, sd)
+        rec += w["recalled"]
+        spent += w["spent"]
+        for qi in w["answered"]:
+            answered_at[questions.index(qi)] += 1
+        for _, fate in w["fates"]:
+            for j, k in enumerate(fate):
+                while len(faced) <= j:
+                    faced.append(0)
+                    kept.append(0)
+                faced[j] += 1
+                if k:
+                    kept[j] += 1
+    survival = []
+    s = 1.0
+    t = 1.0
+    for j in range(len(faced)):
+        s *= kept[j] / faced[j]
+        t *= 1 - loss
+        survival.append({"n": j + 1, "faced": faced[j], "kept": kept[j], "measured": s, "model": t})
+    n = len(seeds)
+    return {"policy": policy, "budget": budget, "loss": loss, "runs": n, "recalled": rec / n, "spent": spent / n,
+            "by_position": [a / n for a in answered_at], "survival": survival}
