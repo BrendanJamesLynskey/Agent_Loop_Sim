@@ -15,3 +15,4 @@ export { loopFrames, toolcallFrames, budgetFrames, cacheFrames, permissionFrames
 export { retrySweep, verified } from "./sweeps";
 export { VERSION, TOOL_SPECS, PRICES, LATENCY, DEFAULT_POLICY, SCENARIOS, scenario, type Obj } from "./data";
 export * as protocols from "./protocols/index";
+export * as context from "./context/index";

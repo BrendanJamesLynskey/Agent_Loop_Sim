@@ -16,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 from agent_loop_sim import VERSION  # noqa: E402
 from agent_loop_sim.accounting import LATENCY, PRICES  # noqa: E402
@@ -39,6 +40,7 @@ from agent_loop_sim.protocols import security as psec  # noqa: E402
 from agent_loop_sim.protocols import scenarios as pscen  # noqa: E402
 from agent_loop_sim.protocols import transport as ptrans  # noqa: E402
 from agent_loop_sim.protocols import views as pviews  # noqa: E402
+from context_fixtures import context_fixtures  # noqa: E402
 
 TEXTS = [
     "Hello, world! It's a test. They'll've DON'T  x\n\n  y\t\tz   \n",
@@ -322,6 +324,9 @@ def build() -> dict[str, str]:
         "ts/src/protocols_data.json": json.dumps(pdata, ensure_ascii=False, indent=1) + "\n",
         "ts/src/engine_data.json": json.dumps(data, ensure_ascii=False, indent=1) + "\n",
     }
+    cfx, cmd = context_fixtures()
+    files["fixtures/context_fixtures.json"] = json.dumps(cfx, ensure_ascii=False, separators=(",", ":")) + "\n"
+    files["fixtures/context_results.md"] = cmd
     for tid, tr in traces.items():
         files[f"traces/{tid}.events.jsonl"] = dumps_jsonl(tr["events"])
     return files
