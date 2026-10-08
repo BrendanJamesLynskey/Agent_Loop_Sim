@@ -1,5 +1,5 @@
 {
- "version": "1.2.0",
+ "version": "1.3.0",
  "fixture_server": {
   "info": {
    "name": "fixture-server",
@@ -1072,5 +1072,565 @@
   "wrong_audience": "The client presents a token minted for another server",
   "insufficient_scope": "The token's scope is too narrow for the tool being called",
   "token_passthrough": "The MCP server forwards the client's token to an upstream API"
+ },
+ "a2a": {
+  "card": {
+   "name": "Research agent",
+   "description": "Summarises documents and meetings for other agents.",
+   "supportedInterfaces": [
+    {
+     "url": "https://research.example.com/a2a",
+     "protocolBinding": "JSONRPC",
+     "protocolVersion": "1.0"
+    }
+   ],
+   "version": "1.0.0",
+   "capabilities": {
+    "streaming": true
+   },
+   "defaultInputModes": [
+    "text/plain"
+   ],
+   "defaultOutputModes": [
+    "text/plain"
+   ],
+   "skills": [
+    {
+     "id": "summarise",
+     "name": "Summarise",
+     "description": "Summarise a document or a meeting.",
+     "tags": [
+      "summary",
+      "text"
+     ],
+     "examples": [
+      "summarise the design notes"
+     ]
+    },
+    {
+     "id": "calendar",
+     "name": "Calendar digest",
+     "description": "Today's meetings from the user's calendar (the user signs in first).",
+     "tags": [
+      "calendar"
+     ],
+     "examples": [
+      "check my calendar"
+     ]
+    }
+   ]
+  },
+  "times": {
+   "net": 20,
+   "start": 40,
+   "chunk": 600,
+   "decide": 30,
+   "model": 1200,
+   "human": 4000
+  },
+  "states": [
+   "TASK_STATE_SUBMITTED",
+   "TASK_STATE_WORKING",
+   "TASK_STATE_INPUT_REQUIRED",
+   "TASK_STATE_AUTH_REQUIRED",
+   "TASK_STATE_COMPLETED",
+   "TASK_STATE_FAILED",
+   "TASK_STATE_CANCELED",
+   "TASK_STATE_REJECTED"
+  ],
+  "transitions": [
+   [
+    "TASK_STATE_SUBMITTED",
+    "TASK_STATE_WORKING"
+   ],
+   [
+    "TASK_STATE_SUBMITTED",
+    "TASK_STATE_REJECTED"
+   ],
+   [
+    "TASK_STATE_WORKING",
+    "TASK_STATE_INPUT_REQUIRED"
+   ],
+   [
+    "TASK_STATE_WORKING",
+    "TASK_STATE_AUTH_REQUIRED"
+   ],
+   [
+    "TASK_STATE_INPUT_REQUIRED",
+    "TASK_STATE_WORKING"
+   ],
+   [
+    "TASK_STATE_AUTH_REQUIRED",
+    "TASK_STATE_WORKING"
+   ],
+   [
+    "TASK_STATE_WORKING",
+    "TASK_STATE_COMPLETED"
+   ],
+   [
+    "TASK_STATE_WORKING",
+    "TASK_STATE_FAILED"
+   ],
+   [
+    "TASK_STATE_WORKING",
+    "TASK_STATE_CANCELED"
+   ],
+   [
+    "TASK_STATE_INPUT_REQUIRED",
+    "TASK_STATE_CANCELED"
+   ],
+   [
+    "TASK_STATE_AUTH_REQUIRED",
+    "TASK_STATE_CANCELED"
+   ],
+   [
+    "TASK_STATE_WORKING",
+    "TASK_STATE_REJECTED"
+   ]
+  ],
+  "errors": {
+   "TaskNotFoundError": -32001,
+   "TaskNotCancelableError": -32002,
+   "PushNotificationNotSupportedError": -32003,
+   "UnsupportedOperationError": -32004,
+   "ContentTypeNotSupportedError": -32005,
+   "InvalidAgentResponseError": -32006,
+   "ExtendedAgentCardNotConfiguredError": -32007,
+   "ExtensionSupportRequiredError": -32008,
+   "VersionNotSupportedError": -32009
+  },
+  "scenarios": {
+   "a2a_send": {
+    "title": "Delegate a task and wait for the result",
+    "steps": [
+     {
+      "op": "card"
+     },
+     {
+      "op": "send",
+      "text": "summarise the design notes",
+      "stream": false,
+      "note": "the orchestrator delegates and waits"
+     },
+     {
+      "op": "get",
+      "note": "later, the orchestrator reads the task again"
+     }
+    ]
+   },
+   "a2a_stream": {
+    "title": "Delegate a task and stream its progress",
+    "steps": [
+     {
+      "op": "card"
+     },
+     {
+      "op": "send",
+      "text": "summarise the design notes",
+      "stream": true,
+      "note": "the orchestrator delegates and streams"
+     }
+    ]
+   },
+   "a2a_input": {
+    "title": "The remote agent needs more input",
+    "steps": [
+     {
+      "op": "card"
+     },
+     {
+      "op": "send",
+      "text": "summarise the meeting",
+      "stream": false,
+      "note": "an ambiguous request"
+     },
+     {
+      "op": "reply",
+      "text": "Tuesday",
+      "stream": false,
+      "note": "the orchestrator answers in the same task"
+     }
+    ]
+   },
+   "a2a_auth": {
+    "title": "The remote agent needs the user to sign in",
+    "steps": [
+     {
+      "op": "card"
+     },
+     {
+      "op": "send",
+      "text": "check my calendar",
+      "stream": false,
+      "note": ""
+     },
+     {
+      "op": "sign_in"
+     },
+     {
+      "op": "reply",
+      "text": "signed in",
+      "stream": false,
+      "note": "the orchestrator tells the agent the user has signed in"
+     }
+    ]
+   },
+   "a2a_cancel": {
+    "title": "Cancel a task, then try to use it",
+    "steps": [
+     {
+      "op": "card"
+     },
+     {
+      "op": "send",
+      "text": "summarise the meeting",
+      "stream": false,
+      "note": ""
+     },
+     {
+      "op": "cancel",
+      "note": "the orchestrator gives up"
+     },
+     {
+      "op": "cancel",
+      "note": "cancelling twice"
+     },
+     {
+      "op": "reply",
+      "text": "Tuesday",
+      "stream": false,
+      "note": "too late: the task is over"
+     },
+     {
+      "op": "subscribe",
+      "note": "nothing to stream: the task is over"
+     }
+    ]
+   },
+   "a2a_reject": {
+    "title": "The remote agent rejects the task",
+    "steps": [
+     {
+      "op": "card"
+     },
+     {
+      "op": "send",
+      "text": "delete every draft",
+      "stream": false,
+      "note": ""
+     }
+    ]
+   },
+   "a2a_message": {
+    "title": "A direct answer, no task",
+    "steps": [
+     {
+      "op": "card"
+     },
+     {
+      "op": "send",
+      "text": "hello",
+      "stream": false,
+      "note": ""
+     }
+    ]
+   },
+   "a2a_errors": {
+    "title": "Errors: no such task, no version, an old method name, no parts, no extended card",
+    "steps": [
+     {
+      "op": "raw",
+      "method": "GetTask",
+      "params": {
+       "id": "00000000-0000-4000-8000-0000000000ff"
+      },
+      "note": "a task this agent never made"
+     },
+     {
+      "op": "raw",
+      "method": "SendMessage",
+      "params": {
+       "message": {
+        "messageId": "00000000-0000-4000-8000-000000000001",
+        "role": "ROLE_USER",
+        "parts": [
+         {
+          "text": "summarise the design notes"
+         }
+        ]
+       }
+      },
+      "headers": [
+       [
+        "Content-Type",
+        "application/json"
+       ]
+      ],
+      "note": "no A2A-Version header: the agent must assume 0.3"
+     },
+     {
+      "op": "raw",
+      "method": "message/send",
+      "params": {
+       "message": {
+        "messageId": "00000000-0000-4000-8000-000000000001",
+        "role": "ROLE_USER",
+        "parts": [
+         {
+          "text": "summarise the design notes"
+         }
+        ]
+       }
+      },
+      "note": "the 0.3 method name"
+     },
+     {
+      "op": "raw",
+      "method": "SendMessage",
+      "params": {
+       "message": {
+        "messageId": "00000000-0000-4000-8000-000000000002",
+        "role": "ROLE_USER",
+        "parts": []
+       }
+      },
+      "note": "a message with no parts"
+     },
+     {
+      "op": "raw",
+      "method": "GetExtendedAgentCard",
+      "params": null,
+      "note": "this agent offers no extended card"
+     }
+    ]
+   }
+  }
+ },
+ "gateway": {
+  "servers": [
+   {
+    "alias": "files",
+    "info": {
+     "name": "files-server",
+     "version": "1.4.0"
+    },
+    "tools": [
+     {
+      "name": "read_file",
+      "description": "Read a text file from the project.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "path": {
+         "type": "string",
+         "description": "Path relative to the project root"
+        }
+       },
+       "required": [
+        "path"
+       ]
+      }
+     },
+     {
+      "name": "write_file",
+      "description": "Write a text file in the project, replacing it.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "path": {
+         "type": "string",
+         "description": "Path relative to the project root"
+        },
+        "text": {
+         "type": "string",
+         "description": "The new contents"
+        }
+       },
+       "required": [
+        "path",
+        "text"
+       ]
+      }
+     },
+     {
+      "name": "search",
+      "description": "Search the project's files for a regular expression.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "pattern": {
+         "type": "string",
+         "description": "A regular expression"
+        }
+       },
+       "required": [
+        "pattern"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "alias": "github",
+    "info": {
+     "name": "github-server",
+     "version": "0.9.2"
+    },
+    "tools": [
+     {
+      "name": "search",
+      "description": "Search issues and pull requests in the repository.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "query": {
+         "type": "string",
+         "description": "GitHub search syntax"
+        }
+       },
+       "required": [
+        "query"
+       ]
+      }
+     },
+     {
+      "name": "create_issue",
+      "description": "Open an issue in the repository.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "title": {
+         "type": "string",
+         "description": "Issue title"
+        },
+        "body": {
+         "type": "string",
+         "description": "Issue body in Markdown"
+        }
+       },
+       "required": [
+        "title",
+        "body"
+       ]
+      }
+     },
+     {
+      "name": "read_file",
+      "description": "Read a file from the default branch on GitHub.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "path": {
+         "type": "string",
+         "description": "Path in the repository"
+        }
+       },
+       "required": [
+        "path"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "alias": "web",
+    "info": {
+     "name": "web-server",
+     "version": "2.0.1"
+    },
+    "tools": [
+     {
+      "name": "search",
+      "description": "Search the web and return the top results.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "query": {
+         "type": "string",
+         "description": "Search terms"
+        }
+       },
+       "required": [
+        "query"
+       ]
+      }
+     },
+     {
+      "name": "fetch",
+      "description": "Fetch a web page and return its text.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "url": {
+         "type": "string",
+         "description": "An https URL"
+        }
+       },
+       "required": [
+        "url"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "alias": "calendar",
+    "info": {
+     "name": "calendar-server",
+     "version": "1.1.0"
+    },
+    "tools": [
+     {
+      "name": "list_events",
+      "description": "List the user's events for a day.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "date": {
+         "type": "string",
+         "description": "An ISO date"
+        }
+       },
+       "required": [
+        "date"
+       ]
+      }
+     },
+     {
+      "name": "create_event",
+      "description": "Create an event in the user's calendar.",
+      "inputSchema": {
+       "type": "object",
+       "properties": {
+        "title": {
+         "type": "string",
+         "description": "Event title"
+        },
+        "start": {
+         "type": "string",
+         "description": "ISO date and time"
+        }
+       },
+       "required": [
+        "title",
+        "start"
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "call": {
+   "alias": "web",
+   "tool": "search",
+   "arguments": {
+    "query": "MCP gateway tool name collisions"
+   }
+  },
+  "allow": [
+   "web.search",
+   "web.fetch",
+   "files.read_file"
+  ]
  }
 }

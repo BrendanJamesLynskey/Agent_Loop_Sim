@@ -1,0 +1,1735 @@
+{
+ "sdk": "a2a-sdk 1.2.2",
+ "protocol": "1.0",
+ "scenarios": {
+  "a2a_send": [
+   {
+    "dir": "c2s",
+    "http": {
+     "method": "GET",
+     "url": "https://research.example.com/.well-known/agent-card.json"
+    }
+   },
+   {
+    "dir": "s2c",
+    "http": {
+     "body": {
+      "capabilities": {
+       "streaming": true
+      },
+      "defaultInputModes": [
+       "text/plain"
+      ],
+      "defaultOutputModes": [
+       "text/plain"
+      ],
+      "description": "Summarises documents and meetings for other agents.",
+      "name": "Research agent",
+      "skills": [
+       {
+        "description": "Summarise a document or a meeting.",
+        "examples": [
+         "summarise the design notes"
+        ],
+        "id": "summarise",
+        "name": "Summarise",
+        "tags": [
+         "summary",
+         "text"
+        ]
+       },
+       {
+        "description": "Today's meetings from the user's calendar (the user signs in first).",
+        "examples": [
+         "check my calendar"
+        ],
+        "id": "calendar",
+        "name": "Calendar digest",
+        "tags": [
+         "calendar"
+        ]
+       }
+      ],
+      "supportedInterfaces": [
+       {
+        "protocolBinding": "JSONRPC",
+        "protocolVersion": "1.0",
+        "url": "https://research.example.com/a2a"
+       }
+      ],
+      "version": "1.0.0"
+     },
+     "headers": [
+      [
+       "Content-Type",
+       "application/json"
+      ],
+      [
+       "ETag",
+       "W/\"0c789eab44ebe1544de8bfee2d00e741a531c349c36d6412efdb06a89af89f4c\""
+      ]
+     ],
+     "status": 200
+    }
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-1>",
+       "parts": [
+        {
+         "text": "summarise the design notes"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "artifacts": [
+        {
+         "artifactId": "<id-2>",
+         "name": "summary",
+         "parts": [
+          {
+           "text": "Summary of the design notes: "
+          },
+          {
+           "text": "three decisions, two actions, no blockers."
+          }
+         ]
+        }
+       ],
+       "contextId": "<id-3>",
+       "history": [
+        {
+         "contextId": "<id-3>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "summarise the design notes"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-4>"
+        }
+       ],
+       "id": "<id-4>",
+       "status": {
+        "state": "TASK_STATE_COMPLETED",
+        "timestamp": "<time>"
+       }
+      }
+     }
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "method": "GetTask",
+     "params": {
+      "id": "<id-4>"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "result": {
+      "artifacts": [
+       {
+        "artifactId": "<id-2>",
+        "name": "summary",
+        "parts": [
+         {
+          "text": "Summary of the design notes: "
+         },
+         {
+          "text": "three decisions, two actions, no blockers."
+         }
+        ]
+       }
+      ],
+      "contextId": "<id-3>",
+      "history": [
+       {
+        "contextId": "<id-3>",
+        "messageId": "<id-1>",
+        "parts": [
+         {
+          "text": "summarise the design notes"
+         }
+        ],
+        "role": "ROLE_USER",
+        "taskId": "<id-4>"
+       }
+      ],
+      "id": "<id-4>",
+      "status": {
+       "state": "TASK_STATE_COMPLETED",
+       "timestamp": "<time>"
+      }
+     }
+    },
+    "sse": false
+   }
+  ],
+  "a2a_stream": [
+   {
+    "dir": "c2s",
+    "http": {
+     "method": "GET",
+     "url": "https://research.example.com/.well-known/agent-card.json"
+    }
+   },
+   {
+    "dir": "s2c",
+    "http": {
+     "body": {
+      "capabilities": {
+       "streaming": true
+      },
+      "defaultInputModes": [
+       "text/plain"
+      ],
+      "defaultOutputModes": [
+       "text/plain"
+      ],
+      "description": "Summarises documents and meetings for other agents.",
+      "name": "Research agent",
+      "skills": [
+       {
+        "description": "Summarise a document or a meeting.",
+        "examples": [
+         "summarise the design notes"
+        ],
+        "id": "summarise",
+        "name": "Summarise",
+        "tags": [
+         "summary",
+         "text"
+        ]
+       },
+       {
+        "description": "Today's meetings from the user's calendar (the user signs in first).",
+        "examples": [
+         "check my calendar"
+        ],
+        "id": "calendar",
+        "name": "Calendar digest",
+        "tags": [
+         "calendar"
+        ]
+       }
+      ],
+      "supportedInterfaces": [
+       {
+        "protocolBinding": "JSONRPC",
+        "protocolVersion": "1.0",
+        "url": "https://research.example.com/a2a"
+       }
+      ],
+      "version": "1.0.0"
+     },
+     "headers": [
+      [
+       "Content-Type",
+       "application/json"
+      ],
+      [
+       "ETag",
+       "W/\"0c789eab44ebe1544de8bfee2d00e741a531c349c36d6412efdb06a89af89f4c\""
+      ]
+     ],
+     "status": 200
+    }
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "SendStreamingMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-1>",
+       "parts": [
+        {
+         "text": "summarise the design notes"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "contextId": "<id-2>",
+       "history": [
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "summarise the design notes"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        }
+       ],
+       "id": "<id-3>",
+       "status": {
+        "state": "TASK_STATE_SUBMITTED"
+       }
+      }
+     }
+    },
+    "sse": true
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "statusUpdate": {
+       "contextId": "<id-2>",
+       "status": {
+        "state": "TASK_STATE_WORKING",
+        "timestamp": "<time>"
+       },
+       "taskId": "<id-3>"
+      }
+     }
+    },
+    "sse": true
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "artifactUpdate": {
+       "artifact": {
+        "artifactId": "<id-4>",
+        "name": "summary",
+        "parts": [
+         {
+          "text": "Summary of the design notes: "
+         }
+        ]
+       },
+       "contextId": "<id-2>",
+       "taskId": "<id-3>"
+      }
+     }
+    },
+    "sse": true
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "artifactUpdate": {
+       "append": true,
+       "artifact": {
+        "artifactId": "<id-4>",
+        "name": "summary",
+        "parts": [
+         {
+          "text": "three decisions, two actions, no blockers."
+         }
+        ]
+       },
+       "contextId": "<id-2>",
+       "lastChunk": true,
+       "taskId": "<id-3>"
+      }
+     }
+    },
+    "sse": true
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "statusUpdate": {
+       "contextId": "<id-2>",
+       "status": {
+        "state": "TASK_STATE_COMPLETED",
+        "timestamp": "<time>"
+       },
+       "taskId": "<id-3>"
+      }
+     }
+    },
+    "sse": true
+   }
+  ],
+  "a2a_input": [
+   {
+    "dir": "c2s",
+    "http": {
+     "method": "GET",
+     "url": "https://research.example.com/.well-known/agent-card.json"
+    }
+   },
+   {
+    "dir": "s2c",
+    "http": {
+     "body": {
+      "capabilities": {
+       "streaming": true
+      },
+      "defaultInputModes": [
+       "text/plain"
+      ],
+      "defaultOutputModes": [
+       "text/plain"
+      ],
+      "description": "Summarises documents and meetings for other agents.",
+      "name": "Research agent",
+      "skills": [
+       {
+        "description": "Summarise a document or a meeting.",
+        "examples": [
+         "summarise the design notes"
+        ],
+        "id": "summarise",
+        "name": "Summarise",
+        "tags": [
+         "summary",
+         "text"
+        ]
+       },
+       {
+        "description": "Today's meetings from the user's calendar (the user signs in first).",
+        "examples": [
+         "check my calendar"
+        ],
+        "id": "calendar",
+        "name": "Calendar digest",
+        "tags": [
+         "calendar"
+        ]
+       }
+      ],
+      "supportedInterfaces": [
+       {
+        "protocolBinding": "JSONRPC",
+        "protocolVersion": "1.0",
+        "url": "https://research.example.com/a2a"
+       }
+      ],
+      "version": "1.0.0"
+     },
+     "headers": [
+      [
+       "Content-Type",
+       "application/json"
+      ],
+      [
+       "ETag",
+       "W/\"0c789eab44ebe1544de8bfee2d00e741a531c349c36d6412efdb06a89af89f4c\""
+      ]
+     ],
+     "status": 200
+    }
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-1>",
+       "parts": [
+        {
+         "text": "summarise the meeting"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "contextId": "<id-2>",
+       "history": [
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "summarise the meeting"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        }
+       ],
+       "id": "<id-3>",
+       "status": {
+        "message": {
+         "contextId": "<id-2>",
+         "messageId": "<id-4>",
+         "parts": [
+          {
+           "text": "Which meeting: Monday's or Tuesday's?"
+          }
+         ],
+         "role": "ROLE_AGENT",
+         "taskId": "<id-3>"
+        },
+        "state": "TASK_STATE_INPUT_REQUIRED",
+        "timestamp": "<time>"
+       }
+      }
+     }
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "contextId": "<id-2>",
+       "messageId": "<id-5>",
+       "parts": [
+        {
+         "text": "Tuesday"
+        }
+       ],
+       "role": "ROLE_USER",
+       "taskId": "<id-3>"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "artifacts": [
+        {
+         "artifactId": "<id-6>",
+         "name": "summary",
+         "parts": [
+          {
+           "text": "Summary of Tuesday's meeting: "
+          },
+          {
+           "text": "three decisions, two actions, no blockers."
+          }
+         ]
+        }
+       ],
+       "contextId": "<id-2>",
+       "history": [
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "summarise the meeting"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        },
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-4>",
+         "parts": [
+          {
+           "text": "Which meeting: Monday's or Tuesday's?"
+          }
+         ],
+         "role": "ROLE_AGENT",
+         "taskId": "<id-3>"
+        },
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-5>",
+         "parts": [
+          {
+           "text": "Tuesday"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        }
+       ],
+       "id": "<id-3>",
+       "status": {
+        "state": "TASK_STATE_COMPLETED",
+        "timestamp": "<time>"
+       }
+      }
+     }
+    },
+    "sse": false
+   }
+  ],
+  "a2a_auth": [
+   {
+    "dir": "c2s",
+    "http": {
+     "method": "GET",
+     "url": "https://research.example.com/.well-known/agent-card.json"
+    }
+   },
+   {
+    "dir": "s2c",
+    "http": {
+     "body": {
+      "capabilities": {
+       "streaming": true
+      },
+      "defaultInputModes": [
+       "text/plain"
+      ],
+      "defaultOutputModes": [
+       "text/plain"
+      ],
+      "description": "Summarises documents and meetings for other agents.",
+      "name": "Research agent",
+      "skills": [
+       {
+        "description": "Summarise a document or a meeting.",
+        "examples": [
+         "summarise the design notes"
+        ],
+        "id": "summarise",
+        "name": "Summarise",
+        "tags": [
+         "summary",
+         "text"
+        ]
+       },
+       {
+        "description": "Today's meetings from the user's calendar (the user signs in first).",
+        "examples": [
+         "check my calendar"
+        ],
+        "id": "calendar",
+        "name": "Calendar digest",
+        "tags": [
+         "calendar"
+        ]
+       }
+      ],
+      "supportedInterfaces": [
+       {
+        "protocolBinding": "JSONRPC",
+        "protocolVersion": "1.0",
+        "url": "https://research.example.com/a2a"
+       }
+      ],
+      "version": "1.0.0"
+     },
+     "headers": [
+      [
+       "Content-Type",
+       "application/json"
+      ],
+      [
+       "ETag",
+       "W/\"0c789eab44ebe1544de8bfee2d00e741a531c349c36d6412efdb06a89af89f4c\""
+      ]
+     ],
+     "status": 200
+    }
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-1>",
+       "parts": [
+        {
+         "text": "check my calendar"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "contextId": "<id-2>",
+       "history": [
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "check my calendar"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        }
+       ],
+       "id": "<id-3>",
+       "status": {
+        "message": {
+         "contextId": "<id-2>",
+         "messageId": "<id-4>",
+         "parts": [
+          {
+           "text": "Sign in to the calendar first: https://calendar.example.com/authorize"
+          }
+         ],
+         "role": "ROLE_AGENT",
+         "taskId": "<id-3>"
+        },
+        "state": "TASK_STATE_AUTH_REQUIRED",
+        "timestamp": "<time>"
+       }
+      }
+     }
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "contextId": "<id-2>",
+       "messageId": "<id-5>",
+       "parts": [
+        {
+         "text": "signed in"
+        }
+       ],
+       "role": "ROLE_USER",
+       "taskId": "<id-3>"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "artifacts": [
+        {
+         "artifactId": "<id-6>",
+         "name": "summary",
+         "parts": [
+          {
+           "text": "Today: "
+          },
+          {
+           "text": "design review at 10:00, one-to-one at 15:00."
+          }
+         ]
+        }
+       ],
+       "contextId": "<id-2>",
+       "history": [
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "check my calendar"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        },
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-4>",
+         "parts": [
+          {
+           "text": "Sign in to the calendar first: https://calendar.example.com/authorize"
+          }
+         ],
+         "role": "ROLE_AGENT",
+         "taskId": "<id-3>"
+        },
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-5>",
+         "parts": [
+          {
+           "text": "signed in"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        }
+       ],
+       "id": "<id-3>",
+       "status": {
+        "state": "TASK_STATE_COMPLETED",
+        "timestamp": "<time>"
+       }
+      }
+     }
+    },
+    "sse": false
+   }
+  ],
+  "a2a_cancel": [
+   {
+    "dir": "c2s",
+    "http": {
+     "method": "GET",
+     "url": "https://research.example.com/.well-known/agent-card.json"
+    }
+   },
+   {
+    "dir": "s2c",
+    "http": {
+     "body": {
+      "capabilities": {
+       "streaming": true
+      },
+      "defaultInputModes": [
+       "text/plain"
+      ],
+      "defaultOutputModes": [
+       "text/plain"
+      ],
+      "description": "Summarises documents and meetings for other agents.",
+      "name": "Research agent",
+      "skills": [
+       {
+        "description": "Summarise a document or a meeting.",
+        "examples": [
+         "summarise the design notes"
+        ],
+        "id": "summarise",
+        "name": "Summarise",
+        "tags": [
+         "summary",
+         "text"
+        ]
+       },
+       {
+        "description": "Today's meetings from the user's calendar (the user signs in first).",
+        "examples": [
+         "check my calendar"
+        ],
+        "id": "calendar",
+        "name": "Calendar digest",
+        "tags": [
+         "calendar"
+        ]
+       }
+      ],
+      "supportedInterfaces": [
+       {
+        "protocolBinding": "JSONRPC",
+        "protocolVersion": "1.0",
+        "url": "https://research.example.com/a2a"
+       }
+      ],
+      "version": "1.0.0"
+     },
+     "headers": [
+      [
+       "Content-Type",
+       "application/json"
+      ],
+      [
+       "ETag",
+       "W/\"0c789eab44ebe1544de8bfee2d00e741a531c349c36d6412efdb06a89af89f4c\""
+      ]
+     ],
+     "status": 200
+    }
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-1>",
+       "parts": [
+        {
+         "text": "summarise the meeting"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "contextId": "<id-2>",
+       "history": [
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "summarise the meeting"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        }
+       ],
+       "id": "<id-3>",
+       "status": {
+        "message": {
+         "contextId": "<id-2>",
+         "messageId": "<id-4>",
+         "parts": [
+          {
+           "text": "Which meeting: Monday's or Tuesday's?"
+          }
+         ],
+         "role": "ROLE_AGENT",
+         "taskId": "<id-3>"
+        },
+        "state": "TASK_STATE_INPUT_REQUIRED",
+        "timestamp": "<time>"
+       }
+      }
+     }
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "method": "CancelTask",
+     "params": {
+      "id": "<id-3>"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "result": {
+      "contextId": "<id-2>",
+      "history": [
+       {
+        "contextId": "<id-2>",
+        "messageId": "<id-1>",
+        "parts": [
+         {
+          "text": "summarise the meeting"
+         }
+        ],
+        "role": "ROLE_USER",
+        "taskId": "<id-3>"
+       }
+      ],
+      "id": "<id-3>",
+      "status": {
+       "message": {
+        "contextId": "<id-2>",
+        "messageId": "<id-4>",
+        "parts": [
+         {
+          "text": "Which meeting: Monday's or Tuesday's?"
+         }
+        ],
+        "role": "ROLE_AGENT",
+        "taskId": "<id-3>"
+       },
+       "state": "TASK_STATE_CANCELED",
+       "timestamp": "<time>"
+      }
+     }
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 3,
+     "jsonrpc": "2.0",
+     "method": "CancelTask",
+     "params": {
+      "id": "<id-3>"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32002,
+      "data": [
+       {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "domain": "a2a-protocol.org",
+        "metadata": {},
+        "reason": "TASK_NOT_CANCELABLE"
+       }
+      ],
+      "message": "Task cannot be canceled"
+     },
+     "id": 3,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 4,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "contextId": "<id-2>",
+       "messageId": "<id-5>",
+       "parts": [
+        {
+         "text": "Tuesday"
+        }
+       ],
+       "role": "ROLE_USER",
+       "taskId": "<id-3>"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32004,
+      "data": [
+       {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "domain": "a2a-protocol.org",
+        "metadata": {},
+        "reason": "UNSUPPORTED_OPERATION"
+       }
+      ],
+      "message": "Task <id-3> is in terminal state: TASK_STATE_CANCELED"
+     },
+     "id": 4,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 5,
+     "jsonrpc": "2.0",
+     "method": "SubscribeToTask",
+     "params": {
+      "id": "<id-3>"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32004,
+      "data": [
+       {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "domain": "a2a-protocol.org",
+        "metadata": {},
+        "reason": "UNSUPPORTED_OPERATION"
+       }
+      ],
+      "message": "Task <id-3> is in terminal state: TASK_STATE_CANCELED"
+     },
+     "id": 5,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   }
+  ],
+  "a2a_reject": [
+   {
+    "dir": "c2s",
+    "http": {
+     "method": "GET",
+     "url": "https://research.example.com/.well-known/agent-card.json"
+    }
+   },
+   {
+    "dir": "s2c",
+    "http": {
+     "body": {
+      "capabilities": {
+       "streaming": true
+      },
+      "defaultInputModes": [
+       "text/plain"
+      ],
+      "defaultOutputModes": [
+       "text/plain"
+      ],
+      "description": "Summarises documents and meetings for other agents.",
+      "name": "Research agent",
+      "skills": [
+       {
+        "description": "Summarise a document or a meeting.",
+        "examples": [
+         "summarise the design notes"
+        ],
+        "id": "summarise",
+        "name": "Summarise",
+        "tags": [
+         "summary",
+         "text"
+        ]
+       },
+       {
+        "description": "Today's meetings from the user's calendar (the user signs in first).",
+        "examples": [
+         "check my calendar"
+        ],
+        "id": "calendar",
+        "name": "Calendar digest",
+        "tags": [
+         "calendar"
+        ]
+       }
+      ],
+      "supportedInterfaces": [
+       {
+        "protocolBinding": "JSONRPC",
+        "protocolVersion": "1.0",
+        "url": "https://research.example.com/a2a"
+       }
+      ],
+      "version": "1.0.0"
+     },
+     "headers": [
+      [
+       "Content-Type",
+       "application/json"
+      ],
+      [
+       "ETag",
+       "W/\"0c789eab44ebe1544de8bfee2d00e741a531c349c36d6412efdb06a89af89f4c\""
+      ]
+     ],
+     "status": 200
+    }
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-1>",
+       "parts": [
+        {
+         "text": "delete every draft"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "task": {
+       "contextId": "<id-2>",
+       "history": [
+        {
+         "contextId": "<id-2>",
+         "messageId": "<id-1>",
+         "parts": [
+          {
+           "text": "delete every draft"
+          }
+         ],
+         "role": "ROLE_USER",
+         "taskId": "<id-3>"
+        }
+       ],
+       "id": "<id-3>",
+       "status": {
+        "message": {
+         "contextId": "<id-2>",
+         "messageId": "<id-4>",
+         "parts": [
+          {
+           "text": "I only summarise; I do not delete files."
+          }
+         ],
+         "role": "ROLE_AGENT",
+         "taskId": "<id-3>"
+        },
+        "state": "TASK_STATE_REJECTED",
+        "timestamp": "<time>"
+       }
+      }
+     }
+    },
+    "sse": false
+   }
+  ],
+  "a2a_message": [
+   {
+    "dir": "c2s",
+    "http": {
+     "method": "GET",
+     "url": "https://research.example.com/.well-known/agent-card.json"
+    }
+   },
+   {
+    "dir": "s2c",
+    "http": {
+     "body": {
+      "capabilities": {
+       "streaming": true
+      },
+      "defaultInputModes": [
+       "text/plain"
+      ],
+      "defaultOutputModes": [
+       "text/plain"
+      ],
+      "description": "Summarises documents and meetings for other agents.",
+      "name": "Research agent",
+      "skills": [
+       {
+        "description": "Summarise a document or a meeting.",
+        "examples": [
+         "summarise the design notes"
+        ],
+        "id": "summarise",
+        "name": "Summarise",
+        "tags": [
+         "summary",
+         "text"
+        ]
+       },
+       {
+        "description": "Today's meetings from the user's calendar (the user signs in first).",
+        "examples": [
+         "check my calendar"
+        ],
+        "id": "calendar",
+        "name": "Calendar digest",
+        "tags": [
+         "calendar"
+        ]
+       }
+      ],
+      "supportedInterfaces": [
+       {
+        "protocolBinding": "JSONRPC",
+        "protocolVersion": "1.0",
+        "url": "https://research.example.com/a2a"
+       }
+      ],
+      "version": "1.0.0"
+     },
+     "headers": [
+      [
+       "Content-Type",
+       "application/json"
+      ],
+      [
+       "ETag",
+       "W/\"0c789eab44ebe1544de8bfee2d00e741a531c349c36d6412efdb06a89af89f4c\""
+      ]
+     ],
+     "status": 200
+    }
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-1>",
+       "parts": [
+        {
+         "text": "hello"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "result": {
+      "message": {
+       "contextId": "<id-2>",
+       "messageId": "<id-3>",
+       "parts": [
+        {
+         "text": "Hello. Ask me to summarise something."
+        }
+       ],
+       "role": "ROLE_AGENT"
+      }
+     }
+    },
+    "sse": false
+   }
+  ],
+  "a2a_errors": [
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 1,
+     "jsonrpc": "2.0",
+     "method": "GetTask",
+     "params": {
+      "id": "<id-1>"
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32001,
+      "data": [
+       {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "domain": "a2a-protocol.org",
+        "metadata": {},
+        "reason": "TASK_NOT_FOUND"
+       }
+      ],
+      "message": "Task not found"
+     },
+     "id": 1,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ]
+    ],
+    "msg": {
+     "id": 2,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-2>",
+       "parts": [
+        {
+         "text": "summarise the design notes"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32009,
+      "data": [
+       {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "domain": "a2a-protocol.org",
+        "metadata": {},
+        "reason": "VERSION_NOT_SUPPORTED"
+       }
+      ],
+      "message": "A2A version '0.3' is not supported by this handler. Expected version '1.0'."
+     },
+     "id": 2,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 3,
+     "jsonrpc": "2.0",
+     "method": "message/send",
+     "params": {
+      "message": {
+       "messageId": "<id-2>",
+       "parts": [
+        {
+         "text": "summarise the design notes"
+        }
+       ],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32601,
+      "message": "Method not found"
+     },
+     "id": 3,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 4,
+     "jsonrpc": "2.0",
+     "method": "SendMessage",
+     "params": {
+      "message": {
+       "messageId": "<id-3>",
+       "parts": [],
+       "role": "ROLE_USER"
+      }
+     }
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32602,
+      "data": [
+       {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "domain": "a2a-protocol.org",
+        "metadata": {
+         "errors": [
+          {
+           "field": "message.parts",
+           "message": "Field must contain at least one element."
+          }
+         ]
+        },
+        "reason": "INVALID_PARAMS"
+       },
+       {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+         {
+          "description": "Field must contain at least one element.",
+          "field": "message.parts"
+         }
+        ]
+       }
+      ],
+      "message": "Validation failed"
+     },
+     "id": 4,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   },
+   {
+    "dir": "c2s",
+    "headers": [
+     [
+      "Content-Type",
+      "application/json"
+     ],
+     [
+      "A2A-Version",
+      "1.0"
+     ]
+    ],
+    "msg": {
+     "id": 5,
+     "jsonrpc": "2.0",
+     "method": "GetExtendedAgentCard"
+    }
+   },
+   {
+    "dir": "s2c",
+    "msg": {
+     "error": {
+      "code": -32004,
+      "data": [
+       {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "domain": "a2a-protocol.org",
+        "metadata": {},
+        "reason": "UNSUPPORTED_OPERATION"
+       }
+      ],
+      "message": "The agent does not support authenticated extended cards"
+     },
+     "id": 5,
+     "jsonrpc": "2.0"
+    },
+    "sse": false
+   }
+  ]
+ }
+}

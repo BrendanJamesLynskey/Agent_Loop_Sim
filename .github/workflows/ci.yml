@@ -9,8 +9,9 @@ on:
 #   - the Python reference: its tests, and the parity fixtures and engine data it writes
 #     are up to date (the fixtures include replays of the recorded traces);
 #   - the TypeScript port: it reproduces every fixture exactly, and typechecks;
-#   - MCP conformance: the official MCP Python SDK's client and server are run and recorded, and the
-#     engine must produce the same JSON-RPC messages.
+#   - SDK conformance: the official MCP Python SDK's client and server are run and recorded, and the
+#     engine must produce the same JSON-RPC messages; likewise the official A2A Python SDK's agent, driven by
+#     the engine's A2A client (the job keeps its original name, a required check).
 # No job calls a language model: recorded traces are replayed; sampling answers are scripted.
 
 jobs:
@@ -42,8 +43,10 @@ jobs:
       - run: pip install -e ".[dev,conformance]"
       - name: Record the official SDK's client and server; compare with the committed recording and the engine
         run: python scripts/record_sdk.py --check
+      - name: Record the official A2A SDK's agent driven by the engine's client; compare with the committed recording and the engine
+        run: python scripts/record_a2a_sdk.py --check
       - name: Protocol tests
-        run: pytest tests/test_protocols.py
+        run: pytest tests/test_protocols.py tests/test_a2a.py
 
   typescript:
     name: TypeScript port (exact parity)

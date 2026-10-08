@@ -257,3 +257,117 @@ def three_ways(played: dict[str, Any], tok: Tokenizer) -> list[dict[str, Any]]:
                      "text": text, "tokens": len(tok.encode(text)),
                      "bytes": sum(log[i]["bytes"] for i in seqs)})
     return rows
+
+
+# --- added in engine 1.3.0: agent to agent, and step-by-step flows (OAuth, attacks) -----------
+
+def _a2a_label(w: dict[str, Any]) -> str:
+    if "http" in w:
+        h = w["http"]
+        if "method" in h:
+            return "GET /.well-known/agent-card.json"
+        b = h["body"]
+        return ("agent card: " + str(b["name"]) + ", " + str(len(b["skills"])) + " skills"
+                + (", streams" if b["capabilities"].get("streaming") else ""))
+    msg = w["msg"]
+    if "method" in msg:
+        p = msg.get("params") or {}
+        m = p.get("message")
+        if isinstance(m, dict):
+            text = " ".join(x.get("text", "") for x in m.get("parts", []))
+            return msg["method"] + " \"" + _short(text, 30).strip("\"") + "\"" + (" (same task)" if "taskId" in m else "")
+        return msg["method"]
+    if "error" in msg:
+        e = msg["error"]
+        return str(e["code"]) + " " + _short(e["message"], 48).strip("\"")
+    r = msg["result"]
+    if "statusUpdate" in r:
+        return "statusUpdate " + r["statusUpdate"]["status"]["state"].replace("TASK_STATE_", "")
+    if "artifactUpdate" in r:
+        a = r["artifactUpdate"]
+        return "artifactUpdate" + (" (append" + (", last" if a.get("lastChunk") else "") + ")" if a.get("append") else
+                                   " (first chunk)")
+    if "message" in r:
+        return "Message \"" + _short(r["message"]["parts"][0].get("text", ""), 28).strip("\"") + "\""
+    t = r["task"] if "task" in r else r
+    s = "Task " + t["status"]["state"].replace("TASK_STATE_", "")
+    if t.get("artifacts"):
+        s += " + artifact"
+    return s
+
+
+def a2a_frames(played: dict[str, Any]) -> list[dict[str, Any]]:
+    """A message sequence chart for an A2A session: the orchestrating agent (``client``), the
+    remote agent (``server``) and, for in-task authorisation, the ``user`` signing in outside
+    A2A. SSE events are marked ``sse``. Each frame carries the task's state after it."""
+    out: list[dict[str, Any]] = []
+    for i, w in enumerate(played["wire"]):
+        lg = played["log"][i]
+        if w["dir"] == "host":
+            out.append({"from": "client", "to": "user", "label": "ask the user to sign in", "virtual": True,
+                        "kind": "gate", "wire": None, "dir": "host", "bytes": 0, "sse": False, "t": lg["t"],
+                        "client": "asking the user", "server": lg["server"], "task": lg["task"]})
+            out.append({"from": "user", "to": "client", "label": "signed in (outside A2A)", "virtual": True,
+                        "kind": "gate", "wire": None, "dir": "host", "bytes": 0, "sse": False, "t": lg["t"],
+                        "client": lg["client"], "server": lg["server"], "task": lg["task"]})
+            continue
+        c2s = w["dir"] == "c2s"
+        kind = lg["kind"]
+        if kind == "http":
+            kind = "request" if c2s else "result"
+        out.append({"from": "client" if c2s else "server", "to": "server" if c2s else "client",
+                    "label": _a2a_label(w), "virtual": False, "kind": kind, "wire": i, "dir": w["dir"],
+                    "bytes": lg["bytes"], "sse": bool(w.get("sse")), "t": lg["t"], "client": lg["client"],
+                    "server": lg["server"], "task": lg["task"]})
+    for k, f in enumerate(out):
+        f["step"] = k
+    return out
+
+
+def a2a_summary(played: dict[str, Any]) -> dict[str, Any]:
+    """Counts and times for the prose: messages, bytes, when the first piece of the result
+    reached the orchestrator, when the session ended, and the task states in order."""
+    msgs = 0
+    nbytes = 0
+    first = None
+    states: list[str] = []
+    for i, w in enumerate(played["wire"]):
+        lg = played["log"][i]
+        if w["dir"] == "host":
+            continue
+        msgs += 1
+        nbytes += lg["bytes"]
+        if w["dir"] == "s2c" and "msg" in w and "result" in w["msg"] and first is None:
+            r = w["msg"]["result"]
+            t = r.get("task") if isinstance(r, dict) else None
+            if "artifactUpdate" in r or (isinstance(t, dict) and t.get("artifacts")):
+                first = lg["t"]
+        if lg["task"] is not None and (len(states) == 0 or states[len(states) - 1] != lg["task"]):
+            states.append(lg["task"])
+    last = played["log"][len(played["log"]) - 1]["t"]
+    return {"messages": msgs, "bytes": nbytes, "first_result_ms": first, "end_ms": last, "states": states}
+
+
+def flow_frames(run: dict[str, Any]) -> list[dict[str, Any]]:
+    """Sequence-chart frames for a step-by-step flow (``oauth.run_oauth``,
+    ``security.run_security``): HTTP requests and responses between actors, and the checks,
+    user actions, model steps and attack steps that happen at one actor or off the wire."""
+    out: list[dict[str, Any]] = []
+    for s in run["steps"]:
+        k = s["kind"]
+        if k == "http":
+            st = s["status"]
+            kind = "request" if st is None else ("error" if st >= 400 else "result")
+            virtual = False
+        elif k == "check":
+            kind = "check" if s["ok"] else "fail"
+            virtual = True
+        elif k == "attack":
+            kind = "attack"
+            virtual = True
+        else:
+            kind = "gate"
+            virtual = True
+        out.append({"from": s["from"], "to": s["to"], "label": s["label"], "kind": kind, "virtual": virtual,
+                    "seq": s["seq"], "ok": s["ok"], "step": len(out)})
+    return out
