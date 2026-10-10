@@ -1,4 +1,4 @@
-"""The orchestration module's fixtures (engine 1.6.0), written by make_fixtures.py:
+"""The orchestration module's fixtures (engine 1.6.0; Send sessions since 1.7.0), written by make_fixtures.py:
 fixtures/orchestration_fixtures.json (for the TS port to reproduce exactly),
 fixtures/orchestration_results.md (the recorded run every published number comes from) and
 ts/src/orchestration_data.json (the graphs, sessions and workflow, shared with the port)."""

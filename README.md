@@ -13,7 +13,9 @@ against the official A2A Python SDK, an MCP gateway, and three protocol attacks 
 **context engineering**: chunking, BM25, dense retrieval over shipped int8 embeddings, hybrid fusion and a recorded
 reranker, measured with recall@k, MRR and nDCG on a fixed, openly licensed corpus, and the window as working memory; since 1.6, **orchestration**: a graph runtime with LangGraph's execution model (super-steps, channels and
 reducers, checkpoints, interrupts, time travel) checked checkpoint for checkpoint against real, pinned LangGraph, and
-durable execution (an event history, replay, non-determinism and idempotency keys).
+durable execution (an event history, replay, non-determinism and idempotency keys); since 1.7, `Send` (map-reduce) in
+that runtime, multi-agent patterns with per-agent token accounting, a **discrete-event simulation** of many workflows
+against a rate-limited model endpoint, and reliability maths tested against simulation.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -296,8 +298,54 @@ Every number is in [`fixtures/context2_results.md`](fixtures/context2_results.md
 - **`views`**: super-step frames (run, barrier, apply; the reducer's fold per key), the checkpoint timeline of a
   session, and a layered graph layout; the durable run's frames come from `durable`.
 
+## Patterns, discrete-event simulation and reliability (since 1.7)
+
+Ported statement for statement to `ts/src/orchestration/`, checked against
+[`fixtures/orchestration2_fixtures.json`](fixtures/orchestration2_fixtures.json) with no tolerance; every number is in
+[`fixtures/orchestration2_results.md`](fixtures/orchestration2_results.md).
+
+- **`Send` in `graph`**: a router may return `Send(node, arg)` packets (a leaf `{"send": node, "over": key, "as":
+  name}`, one packet per item). Each is a separate "push" task in the next super-step whose input is its `arg`, not the
+  state. As in LangGraph 1.2.14: push tasks are listed before the edge-triggered tasks, in packet order (packets are
+  collected in task order, each router's in list order); their writes are applied after the pull tasks' (tasks sort by
+  path, `__pregel_pull` before `__pregel_push`); a crash or interrupt in one push task keeps its siblings' writes and a
+  resume re-runs only that task; `update_state(as_node=…)` through a sending router creates the packets too. Nine new
+  conformance sessions (map-reduce, a crash in one worker, replay, an update that changes the fan-out, an empty
+  fan-out, an interrupt in one worker, sends from two routers beside edge-triggered tasks of the same node, a
+  map-reduce loop) bring the recording to **39 sessions, 71 operations, 232 checkpoints**, all equal.
+- **`patterns`**: single agent, supervisor, hierarchical, swarm (hand-offs over a shared history), debate (three
+  debaters, two rounds, a judge) and map-reduce, built as **call plans** on one task (K sub-questions, each a search
+  and a sub-answer). Every call's input tokens come from its agent's own append-only context, so an agent's previous
+  prompt is a cached prefix. Cost uses `accounting.call_cost`, latency `accounting.call_latency`; P(success) is the
+  product of the critical calls' accuracies (debate: the majority of three, 3-voter formula
+  q₁q₂ + q₁q₃ + q₂q₃ − 2q₁q₂q₃). A call's accuracy falls with its prompt length past 4,000 tokens (illustrative).
+- **`des`**: many workflows (Poisson or batch arrivals) share one endpoint with a FIFO queue, a concurrency limit
+  and **token buckets** for requests, uncached input tokens and output tokens per minute, as the
+  [Claude API documents its limits](https://platform.claude.com/docs/en/api/rate-limits) (continuous replenishment;
+  cache reads do not count toward input tokens). Attempts get the latency model's duration times a jitter, fail
+  transiently or time out, and are retried with exponential backoff and full jitter. Reports latency percentiles
+  (nearest rank), cost per success, success rate, throughput, utilisation, per-attempt traces and resampled queue
+  series. One seeded mulberry32 stream; arrival gaps use the shared fdlibm `ln`.
+- **`reliability`**: closed forms for a chain of n steps with detectable errors e, silent errors w, A attempts and an
+  optional verifier (recall d, false rejections f): per attempt r = e + c·f + w·d, P(step correct) =
+  c(1 − f)(1 − r^A)/(1 − r), P(success) = P(step correct)^n, E[attempts] = S_A·Σ(1 − r^A)^i; Wilson intervals; a
+  Monte Carlo chain to test them.
+- **`study`**: the site's chapter studies (patterns over task size and context penalty, fan-out speed-up against
+  Amdahl's law and the bucket bound, reliability curves, a load sweep with each pattern's capacity per limit, and a
+  chooser that applies constraints to the simulated table).
+- **Tests check the closed forms against the simulations**: DES success against Π(1 − f^A)·P(plan) for every
+  pattern (within 4 standard errors over 3,000 workflows), mean attempts, throughput saturating at the capacity the
+  binding limit allows, speed-up equal to Amdahl's law with no rate limit and below the bucket bound with one, the
+  input bucket never exceeded over any window, Little's law as an identity, and the reliability closed forms
+  (12 configurations, 6,000 runs each).
+
 ## Versions
 
+- **1.7.0** (2026-10-10): `Send` in the graph runtime (op `collect` and an optional `when` condition on any op) with
+  nine new LangGraph conformance sessions; `orchestration/patterns.py`, `des.py`, `reliability.py`, `study.py`; new
+  fixture files `fixtures/orchestration2_fixtures.json` and `fixtures/orchestration2_results.md`. Every 1.6 fixture
+  is unchanged apart from the `engine` field; the orchestration fixtures, data and LangGraph recording only gain the
+  new graphs and sessions (the 30 earlier sessions are identical).
 - **1.6.0** (2026-10-10): the `orchestration` package (graph runtime, durable execution, views), the LangGraph
   conformance recording and its CI step; new fixture files `fixtures/orchestration_fixtures.json`,
   `fixtures/orchestration_results.md` and `fixtures/langgraph_recordings.json`. Every 1.5 fixture is unchanged apart
@@ -383,6 +431,13 @@ in Python and in TypeScript.
   2,000 ms reply timeout, the 5,000 ms restart, 5 ms to replay a recorded step) are illustrative; the workflow, its
   payment service and the shipping cut-off are invented. The event history's shape and event names are simplified,
   not any engine's wire format. The graph semantics are not illustrative: they are LangGraph's, checked as above.
+- **Patterns, DES, reliability (1.7)**: the task, every token size, the accuracy model (0.98 for a focused call, 0.995
+  for a routing decision, minus 0.01 per 1,000 prompt tokens past 4,000), the debate's round 1 being charged but
+  not credited, the rate limits (50 RPM, 40,000 input and 8,000 output tokens per minute: a deliberately small
+  workspace-style limit, not a tier), the transient failure rate, timeouts, backoff and jitter, and the reliability
+  defaults (e = 0.05, w = 0.03, a verifier with recall 0.8 and 5% false rejections) are all illustrative. A timed-out
+  attempt is billed in full and an errored one not at all (assumptions). The client waits for capacity rather than
+  collecting 429s.
 
 ## Run it
 

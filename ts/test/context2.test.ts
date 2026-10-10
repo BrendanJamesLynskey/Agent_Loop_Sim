@@ -22,7 +22,7 @@ const corpus = new C.Corpus(files["corpus.json"]!, files, tok);
 const d = new C.Retriever(corpus, C.DEFAULT);
 
 describe("engine version", () => {
-  it("matches the fixtures", () => expect(fx.engine).toBe("1.6.0"));
+  it("matches the fixtures", () => expect(fx.engine).toBe("1.7.0"));
 });
 
 describe("window task with a lossy summariser", () => {

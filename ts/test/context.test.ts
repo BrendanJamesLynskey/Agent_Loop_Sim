@@ -30,7 +30,7 @@ const d = rs[C.DEFAULT]!;
 const sha = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
 
 describe("engine version and data", () => {
-  it("matches the fixtures", () => expect(fx.engine).toBe("1.6.0"));
+  it("matches the fixtures", () => expect(fx.engine).toBe("1.7.0"));
   it("reads the same data files", () => {
     for (const n of C.FILES) expect(sha(raw[n]!)).toBe(fx.files[n]);
     for (const n of C.FILES) expect(fx.manifest_files[n]).toBe(fx.files[n]);

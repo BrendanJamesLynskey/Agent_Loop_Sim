@@ -1,10 +1,10 @@
-# Orchestration module results (engine 1.6.0)
+# Orchestration module results (engine 1.7.0)
 
 Written by `scripts/make_fixtures.py` (CI checks it is up to date). Node durations, the checkpoint write (15 ms) and every durable-execution timing are illustrative; the semantics are checked against LangGraph.
 
 ## Conformance with LangGraph
 
-`fixtures/langgraph_recordings.json`: langgraph 1.2.14 (langgraph-checkpoint 4.2.0), 30 sessions, 55 operations, 178 checkpoints in the final histories. CI re-records them live and requires live = committed = engine for every checkpoint after every operation.
+`fixtures/langgraph_recordings.json`: langgraph 1.2.14 (langgraph-checkpoint 4.2.0), 39 sessions, 71 operations, 232 checkpoints in the final histories. CI re-records them live and requires live = committed = engine for every checkpoint after every operation.
 
 ## Super-steps of the teaching graphs
 

@@ -26,6 +26,14 @@ The semantics, as checked against LangGraph 1.2.14:
     again from its first line when resumed.
   - Running from an earlier ``loop`` checkpoint (time travel) first copies it to a ``fork``
     checkpoint and re-runs its tasks; ``update_state(as_node=…)`` writes an ``update`` checkpoint.
+  - ``Send`` (since 1.7): a router may return ``Send(node, arg)`` packets (here a leaf
+    ``{"send": node, "over": key, "as": name}``: one packet per item of ``state[key]``). Each packet
+    is a separate "push" task in the next super-step whose input is ``arg``, not the state. Push
+    tasks are listed (``next``, ``tasks``) before the edge-triggered ("pull") tasks, in packet
+    order; packets are collected in task order, each router's in its list order. Their writes are
+    applied after the pull tasks' (LangGraph sorts tasks by path: ``__pregel_pull`` < ``__pregel_push``),
+    in packet order. A crash or interrupt in one push task keeps its siblings' writes; resuming
+    re-runs only that task.
 """
 from __future__ import annotations
 
@@ -161,17 +169,35 @@ def _cond(c: dict[str, Any], state: dict[str, Any]) -> bool:
     raise GraphError(f"unknown comparison {op}")
 
 
-def route(router: dict[str, Any], state: dict[str, Any]) -> list[str]:
-    """A router: ``{"goto": target(s)}`` or ``{"if": cond, "then": router|target(s), "else": …}``."""
+def _expand(g: Any, state: dict[str, Any]) -> list[Any]:
+    """A send leaf ``{"send": node, "over": key, "as": name, "with": [keys]}`` becomes one packet
+    ``{"send": node, "arg": {name: item, **{k: state[k]}}}`` per item of ``state[key]``."""
+    if isinstance(g, dict):
+        out = []
+        for item in state.get(g["over"], []):
+            arg: dict[str, Any] = {g["as"]: copy.deepcopy(item)}
+            for k in g.get("with", []):
+                arg[k] = copy.deepcopy(state.get(k))
+            out.append({"send": g["send"], "arg": arg})
+        return out
+    return [g]
+
+
+def route(router: dict[str, Any], state: dict[str, Any]) -> list[Any]:
+    """A router: ``{"goto": target(s)}`` or ``{"if": cond, "then": router|target(s), "else": …}``.
+    A target is a node name or a send leaf (expanded into ``Send`` packets)."""
     if "goto" in router:
         g = router["goto"]
     elif _cond(router["if"], state):
         g = router["then"]
     else:
         g = router["else"]
-    if isinstance(g, dict):
+    if isinstance(g, dict) and "send" not in g:
         return route(g, state)
-    return list(g) if isinstance(g, list) else [g]
+    out: list[Any] = []
+    for x in (g if isinstance(g, list) else [g]):
+        out += _expand(x, state)
+    return out
 
 
 def run_ops(node: dict[str, Any], state: dict[str, Any], ctx: dict[str, Any]) -> dict[str, Any]:
@@ -181,6 +207,8 @@ def run_ops(node: dict[str, Any], state: dict[str, Any], ctx: dict[str, Any]) ->
     upd: dict[str, Any] = {}
     for op in node["ops"]:
         k = op["op"]
+        if "when" in op and not _cond(op["when"], state):
+            continue
         if k == "set":
             upd[op["key"]] = copy.deepcopy(op["value"])
         elif k == "append":
@@ -193,6 +221,8 @@ def run_ops(node: dict[str, Any], state: dict[str, Any], ctx: dict[str, Any]) ->
             upd[op["key"]] = len(state.get(op["of"], []))
         elif k == "copy":
             upd[op["key"]] = copy.deepcopy(state.get(op["from"]))
+        elif k == "collect":
+            upd[op["key"]] = [copy.deepcopy(state.get(op["from"]))]
         elif k == "effect":
             ctx["effects"].append(node["name"] + ":" + op["name"])
         elif k == "fail":
@@ -230,9 +260,10 @@ class Thread:
     """One LangGraph thread: a tree of checkpoints in creation order.
 
     A checkpoint: ``id`` (creation index), ``parent``, ``step``, ``source``, ``values``, ``next``
-    (task names), ``tasks`` (per task: ``name``, ``error``, ``interrupts``, ``result``), and the
-    scheduler's own state: ``barriers`` (join id → sources seen) and ``ready`` (the tasks that
-    will run: ``next`` without join targets still waiting)."""
+    (task names: push tasks first, then pull tasks), ``tasks`` (per task: ``name``, ``error``,
+    ``interrupts``, ``result``), and the scheduler's own state: ``barriers`` (join id → sources
+    seen), ``ready`` (the pull tasks that will run: ``pull`` without join targets still waiting),
+    ``pull`` (the pull part of ``next``) and ``sends`` (the pending ``Send`` packets)."""
 
     def __init__(self, spec: dict[str, Any]) -> None:
         validate(spec)
@@ -243,11 +274,14 @@ class Thread:
     # -- checkpoints
 
     def _put(self, parent: int | None, step: int, source: str, values: dict[str, Any], nxt: list[str],
-             barriers: dict[str, list[str]], ready: list[str]) -> dict[str, Any]:
+             barriers: dict[str, list[str]], ready: list[str], sends: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        sends = copy.deepcopy(sends or [])
+        names = [s["name"] for s in sends] + list(nxt)
         cp = {"id": len(self.cps), "parent": parent, "step": step, "source": source,
-              "values": ordered(self.spec, values), "next": nxt,
-              "tasks": [{"name": n, "error": None, "interrupts": [], "result": None} for n in nxt],
-              "barriers": {k: list(v) for k, v in barriers.items()}, "ready": list(ready)}
+              "values": ordered(self.spec, values), "next": names,
+              "tasks": [{"name": n, "error": None, "interrupts": [], "result": None} for n in names],
+              "barriers": {k: list(v) for k, v in barriers.items()}, "ready": list(ready),
+              "pull": list(nxt), "sends": sends}
         self.cps.append(cp)
         self.latest = cp["id"]
         return cp
@@ -261,12 +295,14 @@ class Thread:
     # -- scheduling
 
     def _triggers(self, values: dict[str, Any], done: list[tuple[str, dict[str, Any]]],
-                  barriers: dict[str, list[str]]) -> tuple[list[str], list[str], dict[str, list[str]], list[dict[str, Any]]]:
+                  barriers: dict[str, list[str]]) -> tuple[list[str], list[str], dict[str, list[str]], list[dict[str, Any]], list[dict[str, Any]]]:
         """Which nodes come next, given the tasks that just finished (name, update) and the
         snapshot before their writes. Returns ``next`` as LangGraph lists it (every node whose
         trigger was written, including a join target whose barrier is still incomplete), the nodes
-        that will actually run (``ready``), the updated barriers, and the edges that fired."""
+        that will actually run (``ready``), the updated barriers, the edges that fired, and the
+        ``Send`` packets (in task order, each router's in its list order)."""
         trig: set[str] = set()
+        sends: list[dict[str, Any]] = []
         bar = {k: list(v) for k, v in barriers.items()}
         fired: list[dict[str, Any]] = []
         for name, upd in done:
@@ -276,6 +312,10 @@ class Thread:
                         continue
                     own = apply_writes(self.spec, values, [(name, upd)])
                     for t in route(e["router"], own):
+                        if isinstance(t, dict):
+                            fired.append({"from": name, "to": t["send"], "kind": "send", "arg": t["arg"]})
+                            sends.append({"name": t["send"], "arg": t["arg"]})
+                            continue
                         fired.append({"from": name, "to": t, "kind": "conditional"})
                         if t != END:
                             trig.add(t)
@@ -315,7 +355,7 @@ class Thread:
                 if all(s in bar.get(jid, []) for s in e["from"]):
                     bar[jid] = []
         bar = {k: v for k, v in bar.items() if v}
-        return nxt, ready, bar, fired
+        return nxt, ready, bar, fired, sends
 
     # -- running
 
@@ -338,9 +378,9 @@ class Thread:
             cur["tasks"][0]["result"] = copy.deepcopy(inp)
             values = apply_writes(self.spec, cur["values"], [(START, inp)])
             done = [(START, inp)]
-            nxt, ready, bar, fired = self._triggers(cur["values"], done, {})
+            nxt, ready, bar, fired, sends = self._triggers(cur["values"], done, {})
             par = cur["id"]
-            cur = self._put(cur["id"], 0, "loop", values, nxt, bar, ready)
+            cur = self._put(cur["id"], 0, "loop", values, nxt, bar, ready, sends)
             steps.append({"step": 0, "tasks": [START], "writes": [[START, copy.deepcopy(inp)]], "fired": fired,
                           "parent": par, "checkpoint": cur["id"]})
             step = 1
@@ -353,7 +393,8 @@ class Thread:
                     cur = base
                     reuse = False
                 else:
-                    cur = self._put(base["id"], base["step"] + 1, "fork", base["values"], base["next"], base["barriers"], base["ready"])
+                    cur = self._put(base["id"], base["step"] + 1, "fork", base["values"], base["pull"], base["barriers"], base["ready"],
+                                    base["sends"])
                 step = cur["step"] + 1
                 reuse = False
             else:
@@ -372,7 +413,12 @@ class Thread:
             if step > stop:
                 status = "recursion_limit"
                 break
-            tasks = list(cur["ready"])
+            # (push index or -1, node name, record): push tasks first, in packet order, then pull tasks
+            npush = len(cur["sends"])
+            todo: list[tuple[int, str, dict[str, Any]]] = [(i, s["name"], cur["tasks"][i]) for i, s in enumerate(cur["sends"])]
+            for t in cur["ready"]:
+                todo.append((-1, t, next(x for x in cur["tasks"][npush:] if x["name"] == t)))
+            tasks = [t for _, t, _ in todo]
             if not tasks:
                 status = "done"
                 break
@@ -381,37 +427,44 @@ class Thread:
             if ib and any(t in ib for t in tasks) and not (first and inp is None):
                 status = "interrupt_before"
                 break
-            writes: list[tuple[str, dict[str, Any]]] = []
+            keyed: list[tuple[tuple[int, str, int], str, dict[str, Any]]] = []
             failed: list[str] = []
+            first_error = None
             paused: list[Any] = []
-            for t in tasks:
-                rec = next(x for x in cur["tasks"] if x["name"] == t)
+            for i, t, rec in todo:
+                # LangGraph applies writes in task-path order: pull tasks by name, then push tasks by index
+                key = (1, "", i) if i >= 0 else (0, t, 0)
                 if first and reuse and rec["result"] is not None:
-                    writes.append((t, copy.deepcopy(rec["result"])))
+                    keyed.append((key, t, copy.deepcopy(rec["result"])))
                     continue
                 ctx: dict[str, Any] = {"fail": ctx_fail, "effects": effects}
                 if first and reuse and has_resume and rec["interrupts"]:
                     ctx["resume"] = resume
                 calls.append(t)
                 try:
-                    upd = run_ops(_node(self.spec, t), cur["values"], ctx)
+                    upd = run_ops(_node(self.spec, t), cur["sends"][i]["arg"] if i >= 0 else cur["values"], ctx)
                 except NodeFailure as e:
                     rec["error"] = "NodeFailure('" + str(e) + "')"
                     failed.append(t)
+                    if first_error is None:
+                        first_error = rec["error"]
                     continue
                 except _Interrupt as it:
                     rec["interrupts"] = [it.payload]
                     paused.append(it.payload)
                     continue
                 rec["result"] = copy.deepcopy(upd)
-                writes.append((t, upd))
+                keyed.append((key, t, upd))
             first = False
-            writes.sort(key=lambda w: w[0])
+            keyed.sort(key=lambda w: w[0])
+            writes: list[tuple[str, dict[str, Any]]] = [(t, u) for _, t, u in keyed]
             halt = {"step": step, "tasks": tasks, "writes": [[n, copy.deepcopy(u)] for n, u in writes],
                     "failed": failed, "interrupts": paused, "parent": cur["id"]}
+            if npush:
+                halt["sends"] = copy.deepcopy(cur["sends"])
             if failed:
                 status = "error"
-                error = "NodeFailure: " + next(x for x in cur["tasks"] if x["name"] == failed[0])["error"]
+                error = "NodeFailure: " + str(first_error)
                 break
             if paused:
                 status = "interrupted"
@@ -424,11 +477,15 @@ class Thread:
                 error = "InvalidUpdateError: " + str(e)
                 break
             halt = None
-            nxt, ready, bar, fired = self._triggers(cur["values"], writes, cur["barriers"])
+            nxt, ready, bar, fired, sends = self._triggers(cur["values"], writes, cur["barriers"])
             par = cur["id"]
-            cur = self._put(cur["id"], step, "loop", values, nxt, bar, ready)
-            steps.append({"step": step, "tasks": tasks, "writes": [[n, copy.deepcopy(u)] for n, u in writes], "fired": fired,
-                          "parent": par, "checkpoint": cur["id"]})
+            ran = copy.deepcopy(cur["sends"])
+            cur = self._put(cur["id"], step, "loop", values, nxt, bar, ready, sends)
+            st: dict[str, Any] = {"step": step, "tasks": tasks, "writes": [[n, copy.deepcopy(u)] for n, u in writes],
+                                  "fired": fired, "parent": par, "checkpoint": cur["id"]}
+            if npush:
+                st["sends"] = ran
+            steps.append(st)
             step += 1
             ia = self.spec.get("interrupt_after", [])
             if ia and any(t in ia for t in tasks):
@@ -443,8 +500,8 @@ class Thread:
         next tasks are as if ``as_node`` had just written ``values``."""
         base = self.cps[checkpoint]
         new = apply_writes(self.spec, base["values"], [(as_node, values)])
-        nxt, ready, bar, _ = self._triggers(base["values"], [(as_node, values)], base["barriers"])
-        cp = self._put(base["id"], base["step"] + 1, "update", new, nxt, bar, ready)
+        nxt, ready, bar, _, sends = self._triggers(base["values"], [(as_node, values)], base["barriers"])
+        cp = self._put(base["id"], base["step"] + 1, "update", new, nxt, bar, ready, sends)
         return cp["id"]
 
 

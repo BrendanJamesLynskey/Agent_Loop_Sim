@@ -1,6 +1,8 @@
-/** The orchestration module (engine 1.6.0): a graph runtime with LangGraph's execution model
- * (checked against LangGraph in the engine's CI), checkpoints, interrupts and time travel; durable
- * execution with replay and idempotency keys; and the views the site animates. A port of
+/** The orchestration module (engine 1.7.0): a graph runtime with LangGraph's execution model
+ * (checked against LangGraph in the engine's CI), including Send (map-reduce), checkpoints,
+ * interrupts and time travel; durable execution with replay and idempotency keys; multi-agent
+ * patterns, a discrete-event simulation of many workflows against a rate-limited endpoint and
+ * reliability maths (since 1.7); and the views the site animates. A port of
  * agent_loop_sim/orchestration. */
 import type { Obj } from "../data";
 import data from "../orchestration_data.json";
@@ -41,6 +43,11 @@ export {
   chargeSweep,
   durableScenario,
 } from "./durable";
+
+export * as patterns from "./patterns";
+export * as des from "./des";
+export * as reliability from "./reliability";
+export * as study from "./study";
 
 export const GRAPHS: Obj[] = data.graphs as Obj[];
 export const SESSIONS: Obj[] = data.sessions as Obj[];
