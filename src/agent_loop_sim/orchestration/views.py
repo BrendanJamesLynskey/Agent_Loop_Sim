@@ -222,9 +222,12 @@ def _outcome_caption(r: dict[str, Any], hist: list[dict[str, Any]]) -> str:
                 + ("pending writes of " + names(kept) + " are saved on checkpoint " + str(r["checkpoint"]) + "." if kept
                    else "the thread waits on checkpoint " + str(r["checkpoint"]) + ".") + eff)
     if st in ("interrupt_before", "interrupt_after"):
-        where = "before" if st == "interrupt_before" else "after"
-        return (f"Paused by a static interrupt ({where} {names([n for n in hist[r['checkpoint']]['next']] if st == 'interrupt_before' else [])})"
-                .replace(" ()", "") + f" at checkpoint {r['checkpoint']}; a human can inspect or edit the state." + eff)
+        if st == "interrupt_before":
+            where = "before " + names(hist[r["checkpoint"]]["next"])
+        else:
+            where = "after " + names(r["steps"][-1]["tasks"] if r["steps"] else [])
+        return (f"Paused by a static interrupt ({where}) at checkpoint {r['checkpoint']}; "
+                "a human can inspect or edit the state." + eff)
     if st == "error":
         h = r["halt"]
         if h is not None and h["failed"]:

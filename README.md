@@ -11,7 +11,9 @@ machines over JSON-RPC 2.0 in both protocol eras, its transports and its OAuth 2
 message for message against the official MCP Python SDK; since 1.3, **A2A** (agent to agent) checked the same way
 against the official A2A Python SDK, an MCP gateway, and three protocol attacks with their defences; since 1.4,
 **context engineering**: chunking, BM25, dense retrieval over shipped int8 embeddings, hybrid fusion and a recorded
-reranker, measured with recall@k, MRR and nDCG on a fixed, openly licensed corpus, and the window as working memory.
+reranker, measured with recall@k, MRR and nDCG on a fixed, openly licensed corpus, and the window as working memory; since 1.6, **orchestration**: a graph runtime with LangGraph's execution model (super-steps, channels and
+reducers, checkpoints, interrupts, time travel) checked checkpoint for checkpoint against real, pinned LangGraph, and
+durable execution (an event history, replay, non-determinism and idempotency keys).
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -21,8 +23,9 @@ reranker, measured with recall@k, MRR and nDCG on a fixed, openly licensed corpu
 
 Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.app)** and
 **[Agent Protocols Explained](https://agent-protocols-explained.vercel.app)** and
-**[Agent Context Explained](https://agent-context-explained.vercel.app)**, which vendor the TS port at a pinned
-commit.
+**[Agent Context Explained](https://agent-context-explained.vercel.app)** and
+**[Agent Orchestration Explained](https://agent-orchestration-explained.vercel.app)**, which vendor the TS port at a
+pinned commit.
 
 ## The pieces
 
@@ -253,8 +256,52 @@ Every number is in [`fixtures/context2_results.md`](fixtures/context2_results.md
   $150.04 uncached and $18.49 cached for the 50 questions; top-5 retrieval costs $0.18 with the answer in the prompt
   for 0.995 of the questions.
 
+## Orchestration (since 1.6)
+
+`orchestration/` (ported statement for statement to `ts/src/orchestration/`, checked against
+[`fixtures/orchestration_fixtures.json`](fixtures/orchestration_fixtures.json) with no tolerance). Every number is in
+[`fixtures/orchestration_results.md`](fixtures/orchestration_results.md), the recorded run.
+
+- **`graph`**: a runtime with [LangGraph](https://github.com/langchain-ai/langgraph)'s execution model. A graph is
+  data: state keys with reducers (`overwrite`, `add` for lists and numbers, a custom `max`), nodes whose behaviour is
+  a short list of deterministic operations (set, append, increment, copy, an outside-world effect, an injected
+  failure, `interrupt`), static edges, join edges (`add_edge([a, b], c)`) and conditional edges (routers). It runs in
+  Pregel-style super-steps (Malewicz et al., *Pregel*, SIGMOD 2010, doi:10.1145/1807167.1807184): every triggered node
+  reads the same snapshot; writes wait at the barrier and are applied in task order (sorted by node name, not by
+  finishing time) through the reducers; a key without a reducer accepts one write per step (`InvalidUpdateError`); a
+  router sees the snapshot plus its own node's writes; a checkpoint is saved after every super-step; the recursion
+  limit counts steps. Crashes and dynamic `interrupt()`s keep the siblings' writes as pending writes and re-run only
+  the failed or interrupted node (from its first line); `interrupt_before`/`interrupt_after` pause at the step
+  boundary; `update_state(as_node=…)` writes an `update` checkpoint; running from an earlier checkpoint copies it to a
+  `fork` checkpoint and re-executes from there.
+- **Conformance with real LangGraph**: [`conformance/langgraph_graphs.py`](conformance/langgraph_graphs.py) builds a
+  real `StateGraph` from each spec (plain node functions, `operator.add` and a `max` reducer, LangGraph's own
+  `interrupt`, `InMemorySaver`), and [`scripts/record_langgraph.py`](scripts/record_langgraph.py) runs 30 sessions (55
+  operations: invokes, crashes, resumes, `Command(resume=…)`, `update_state`, time travel) in **langgraph 1.2.14**
+  (pinned in the `conformance` extra) and compares, after every operation, the whole `get_state_history`: every
+  checkpoint's step, source, parent, values, next tasks and each task's result, error and interrupts, plus the
+  outcome, the node runs and the side effects. CI re-records live and requires live = committed
+  ([`fixtures/langgraph_recordings.json`](fixtures/langgraph_recordings.json)) = engine. One LangGraph detail is not
+  deterministic: whether `next` lists a join target whose barrier is still incomplete (in about 9 runs in 10 here);
+  that task never runs from that checkpoint, so both sides drop it before comparing (`comparable_history`).
+- **`durable`**: durable execution in the style of workflow engines such as
+  [Temporal](https://docs.temporal.io/workflows): an order workflow (reserve stock, charge a card, choose shipping,
+  ship, send a receipt) whose commands and results go into an append-only **event history**. A worker that dies is
+  replaced by one that **replays** the code from the top against the history: recorded results come back without
+  running anything. A crash inside the charge (after the payment service acted, before the result was recorded) runs
+  it again: two charges without an idempotency key, one with it. A lost reply and a retry do the same. A choice that
+  reads the clock in workflow code breaks replay (a non-determinism error at the first command that differs);
+  recording it as a marker fixes it. `charge_sweep` checks the closed forms against a seeded simulation: without a key
+  E[charges] = (1 − q^A)/(1 − q) and P(two or more) = q; with a key, one.
+- **`views`**: super-step frames (run, barrier, apply; the reducer's fold per key), the checkpoint timeline of a
+  session, and a layered graph layout; the durable run's frames come from `durable`.
+
 ## Versions
 
+- **1.6.0** (2026-10-10): the `orchestration` package (graph runtime, durable execution, views), the LangGraph
+  conformance recording and its CI step; new fixture files `fixtures/orchestration_fixtures.json`,
+  `fixtures/orchestration_results.md` and `fixtures/langgraph_recordings.json`. Every 1.5 fixture is unchanged apart
+  from the `engine` field.
 - **1.5.0** (2026-10-08): `context/packing.py`, `context/memory.py`, `context/tradeoff.py`; a lossy summariser
   and `compaction_study` in `context/window.py`; new fixture files `fixtures/context2_fixtures.json` and
   `fixtures/context2_results.md`. Every 1.4 fixture is unchanged apart from the `engine` field, except one
@@ -332,6 +379,11 @@ in Python and in TypeScript.
   sets larger than the corpus are hypothetical (the same arithmetic), and whether a model accepts such a prompt,
   and any long-prompt surcharge, are not modelled.
 
+- **Orchestration (1.6)**: node durations, the 15 ms checkpoint write and every durable-execution time (the
+  2,000 ms reply timeout, the 5,000 ms restart, 5 ms to replay a recorded step) are illustrative; the workflow, its
+  payment service and the shipping cut-off are invented. The event history's shape and event names are simplified,
+  not any engine's wire format. The graph semantics are not illustrative: they are LangGraph's, checked as above.
+
 ## Run it
 
 ```bash
@@ -342,8 +394,8 @@ cd ts && pnpm install && pnpm test                 # the port, against the fixtu
 ```
 
 SDK conformance: `.venv/bin/pip install -e ".[conformance]"`, then `python scripts/record_sdk.py --check` (MCP)
-and `python scripts/record_a2a_sdk.py --check` (A2A): each records its SDK live and compares; without `--check`
-they re-record.
+and `python scripts/record_a2a_sdk.py --check` (A2A), and `python scripts/record_langgraph.py --check`
+(LangGraph): each records its SDK live and compares; without `--check` they re-record.
 
 Context data (offline, downloads the SQuAD file and two ONNX models, about 190 MB):
 `.venv/bin/pip install -e ".[offline]"`, then
