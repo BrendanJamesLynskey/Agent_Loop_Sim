@@ -1,0 +1,2265 @@
+{
+ "version": "1.6.0",
+ "graphs": [
+  {
+   "name": "chain",
+   "title": "A chain: retrieve, draft, review",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "question",
+     "reducer": "overwrite",
+     "type": "str"
+    },
+    {
+     "key": "docs",
+     "reducer": "overwrite",
+     "type": "int"
+    },
+    {
+     "key": "draft",
+     "reducer": "overwrite",
+     "type": "str"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "retrieve",
+     "ms": 600,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "retrieve"
+      },
+      {
+       "op": "set",
+       "key": "docs",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "name": "draft",
+     "ms": 1400,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "draft"
+      },
+      {
+       "op": "set",
+       "key": "draft",
+       "value": "v1"
+      }
+     ]
+    },
+    {
+     "name": "review",
+     "ms": 800,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "review"
+      },
+      {
+       "op": "set",
+       "key": "draft",
+       "value": "v1 (reviewed)"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "retrieve"
+    },
+    {
+     "from": "retrieve",
+     "to": "draft"
+    },
+    {
+     "from": "draft",
+     "to": "review"
+    },
+    {
+     "from": "review",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "fanout",
+   "title": "Fan out to two researchers, join, compose",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "notes",
+     "reducer": "add",
+     "type": "int"
+    },
+    {
+     "key": "sources",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "report",
+     "reducer": "overwrite",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "plan",
+     "ms": 500,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "plan"
+      }
+     ]
+    },
+    {
+     "name": "web",
+     "ms": 1800,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "web"
+      },
+      {
+       "op": "delta",
+       "key": "notes",
+       "value": 3
+      },
+      {
+       "op": "append",
+       "key": "sources",
+       "value": "web"
+      }
+     ]
+    },
+    {
+     "name": "papers",
+     "ms": 1200,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "papers"
+      },
+      {
+       "op": "delta",
+       "key": "notes",
+       "value": 2
+      },
+      {
+       "op": "append",
+       "key": "sources",
+       "value": "papers"
+      }
+     ]
+    },
+    {
+     "name": "compose",
+     "ms": 900,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "compose"
+      },
+      {
+       "op": "len",
+       "key": "report",
+       "of": "sources"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "plan"
+    },
+    {
+     "from": "plan",
+     "to": "web"
+    },
+    {
+     "from": "plan",
+     "to": "papers"
+    },
+    {
+     "from": [
+      "web",
+      "papers"
+     ],
+     "to": "compose"
+    },
+    {
+     "from": "compose",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "react_loop",
+   "title": "An agent loop: model, tools, model … until done",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "turns",
+     "reducer": "overwrite",
+     "type": "int"
+    },
+    {
+     "key": "tool_calls",
+     "reducer": "add",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "model",
+     "ms": 900,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "model"
+      },
+      {
+       "op": "inc",
+       "key": "turns",
+       "by": 1
+      }
+     ]
+    },
+    {
+     "name": "tools",
+     "ms": 400,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "tools"
+      },
+      {
+       "op": "delta",
+       "key": "tool_calls",
+       "value": 1
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "model"
+    },
+    {
+     "from": "model",
+     "router": {
+      "if": {
+       "key": "turns",
+       "op": "<",
+       "value": 3
+      },
+      "then": "tools",
+      "else": "__end__"
+     },
+     "targets": [
+      "tools",
+      "__end__"
+     ]
+    },
+    {
+     "from": "tools",
+     "to": "model"
+    }
+   ]
+  },
+  {
+   "name": "uneven_join",
+   "title": "A join waits across super-steps",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "a",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "a"
+      }
+     ]
+    },
+    {
+     "name": "b",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "b"
+      }
+     ]
+    },
+    {
+     "name": "c",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "c"
+      }
+     ]
+    },
+    {
+     "name": "d",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "d"
+      }
+     ]
+    },
+    {
+     "name": "e",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "e"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "a"
+    },
+    {
+     "from": "a",
+     "to": "b"
+    },
+    {
+     "from": "b",
+     "to": "c"
+    },
+    {
+     "from": "a",
+     "to": "d"
+    },
+    {
+     "from": [
+      "c",
+      "d"
+     ],
+     "to": "e"
+    },
+    {
+     "from": "e",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "no_join",
+   "title": "Two plain edges into one node: it runs twice",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "b",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "b"
+      }
+     ]
+    },
+    {
+     "name": "a",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "a"
+      }
+     ]
+    },
+    {
+     "name": "c",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "c"
+      }
+     ]
+    },
+    {
+     "name": "e",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "e"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "c"
+    },
+    {
+     "from": "__start__",
+     "to": "a"
+    },
+    {
+     "from": "a",
+     "to": "b"
+    },
+    {
+     "from": "b",
+     "to": "e"
+    },
+    {
+     "from": "c",
+     "to": "e"
+    },
+    {
+     "from": "e",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "router_view",
+   "title": "A router sees its own node's writes, not its sibling's",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "n",
+     "reducer": "overwrite",
+     "type": "int"
+    },
+    {
+     "key": "x",
+     "reducer": "overwrite",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "p",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "p"
+      },
+      {
+       "op": "inc",
+       "key": "n",
+       "by": 1
+      }
+     ]
+    },
+    {
+     "name": "q",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "q"
+      },
+      {
+       "op": "set",
+       "key": "x",
+       "value": 7
+      }
+     ]
+    },
+    {
+     "name": "r",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "r"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "p"
+    },
+    {
+     "from": "__start__",
+     "to": "q"
+    },
+    {
+     "from": "p",
+     "router": {
+      "if": {
+       "key": "x",
+       "op": "==",
+       "value": 7
+      },
+      "then": "r",
+      "else": "__end__"
+     },
+     "targets": [
+      "r",
+      "__end__"
+     ]
+    },
+    {
+     "from": "q",
+     "to": "__end__"
+    },
+    {
+     "from": "r",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "merge_overwrite",
+   "title": "Two branches write one key with no reducer",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "answer",
+     "reducer": "overwrite",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "plan",
+     "ms": 400,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "plan"
+      }
+     ]
+    },
+    {
+     "name": "fast",
+     "ms": 700,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "fast"
+      },
+      {
+       "op": "set",
+       "key": "answer",
+       "value": 41
+      }
+     ]
+    },
+    {
+     "name": "careful",
+     "ms": 1600,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "careful"
+      },
+      {
+       "op": "set",
+       "key": "answer",
+       "value": 42
+      }
+     ]
+    },
+    {
+     "name": "merge",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "merge"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "plan"
+    },
+    {
+     "from": "plan",
+     "to": "fast"
+    },
+    {
+     "from": "plan",
+     "to": "careful"
+    },
+    {
+     "from": [
+      "fast",
+      "careful"
+     ],
+     "to": "merge"
+    },
+    {
+     "from": "merge",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "merge_add",
+   "title": "The same branches with an add reducer (a list)",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "answer",
+     "reducer": "add",
+     "type": "list"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "plan",
+     "ms": 400,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "plan"
+      }
+     ]
+    },
+    {
+     "name": "fast",
+     "ms": 700,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "fast"
+      },
+      {
+       "op": "append",
+       "key": "answer",
+       "value": 41
+      }
+     ]
+    },
+    {
+     "name": "careful",
+     "ms": 1600,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "careful"
+      },
+      {
+       "op": "append",
+       "key": "answer",
+       "value": 42
+      }
+     ]
+    },
+    {
+     "name": "merge",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "merge"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "plan"
+    },
+    {
+     "from": "plan",
+     "to": "fast"
+    },
+    {
+     "from": "plan",
+     "to": "careful"
+    },
+    {
+     "from": [
+      "fast",
+      "careful"
+     ],
+     "to": "merge"
+    },
+    {
+     "from": "merge",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "merge_max",
+   "title": "The same branches with a custom reducer (max)",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "answer",
+     "reducer": "max",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "plan",
+     "ms": 400,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "plan"
+      }
+     ]
+    },
+    {
+     "name": "fast",
+     "ms": 700,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "fast"
+      },
+      {
+       "op": "set",
+       "key": "answer",
+       "value": 41
+      }
+     ]
+    },
+    {
+     "name": "careful",
+     "ms": 1600,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "careful"
+      },
+      {
+       "op": "set",
+       "key": "answer",
+       "value": 42
+      }
+     ]
+    },
+    {
+     "name": "merge",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "merge"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "plan"
+    },
+    {
+     "from": "plan",
+     "to": "fast"
+    },
+    {
+     "from": "plan",
+     "to": "careful"
+    },
+    {
+     "from": [
+      "fast",
+      "careful"
+     ],
+     "to": "merge"
+    },
+    {
+     "from": "merge",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "fanout_list",
+   "title": "A router that returns a list fans out",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "m",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "m"
+      }
+     ]
+    },
+    {
+     "name": "k",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "k"
+      }
+     ]
+    },
+    {
+     "name": "b",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "b"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "b"
+    },
+    {
+     "from": "__start__",
+     "to": "k"
+    },
+    {
+     "from": "__start__",
+     "to": "m"
+    },
+    {
+     "from": "b",
+     "router": {
+      "goto": [
+       "m",
+       "k"
+      ]
+     },
+     "targets": [
+      "m",
+      "k"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "start_router",
+   "title": "A conditional edge from START",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "kind",
+     "reducer": "overwrite",
+     "type": "str"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "billing",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "billing"
+      }
+     ]
+    },
+    {
+     "name": "tech",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "tech"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "router": {
+      "if": {
+       "key": "kind",
+       "op": "==",
+       "value": "bill"
+      },
+      "then": "billing",
+      "else": "tech"
+     },
+     "targets": [
+      "billing",
+      "tech"
+     ]
+    },
+    {
+     "from": "billing",
+     "to": "__end__"
+    },
+    {
+     "from": "tech",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "approval",
+   "title": "Draft, ask a human, send (a dynamic interrupt beside a sibling)",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "draft",
+     "reducer": "overwrite",
+     "type": "str"
+    },
+    {
+     "key": "approved",
+     "reducer": "overwrite",
+     "type": "str"
+    },
+    {
+     "key": "checks",
+     "reducer": "add",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "draft",
+     "ms": 1200,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "draft"
+      },
+      {
+       "op": "set",
+       "key": "draft",
+       "value": "refund £40"
+      }
+     ]
+    },
+    {
+     "name": "ask",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "effect",
+       "name": "notify_reviewer"
+      },
+      {
+       "op": "interrupt",
+       "key": "approved",
+       "payload": {
+        "question": "Send this reply?",
+        "draft": "refund £40"
+       }
+      },
+      {
+       "op": "append",
+       "key": "log",
+       "value": "ask"
+      }
+     ]
+    },
+    {
+     "name": "check",
+     "ms": 700,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "check"
+      },
+      {
+       "op": "delta",
+       "key": "checks",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "name": "send",
+     "ms": 400,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "send"
+      },
+      {
+       "op": "effect",
+       "name": "send_email"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "draft"
+    },
+    {
+     "from": "draft",
+     "to": "ask"
+    },
+    {
+     "from": "draft",
+     "to": "check"
+    },
+    {
+     "from": [
+      "ask",
+      "check"
+     ],
+     "to": "send"
+    },
+    {
+     "from": "send",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "gated",
+   "title": "Plan, then a tool call gated by a static interrupt",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "plan",
+     "reducer": "overwrite",
+     "type": "str"
+    },
+    {
+     "key": "result",
+     "reducer": "overwrite",
+     "type": "str"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "planner",
+     "ms": 900,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "planner"
+      },
+      {
+       "op": "set",
+       "key": "plan",
+       "value": "delete 3 stale branches"
+      }
+     ]
+    },
+    {
+     "name": "execute",
+     "ms": 600,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "execute"
+      },
+      {
+       "op": "effect",
+       "name": "git_push"
+      },
+      {
+       "op": "copy",
+       "key": "result",
+       "from": "plan"
+      }
+     ]
+    },
+    {
+     "name": "report",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "report"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "planner"
+    },
+    {
+     "from": "planner",
+     "to": "execute"
+    },
+    {
+     "from": "execute",
+     "to": "report"
+    },
+    {
+     "from": "report",
+     "to": "__end__"
+    }
+   ],
+   "interrupt_before": [
+    "execute"
+   ]
+  },
+  {
+   "name": "gated_after",
+   "title": "Review after a node (interrupt_after)",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "a",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "a"
+      }
+     ]
+    },
+    {
+     "name": "b",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "b"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "a"
+    },
+    {
+     "from": "a",
+     "to": "b"
+    },
+    {
+     "from": "b",
+     "to": "__end__"
+    }
+   ],
+   "interrupt_after": [
+    "a"
+   ]
+  },
+  {
+   "name": "crash",
+   "title": "A worker crashes mid-run; resume from the checkpoint",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "rows",
+     "reducer": "add",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "load",
+     "ms": 600,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "load"
+      },
+      {
+       "op": "delta",
+       "key": "rows",
+       "value": 100
+      }
+     ]
+    },
+    {
+     "name": "enrich",
+     "ms": 1500,
+     "ops": [
+      {
+       "op": "effect",
+       "name": "call_api"
+      },
+      {
+       "op": "fail",
+       "message": "worker died"
+      },
+      {
+       "op": "append",
+       "key": "log",
+       "value": "enrich"
+      },
+      {
+       "op": "delta",
+       "key": "rows",
+       "value": 10
+      }
+     ]
+    },
+    {
+     "name": "score",
+     "ms": 900,
+     "ops": [
+      {
+       "op": "effect",
+       "name": "call_model"
+      },
+      {
+       "op": "append",
+       "key": "log",
+       "value": "score"
+      },
+      {
+       "op": "delta",
+       "key": "rows",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "name": "publish",
+     "ms": 400,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "publish"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "load"
+    },
+    {
+     "from": "load",
+     "to": "enrich"
+    },
+    {
+     "from": "load",
+     "to": "score"
+    },
+    {
+     "from": [
+      "enrich",
+      "score"
+     ],
+     "to": "publish"
+    },
+    {
+     "from": "publish",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "counter",
+   "title": "A loop that counts (recursion limit)",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "n",
+     "reducer": "overwrite",
+     "type": "int"
+    },
+    {
+     "key": "stop",
+     "reducer": "overwrite",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "a",
+     "ms": 200,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "a"
+      },
+      {
+       "op": "inc",
+       "key": "n",
+       "by": 1
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "a"
+    },
+    {
+     "from": "a",
+     "router": {
+      "if": {
+       "key": "n",
+       "op": "<",
+       "value": 5
+      },
+      "then": "a",
+      "else": "__end__"
+     },
+     "targets": [
+      "a",
+      "__end__"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "branchy",
+   "title": "Plan, then one of two tools (for time travel)",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "choice",
+     "reducer": "overwrite",
+     "type": "str"
+    },
+    {
+     "key": "cost",
+     "reducer": "add",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "plan",
+     "ms": 800,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "plan"
+      },
+      {
+       "op": "set",
+       "key": "choice",
+       "value": "search"
+      }
+     ]
+    },
+    {
+     "name": "search",
+     "ms": 1100,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "search"
+      },
+      {
+       "op": "delta",
+       "key": "cost",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "name": "calculator",
+     "ms": 200,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "calculator"
+      },
+      {
+       "op": "delta",
+       "key": "cost",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "name": "answer",
+     "ms": 700,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "answer"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "plan"
+    },
+    {
+     "from": "plan",
+     "router": {
+      "if": {
+       "key": "choice",
+       "op": "==",
+       "value": "search"
+      },
+      "then": "search",
+      "else": "calculator"
+     },
+     "targets": [
+      "search",
+      "calculator"
+     ]
+    },
+    {
+     "from": "search",
+     "to": "answer"
+    },
+    {
+     "from": "calculator",
+     "to": "answer"
+    },
+    {
+     "from": "answer",
+     "to": "__end__"
+    }
+   ]
+  },
+  {
+   "name": "loop_join",
+   "title": "A fan-out and join inside a loop (the barrier resets each round)",
+   "state": [
+    {
+     "key": "log",
+     "reducer": "add",
+     "type": "list"
+    },
+    {
+     "key": "round",
+     "reducer": "overwrite",
+     "type": "int"
+    },
+    {
+     "key": "found",
+     "reducer": "add",
+     "type": "int"
+    }
+   ],
+   "nodes": [
+    {
+     "name": "plan",
+     "ms": 300,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "plan"
+      },
+      {
+       "op": "inc",
+       "key": "round",
+       "by": 1
+      }
+     ]
+    },
+    {
+     "name": "w1",
+     "ms": 900,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "w1"
+      },
+      {
+       "op": "delta",
+       "key": "found",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "name": "w2",
+     "ms": 500,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "w2"
+      },
+      {
+       "op": "delta",
+       "key": "found",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "name": "check",
+     "ms": 200,
+     "ops": [
+      {
+       "op": "append",
+       "key": "log",
+       "value": "check"
+      }
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "from": "__start__",
+     "to": "plan"
+    },
+    {
+     "from": "plan",
+     "to": "w1"
+    },
+    {
+     "from": "plan",
+     "to": "w2"
+    },
+    {
+     "from": [
+      "w1",
+      "w2"
+     ],
+     "to": "check"
+    },
+    {
+     "from": "check",
+     "router": {
+      "if": {
+       "key": "found",
+       "op": "<",
+       "value": 6
+      },
+      "then": "plan",
+      "else": "__end__"
+     },
+     "targets": [
+      "plan",
+      "__end__"
+     ]
+    }
+   ]
+  }
+ ],
+ "sessions": [
+  {
+   "name": "chain",
+   "graph": "chain",
+   "ops": [
+    {
+     "invoke": {
+      "question": "Which GPU?"
+     }
+    }
+   ]
+  },
+  {
+   "name": "fanout",
+   "graph": "fanout",
+   "ops": [
+    {
+     "invoke": {
+      "log": [
+       "start"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "react_loop",
+   "graph": "react_loop",
+   "ops": [
+    {
+     "invoke": {
+      "turns": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "uneven_join",
+   "graph": "uneven_join",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "no_join",
+   "graph": "no_join",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "router_view",
+   "graph": "router_view",
+   "ops": [
+    {
+     "invoke": {
+      "log": [],
+      "n": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "merge_overwrite",
+   "graph": "merge_overwrite",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "merge_add",
+   "graph": "merge_add",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "merge_max",
+   "graph": "merge_max",
+   "ops": [
+    {
+     "invoke": {
+      "log": [],
+      "answer": 40
+     }
+    }
+   ]
+  },
+  {
+   "name": "fanout_list",
+   "graph": "fanout_list",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "start_router",
+   "graph": "start_router",
+   "ops": [
+    {
+     "invoke": {
+      "kind": "bill"
+     }
+    }
+   ]
+  },
+  {
+   "name": "approval",
+   "graph": "approval",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "resume": "yes"
+    }
+   ]
+  },
+  {
+   "name": "approval_no",
+   "graph": "approval",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "resume": "no, change the amount"
+    }
+   ]
+  },
+  {
+   "name": "gated",
+   "graph": "gated",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "gated_edit",
+   "graph": "gated",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "update": {
+      "plan": "delete 1 stale branch"
+     },
+     "at": 2,
+     "as_node": "planner"
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "gated_after",
+   "graph": "gated_after",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "crash",
+   "graph": "crash",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     },
+     "fail": [
+      "enrich"
+     ]
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "crash_twice",
+   "graph": "crash",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     },
+     "fail": [
+      "enrich"
+     ]
+    },
+    {
+     "continue": true,
+     "fail": [
+      "enrich"
+     ]
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "counter_ok",
+   "graph": "counter",
+   "ops": [
+    {
+     "invoke": {
+      "n": 1
+     },
+     "limit": 5
+    }
+   ]
+  },
+  {
+   "name": "counter_edge",
+   "graph": "counter",
+   "ops": [
+    {
+     "invoke": {
+      "n": 0
+     },
+     "limit": 5
+    }
+   ]
+  },
+  {
+   "name": "counter_over",
+   "graph": "counter",
+   "ops": [
+    {
+     "invoke": {
+      "n": -3
+     },
+     "limit": 5
+    },
+    {
+     "continue": true,
+     "limit": 3
+    },
+    {
+     "continue": true,
+     "limit": 25
+    }
+   ]
+  },
+  {
+   "name": "replay",
+   "graph": "branchy",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "replay": 2
+    }
+   ]
+  },
+  {
+   "name": "fork",
+   "graph": "branchy",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "update": {
+      "choice": "calc"
+     },
+     "at": 2,
+     "as_node": "plan"
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "fork_other_node",
+   "graph": "branchy",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "update": {
+      "cost": 5
+     },
+     "at": 2,
+     "as_node": "search"
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "replay_update",
+   "graph": "branchy",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "update": {
+      "choice": "calc"
+     },
+     "at": 2,
+     "as_node": "plan"
+    },
+    {
+     "replay": 5
+    }
+   ]
+  },
+  {
+   "name": "loop_join",
+   "graph": "loop_join",
+   "ops": [
+    {
+     "invoke": {
+      "round": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "start_router_else",
+   "graph": "start_router",
+   "ops": [
+    {
+     "invoke": {
+      "kind": "bug"
+     }
+    }
+   ]
+  },
+  {
+   "name": "loop_join_crash",
+   "graph": "loop_join",
+   "ops": [
+    {
+     "invoke": {
+      "round": 0
+     },
+     "fail": []
+    },
+    {
+     "replay": 3
+    },
+    {
+     "update": {
+      "found": 10
+     },
+     "at": 5,
+     "as_node": "check"
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "after_update",
+   "graph": "gated_after",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "update": {
+      "log": [
+       "human"
+      ]
+     },
+     "at": 2,
+     "as_node": "a"
+    },
+    {
+     "continue": true
+    }
+   ]
+  },
+  {
+   "name": "replay_interrupt",
+   "graph": "gated",
+   "ops": [
+    {
+     "invoke": {
+      "log": []
+     }
+    },
+    {
+     "continue": true
+    },
+    {
+     "replay": 2
+    }
+   ]
+  }
+ ],
+ "workflow": {
+  "id": "order-1042",
+  "steps": [
+   {
+    "kind": "activity",
+    "name": "reserve_stock",
+    "ms": 300
+   },
+   {
+    "kind": "activity",
+    "name": "charge_card",
+    "ms": 800,
+    "effect": "charge",
+    "amount": 40
+   },
+   {
+    "kind": "choose",
+    "name": "shipping",
+    "cutoff_ms": 1500,
+    "early": "express",
+    "late": "standard"
+   },
+   {
+    "kind": "activity",
+    "name": "ship",
+    "ms": 500
+   },
+   {
+    "kind": "activity",
+    "name": "send_receipt",
+    "ms": 200,
+    "effect": "email"
+   }
+  ]
+ },
+ "durable_scenarios": [
+  {
+   "name": "clean",
+   "title": "A clean run",
+   "params": {}
+  },
+  {
+   "name": "crash_replay",
+   "title": "Crash after the charge, then replay",
+   "params": {
+    "crash": {
+     "after_event": 4
+    },
+    "choose": "marker"
+   }
+  },
+  {
+   "name": "crash_in_charge",
+   "title": "Crash inside the charge (no key)",
+   "params": {
+    "crash": {
+     "in_activity": "charge_card"
+    },
+    "choose": "marker"
+   }
+  },
+  {
+   "name": "crash_in_charge_key",
+   "title": "Crash inside the charge (with a key)",
+   "params": {
+    "crash": {
+     "in_activity": "charge_card"
+    },
+    "choose": "marker",
+    "idempotency": true
+   }
+  },
+  {
+   "name": "lost_reply",
+   "title": "A lost reply and a retry (no key)",
+   "params": {
+    "lost": {
+     "charge_card": [
+      1
+     ]
+    },
+    "choose": "marker"
+   }
+  },
+  {
+   "name": "lost_reply_key",
+   "title": "A lost reply and a retry (with a key)",
+   "params": {
+    "lost": {
+     "charge_card": [
+      1
+     ]
+    },
+    "choose": "marker",
+    "idempotency": true
+   }
+  },
+  {
+   "name": "nondeterministic",
+   "title": "Replay with a clock read in the code",
+   "params": {
+    "crash": {
+     "after_event": 5
+    },
+    "choose": "clock"
+   }
+  },
+  {
+   "name": "deterministic",
+   "title": "The same, with the choice recorded as a marker",
+   "params": {
+    "crash": {
+     "after_event": 5
+    },
+    "choose": "marker"
+   }
+  }
+ ],
+ "consts": {
+  "ckpt_ms": 15,
+  "timeout_ms": 2000,
+  "restart_ms": 5000,
+  "replay_ms": 5,
+  "max_attempts": 3
+ }
+}

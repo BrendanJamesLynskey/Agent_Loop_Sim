@@ -1,0 +1,9647 @@
+{
+ "langgraph": "1.2.14",
+ "langgraph_checkpoint": "4.2.0",
+ "sessions": [
+  {
+   "name": "chain",
+   "graph": "chain",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "question": "Which GPU?"
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "draft",
+       "retrieve",
+       "review"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "question": "Which GPU?"
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "question": "Which GPU?"
+       },
+       "next": [
+        "retrieve"
+       ],
+       "tasks": [
+        {
+         "name": "retrieve",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "retrieve"
+          ],
+          "docs": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "retrieve"
+        ],
+        "question": "Which GPU?",
+        "docs": 3
+       },
+       "next": [
+        "draft"
+       ],
+       "tasks": [
+        {
+         "name": "draft",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "draft"
+          ],
+          "draft": "v1"
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "retrieve",
+         "draft"
+        ],
+        "question": "Which GPU?",
+        "docs": 3,
+        "draft": "v1"
+       },
+       "next": [
+        "review"
+       ],
+       "tasks": [
+        {
+         "name": "review",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "review"
+          ],
+          "draft": "v1 (reviewed)"
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "retrieve",
+         "draft",
+         "review"
+        ],
+        "question": "Which GPU?",
+        "docs": 3,
+        "draft": "v1 (reviewed)"
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "fanout",
+   "graph": "fanout",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": [
+        "start"
+       ]
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "compose",
+       "papers",
+       "plan",
+       "web"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "notes": 0,
+        "sources": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "start"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [
+         "start"
+        ],
+        "notes": 0,
+        "sources": []
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "start",
+         "plan"
+        ],
+        "notes": 0,
+        "sources": []
+       },
+       "next": [
+        "web",
+        "papers"
+       ],
+       "tasks": [
+        {
+         "name": "web",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "web"
+          ],
+          "notes": 3,
+          "sources": [
+           "web"
+          ]
+         }
+        },
+        {
+         "name": "papers",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "papers"
+          ],
+          "notes": 2,
+          "sources": [
+           "papers"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "start",
+         "plan",
+         "papers",
+         "web"
+        ],
+        "notes": 5,
+        "sources": [
+         "papers",
+         "web"
+        ]
+       },
+       "next": [
+        "compose"
+       ],
+       "tasks": [
+        {
+         "name": "compose",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "compose"
+          ],
+          "report": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "start",
+         "plan",
+         "papers",
+         "web",
+         "compose"
+        ],
+        "notes": 5,
+        "sources": [
+         "papers",
+         "web"
+        ],
+        "report": 2
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "react_loop",
+   "graph": "react_loop",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "turns": 0
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "model",
+       "model",
+       "model",
+       "tools",
+       "tools"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "tool_calls": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "turns": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "turns": 0,
+        "tool_calls": 0
+       },
+       "next": [
+        "model"
+       ],
+       "tasks": [
+        {
+         "name": "model",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "model"
+          ],
+          "turns": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "model"
+        ],
+        "turns": 1,
+        "tool_calls": 0
+       },
+       "next": [
+        "tools"
+       ],
+       "tasks": [
+        {
+         "name": "tools",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "tools"
+          ],
+          "tool_calls": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "model",
+         "tools"
+        ],
+        "turns": 1,
+        "tool_calls": 1
+       },
+       "next": [
+        "model"
+       ],
+       "tasks": [
+        {
+         "name": "model",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "model"
+          ],
+          "turns": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "model",
+         "tools",
+         "model"
+        ],
+        "turns": 2,
+        "tool_calls": 1
+       },
+       "next": [
+        "tools"
+       ],
+       "tasks": [
+        {
+         "name": "tools",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "tools"
+          ],
+          "tool_calls": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "model",
+         "tools",
+         "model",
+         "tools"
+        ],
+        "turns": 2,
+        "tool_calls": 2
+       },
+       "next": [
+        "model"
+       ],
+       "tasks": [
+        {
+         "name": "model",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "model"
+          ],
+          "turns": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "model",
+         "tools",
+         "model",
+         "tools",
+         "model"
+        ],
+        "turns": 3,
+        "tool_calls": 2
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "uneven_join",
+   "graph": "uneven_join",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a",
+       "b",
+       "c",
+       "d",
+       "e"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ]
+       },
+       "next": [
+        "b",
+        "d"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "b"
+          ]
+         }
+        },
+        {
+         "name": "d",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "d"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "b",
+         "d"
+        ]
+       },
+       "next": [
+        "c"
+       ],
+       "tasks": [
+        {
+         "name": "c",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "c"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "b",
+         "d",
+         "c"
+        ]
+       },
+       "next": [
+        "e"
+       ],
+       "tasks": [
+        {
+         "name": "e",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "e"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "b",
+         "d",
+         "c",
+         "e"
+        ]
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "no_join",
+   "graph": "no_join",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a",
+       "b",
+       "c",
+       "e",
+       "e"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "a",
+        "c"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ]
+         }
+        },
+        {
+         "name": "c",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "c"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "c"
+        ]
+       },
+       "next": [
+        "b",
+        "e"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "b"
+          ]
+         }
+        },
+        {
+         "name": "e",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "e"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "c",
+         "b",
+         "e"
+        ]
+       },
+       "next": [
+        "e"
+       ],
+       "tasks": [
+        {
+         "name": "e",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "e"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "c",
+         "b",
+         "e",
+         "e"
+        ]
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "router_view",
+   "graph": "router_view",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": [],
+       "n": 0
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "p",
+       "q"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [],
+          "n": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "n": 0
+       },
+       "next": [
+        "p",
+        "q"
+       ],
+       "tasks": [
+        {
+         "name": "p",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "p"
+          ],
+          "n": 1
+         }
+        },
+        {
+         "name": "q",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "q"
+          ],
+          "x": 7
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "p",
+         "q"
+        ],
+        "n": 1,
+        "x": 7
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "merge_overwrite",
+   "graph": "merge_overwrite",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "error",
+      "interrupts": [],
+      "error": "InvalidUpdateError",
+      "calls": [
+       "careful",
+       "fast",
+       "plan"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ]
+       },
+       "next": [
+        "fast",
+        "careful"
+       ],
+       "tasks": [
+        {
+         "name": "fast",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "fast"
+          ],
+          "answer": 41
+         }
+        },
+        {
+         "name": "careful",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "careful"
+          ],
+          "answer": 42
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "merge_add",
+   "graph": "merge_add",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "careful",
+       "fast",
+       "merge",
+       "plan"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "answer": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "answer": []
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "answer": []
+       },
+       "next": [
+        "fast",
+        "careful"
+       ],
+       "tasks": [
+        {
+         "name": "fast",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "fast"
+          ],
+          "answer": [
+           41
+          ]
+         }
+        },
+        {
+         "name": "careful",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "careful"
+          ],
+          "answer": [
+           42
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "careful",
+         "fast"
+        ],
+        "answer": [
+         42,
+         41
+        ]
+       },
+       "next": [
+        "merge"
+       ],
+       "tasks": [
+        {
+         "name": "merge",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "merge"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "careful",
+         "fast",
+         "merge"
+        ],
+        "answer": [
+         42,
+         41
+        ]
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "merge_max",
+   "graph": "merge_max",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": [],
+       "answer": 40
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "careful",
+       "fast",
+       "merge",
+       "plan"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "answer": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [],
+          "answer": 40
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "answer": 40
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "answer": 40
+       },
+       "next": [
+        "fast",
+        "careful"
+       ],
+       "tasks": [
+        {
+         "name": "fast",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "fast"
+          ],
+          "answer": 41
+         }
+        },
+        {
+         "name": "careful",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "careful"
+          ],
+          "answer": 42
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "careful",
+         "fast"
+        ],
+        "answer": 42
+       },
+       "next": [
+        "merge"
+       ],
+       "tasks": [
+        {
+         "name": "merge",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "merge"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "careful",
+         "fast",
+         "merge"
+        ],
+        "answer": 42
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "fanout_list",
+   "graph": "fanout_list",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "b",
+       "k",
+       "k",
+       "m",
+       "m"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "m",
+        "k",
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "m",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "m"
+          ]
+         }
+        },
+        {
+         "name": "k",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "k"
+          ]
+         }
+        },
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "b"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "b",
+         "k",
+         "m"
+        ]
+       },
+       "next": [
+        "m",
+        "k"
+       ],
+       "tasks": [
+        {
+         "name": "m",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "m"
+          ]
+         }
+        },
+        {
+         "name": "k",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "k"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "b",
+         "k",
+         "m",
+         "k",
+         "m"
+        ]
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "start_router",
+   "graph": "start_router",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "kind": "bill"
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "billing"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "kind": "bill"
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "kind": "bill"
+       },
+       "next": [
+        "billing"
+       ],
+       "tasks": [
+        {
+         "name": "billing",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "billing"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "billing"
+        ],
+        "kind": "bill"
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "approval",
+   "graph": "approval",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "interrupted",
+      "interrupts": [
+       {
+        "question": "Send this reply?",
+        "draft": "refund £40"
+       }
+      ],
+      "error": null,
+      "calls": [
+       "ask",
+       "check",
+       "draft"
+      ],
+      "effects": [
+       "ask:notify_reviewer"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "draft"
+       ],
+       "tasks": [
+        {
+         "name": "draft",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "draft"
+          ],
+          "draft": "refund £40"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft"
+        ],
+        "draft": "refund £40",
+        "checks": 0
+       },
+       "next": [
+        "ask",
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "ask",
+         "error": null,
+         "interrupts": [
+          {
+           "question": "Send this reply?",
+           "draft": "refund £40"
+          }
+         ],
+         "result": null
+        },
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ],
+          "checks": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "resume": "yes"
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "ask",
+       "send"
+      ],
+      "effects": [
+       "ask:notify_reviewer",
+       "send:send_email"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "draft"
+       ],
+       "tasks": [
+        {
+         "name": "draft",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "draft"
+          ],
+          "draft": "refund £40"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft"
+        ],
+        "draft": "refund £40",
+        "checks": 0
+       },
+       "next": [
+        "ask",
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "ask",
+         "error": null,
+         "interrupts": [
+          {
+           "question": "Send this reply?",
+           "draft": "refund £40"
+          }
+         ],
+         "result": {
+          "approved": "yes",
+          "log": [
+           "ask"
+          ]
+         }
+        },
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ],
+          "checks": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft",
+         "ask",
+         "check"
+        ],
+        "draft": "refund £40",
+        "approved": "yes",
+        "checks": 1
+       },
+       "next": [
+        "send"
+       ],
+       "tasks": [
+        {
+         "name": "send",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "send"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft",
+         "ask",
+         "check",
+         "send"
+        ],
+        "draft": "refund £40",
+        "approved": "yes",
+        "checks": 1
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "approval_no",
+   "graph": "approval",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "interrupted",
+      "interrupts": [
+       {
+        "question": "Send this reply?",
+        "draft": "refund £40"
+       }
+      ],
+      "error": null,
+      "calls": [
+       "ask",
+       "check",
+       "draft"
+      ],
+      "effects": [
+       "ask:notify_reviewer"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "draft"
+       ],
+       "tasks": [
+        {
+         "name": "draft",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "draft"
+          ],
+          "draft": "refund £40"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft"
+        ],
+        "draft": "refund £40",
+        "checks": 0
+       },
+       "next": [
+        "ask",
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "ask",
+         "error": null,
+         "interrupts": [
+          {
+           "question": "Send this reply?",
+           "draft": "refund £40"
+          }
+         ],
+         "result": null
+        },
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ],
+          "checks": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "resume": "no, change the amount"
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "ask",
+       "send"
+      ],
+      "effects": [
+       "ask:notify_reviewer",
+       "send:send_email"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "checks": 0
+       },
+       "next": [
+        "draft"
+       ],
+       "tasks": [
+        {
+         "name": "draft",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "draft"
+          ],
+          "draft": "refund £40"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft"
+        ],
+        "draft": "refund £40",
+        "checks": 0
+       },
+       "next": [
+        "ask",
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "ask",
+         "error": null,
+         "interrupts": [
+          {
+           "question": "Send this reply?",
+           "draft": "refund £40"
+          }
+         ],
+         "result": {
+          "approved": "no, change the amount",
+          "log": [
+           "ask"
+          ]
+         }
+        },
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ],
+          "checks": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft",
+         "ask",
+         "check"
+        ],
+        "draft": "refund £40",
+        "approved": "no, change the amount",
+        "checks": 1
+       },
+       "next": [
+        "send"
+       ],
+       "tasks": [
+        {
+         "name": "send",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "send"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "draft",
+         "ask",
+         "check",
+         "send"
+        ],
+        "draft": "refund £40",
+        "approved": "no, change the amount",
+        "checks": 1
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "gated",
+   "graph": "gated",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "paused",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "planner"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "execute",
+       "report"
+      ],
+      "effects": [
+       "execute:git_push"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "execute"
+          ],
+          "result": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [
+        "report"
+       ],
+       "tasks": [
+        {
+         "name": "report",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "report"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute",
+         "report"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "gated_edit",
+   "graph": "gated",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "paused",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "planner"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "update": {
+       "plan": "delete 1 stale branch"
+      },
+      "at": 2,
+      "as_node": "planner"
+     },
+     "outcome": {
+      "status": "updated",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 1 stale branch"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "execute",
+       "report"
+      ],
+      "effects": [
+       "execute:git_push"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 1 stale branch"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "execute"
+          ],
+          "result": "delete 1 stale branch"
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute"
+        ],
+        "plan": "delete 1 stale branch",
+        "result": "delete 1 stale branch"
+       },
+       "next": [
+        "report"
+       ],
+       "tasks": [
+        {
+         "name": "report",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "report"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute",
+         "report"
+        ],
+        "plan": "delete 1 stale branch",
+        "result": "delete 1 stale branch"
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "gated_after",
+   "graph": "gated_after",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "paused",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ]
+       },
+       "next": [
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "b"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ]
+       },
+       "next": [
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "b"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "b"
+        ]
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "crash",
+   "graph": "crash",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      },
+      "fail": [
+       "enrich"
+      ]
+     },
+     "outcome": {
+      "status": "error",
+      "interrupts": [],
+      "error": "NodeFailure",
+      "calls": [
+       "enrich",
+       "load",
+       "score"
+      ],
+      "effects": [
+       "enrich:call_api",
+       "score:call_model"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "load"
+       ],
+       "tasks": [
+        {
+         "name": "load",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "load"
+          ],
+          "rows": 100
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load"
+        ],
+        "rows": 100
+       },
+       "next": [
+        "enrich",
+        "score"
+       ],
+       "tasks": [
+        {
+         "name": "enrich",
+         "error": "NodeFailure('worker died')",
+         "interrupts": [],
+         "result": null
+        },
+        {
+         "name": "score",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "score"
+          ],
+          "rows": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "enrich",
+       "publish"
+      ],
+      "effects": [
+       "enrich:call_api"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "load"
+       ],
+       "tasks": [
+        {
+         "name": "load",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "load"
+          ],
+          "rows": 100
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load"
+        ],
+        "rows": 100
+       },
+       "next": [
+        "enrich",
+        "score"
+       ],
+       "tasks": [
+        {
+         "name": "enrich",
+         "error": "NodeFailure('worker died')",
+         "interrupts": [],
+         "result": {
+          "log": [
+           "enrich"
+          ],
+          "rows": 10
+         }
+        },
+        {
+         "name": "score",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "score"
+          ],
+          "rows": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load",
+         "enrich",
+         "score"
+        ],
+        "rows": 111
+       },
+       "next": [
+        "publish"
+       ],
+       "tasks": [
+        {
+         "name": "publish",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "publish"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load",
+         "enrich",
+         "score",
+         "publish"
+        ],
+        "rows": 111
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "crash_twice",
+   "graph": "crash",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      },
+      "fail": [
+       "enrich"
+      ]
+     },
+     "outcome": {
+      "status": "error",
+      "interrupts": [],
+      "error": "NodeFailure",
+      "calls": [
+       "enrich",
+       "load",
+       "score"
+      ],
+      "effects": [
+       "enrich:call_api",
+       "score:call_model"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "load"
+       ],
+       "tasks": [
+        {
+         "name": "load",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "load"
+          ],
+          "rows": 100
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load"
+        ],
+        "rows": 100
+       },
+       "next": [
+        "enrich",
+        "score"
+       ],
+       "tasks": [
+        {
+         "name": "enrich",
+         "error": "NodeFailure('worker died')",
+         "interrupts": [],
+         "result": null
+        },
+        {
+         "name": "score",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "score"
+          ],
+          "rows": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true,
+      "fail": [
+       "enrich"
+      ]
+     },
+     "outcome": {
+      "status": "error",
+      "interrupts": [],
+      "error": "NodeFailure",
+      "calls": [
+       "enrich"
+      ],
+      "effects": [
+       "enrich:call_api"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "load"
+       ],
+       "tasks": [
+        {
+         "name": "load",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "load"
+          ],
+          "rows": 100
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load"
+        ],
+        "rows": 100
+       },
+       "next": [
+        "enrich",
+        "score"
+       ],
+       "tasks": [
+        {
+         "name": "enrich",
+         "error": "NodeFailure('worker died')",
+         "interrupts": [],
+         "result": null
+        },
+        {
+         "name": "score",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "score"
+          ],
+          "rows": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "enrich",
+       "publish"
+      ],
+      "effects": [
+       "enrich:call_api"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "rows": 0
+       },
+       "next": [
+        "load"
+       ],
+       "tasks": [
+        {
+         "name": "load",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "load"
+          ],
+          "rows": 100
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load"
+        ],
+        "rows": 100
+       },
+       "next": [
+        "enrich",
+        "score"
+       ],
+       "tasks": [
+        {
+         "name": "enrich",
+         "error": "NodeFailure('worker died')",
+         "interrupts": [],
+         "result": {
+          "log": [
+           "enrich"
+          ],
+          "rows": 10
+         }
+        },
+        {
+         "name": "score",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "score"
+          ],
+          "rows": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load",
+         "enrich",
+         "score"
+        ],
+        "rows": 111
+       },
+       "next": [
+        "publish"
+       ],
+       "tasks": [
+        {
+         "name": "publish",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "publish"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "load",
+         "enrich",
+         "score",
+         "publish"
+        ],
+        "rows": 111
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "counter_ok",
+   "graph": "counter",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "n": 1
+      },
+      "limit": 5
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a",
+       "a",
+       "a",
+       "a"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "n": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "n": 1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ],
+        "n": 2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a"
+        ],
+        "n": 3
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 4
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 4
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 5
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 5
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "counter_edge",
+   "graph": "counter",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "n": 0
+      },
+      "limit": 5
+     },
+     "outcome": {
+      "status": "recursion_limit",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a",
+       "a",
+       "a",
+       "a",
+       "a"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "n": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "n": 0
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ],
+        "n": 1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a"
+        ],
+        "n": 2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 3
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 4
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 4
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 5
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 5
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "counter_over",
+   "graph": "counter",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "n": -3
+      },
+      "limit": 5
+     },
+     "outcome": {
+      "status": "recursion_limit",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a",
+       "a",
+       "a",
+       "a",
+       "a"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "n": -3
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "n": -3
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": -2
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ],
+        "n": -2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": -1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a"
+        ],
+        "n": -1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 0
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true,
+      "limit": 3
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a",
+       "a",
+       "a"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "n": -3
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "n": -3
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": -2
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ],
+        "n": -2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": -1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a"
+        ],
+        "n": -1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 0
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 3
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 4
+         }
+        }
+       ]
+      },
+      {
+       "id": 8,
+       "parent": 7,
+       "step": 7,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 4
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 5
+         }
+        }
+       ]
+      },
+      {
+       "id": 9,
+       "parent": 8,
+       "step": 8,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 5
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true,
+      "limit": 25
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "n": -3
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "n": -3
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": -2
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ],
+        "n": -2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": -1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a"
+        ],
+        "n": -1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 0
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 1
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 2
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 3
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 4
+         }
+        }
+       ]
+      },
+      {
+       "id": 8,
+       "parent": 7,
+       "step": 7,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 4
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ],
+          "n": 5
+         }
+        }
+       ]
+      },
+      {
+       "id": 9,
+       "parent": 8,
+       "step": 8,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a",
+         "a"
+        ],
+        "n": 5
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "replay",
+   "graph": "branchy",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer",
+       "plan",
+       "search"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "replay": 2
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer",
+       "search"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "fork",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "fork",
+   "graph": "branchy",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer",
+       "plan",
+       "search"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "update": {
+       "choice": "calc"
+      },
+      "at": 2,
+      "as_node": "plan"
+     },
+     "outcome": {
+      "status": "updated",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "calc",
+        "cost": 0
+       },
+       "next": [
+        "calculator"
+       ],
+       "tasks": [
+        {
+         "name": "calculator",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer",
+       "calculator"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "calc",
+        "cost": 0
+       },
+       "next": [
+        "calculator"
+       ],
+       "tasks": [
+        {
+         "name": "calculator",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "calculator"
+          ],
+          "cost": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "calculator"
+        ],
+        "choice": "calc",
+        "cost": 1
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "calculator",
+         "answer"
+        ],
+        "choice": "calc",
+        "cost": 1
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "fork_other_node",
+   "graph": "branchy",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer",
+       "plan",
+       "search"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "update": {
+       "cost": 5
+      },
+      "at": 2,
+      "as_node": "search"
+     },
+     "outcome": {
+      "status": "updated",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 5
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 5
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 5
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "replay_update",
+   "graph": "branchy",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer",
+       "plan",
+       "search"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "update": {
+       "choice": "calc"
+      },
+      "at": 2,
+      "as_node": "plan"
+     },
+     "outcome": {
+      "status": "updated",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "calc",
+        "cost": 0
+       },
+       "next": [
+        "calculator"
+       ],
+       "tasks": [
+        {
+         "name": "calculator",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "replay": 5
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "answer",
+       "calculator"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "cost": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "choice": "search"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "search",
+        "cost": 0
+       },
+       "next": [
+        "search"
+       ],
+       "tasks": [
+        {
+         "name": "search",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "search"
+          ],
+          "cost": 3
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "search",
+         "answer"
+        ],
+        "choice": "search",
+        "cost": 3
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "choice": "calc",
+        "cost": 0
+       },
+       "next": [
+        "calculator"
+       ],
+       "tasks": [
+        {
+         "name": "calculator",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "calculator"
+          ],
+          "cost": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "calculator"
+        ],
+        "choice": "calc",
+        "cost": 1
+       },
+       "next": [
+        "answer"
+       ],
+       "tasks": [
+        {
+         "name": "answer",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "answer"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "calculator",
+         "answer"
+        ],
+        "choice": "calc",
+        "cost": 1
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "loop_join",
+   "graph": "loop_join",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "round": 0
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "check",
+       "check",
+       "plan",
+       "plan",
+       "w1",
+       "w1",
+       "w2",
+       "w2"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "found": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "round": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "round": 0,
+        "found": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "round": 1,
+        "found": 0
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "start_router_else",
+   "graph": "start_router",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "kind": "bug"
+      }
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "tech"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "kind": "bug"
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "kind": "bug"
+       },
+       "next": [
+        "tech"
+       ],
+       "tasks": [
+        {
+         "name": "tech",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "tech"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "tech"
+        ],
+        "kind": "bug"
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "loop_join_crash",
+   "graph": "loop_join",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "round": 0
+      },
+      "fail": []
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "check",
+       "check",
+       "plan",
+       "plan",
+       "w1",
+       "w1",
+       "w2",
+       "w2"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "found": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "round": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "round": 0,
+        "found": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "round": 1,
+        "found": 0
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "replay": 3
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "check",
+       "check",
+       "plan",
+       "w1",
+       "w2"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "found": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "round": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "round": 0,
+        "found": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "round": 1,
+        "found": 0
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 8,
+       "parent": 3,
+       "step": 3,
+       "source": "fork",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 9,
+       "parent": 8,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 10,
+       "parent": 9,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 11,
+       "parent": 10,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 12,
+       "parent": 11,
+       "step": 7,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "update": {
+       "found": 10
+      },
+      "at": 5,
+      "as_node": "check"
+     },
+     "outcome": {
+      "status": "updated",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "found": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "round": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "round": 0,
+        "found": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "round": 1,
+        "found": 0
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 8,
+       "parent": 3,
+       "step": 3,
+       "source": "fork",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 9,
+       "parent": 8,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 10,
+       "parent": 9,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 11,
+       "parent": 10,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 12,
+       "parent": 11,
+       "step": 7,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 13,
+       "parent": 5,
+       "step": 5,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 13
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": [],
+        "found": 0
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "round": 0
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": [],
+        "round": 0,
+        "found": 0
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan"
+        ],
+        "round": 1,
+        "found": 0
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 5,
+       "parent": 4,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 8,
+       "parent": 3,
+       "step": 3,
+       "source": "fork",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 9,
+       "parent": 8,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 1,
+        "found": 3
+       },
+       "next": [
+        "plan"
+       ],
+       "tasks": [
+        {
+         "name": "plan",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "plan"
+          ],
+          "round": 2
+         }
+        }
+       ]
+      },
+      {
+       "id": 10,
+       "parent": 9,
+       "step": 5,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 3
+       },
+       "next": [
+        "w1",
+        "w2"
+       ],
+       "tasks": [
+        {
+         "name": "w1",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w1"
+          ],
+          "found": 2
+         }
+        },
+        {
+         "name": "w2",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "w2"
+          ],
+          "found": 1
+         }
+        }
+       ]
+      },
+      {
+       "id": 11,
+       "parent": 10,
+       "step": 6,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [
+        "check"
+       ],
+       "tasks": [
+        {
+         "name": "check",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "check"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 12,
+       "parent": 11,
+       "step": 7,
+       "source": "loop",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan",
+         "w1",
+         "w2",
+         "check"
+        ],
+        "round": 2,
+        "found": 6
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 13,
+       "parent": 5,
+       "step": 5,
+       "source": "update",
+       "values": {
+        "log": [
+         "plan",
+         "w1",
+         "w2",
+         "check",
+         "plan"
+        ],
+        "round": 2,
+        "found": 13
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "after_update",
+   "graph": "gated_after",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "paused",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "a"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ]
+       },
+       "next": [
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "update": {
+       "log": [
+        "human"
+       ]
+      },
+      "at": 2,
+      "as_node": "a"
+     },
+     "outcome": {
+      "status": "updated",
+      "interrupts": [],
+      "error": null,
+      "calls": [],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ]
+       },
+       "next": [
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "a",
+         "human"
+        ]
+       },
+       "next": [
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "b"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "a"
+       ],
+       "tasks": [
+        {
+         "name": "a",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "a"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a"
+        ]
+       },
+       "next": [
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "update",
+       "values": {
+        "log": [
+         "a",
+         "human"
+        ]
+       },
+       "next": [
+        "b"
+       ],
+       "tasks": [
+        {
+         "name": "b",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "b"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "a",
+         "human",
+         "b"
+        ]
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "replay_interrupt",
+   "graph": "gated",
+   "ops": [
+    {
+     "op": {
+      "invoke": {
+       "log": []
+      }
+     },
+     "outcome": {
+      "status": "paused",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "planner"
+      ],
+      "effects": []
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": null
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "op": {
+      "continue": true
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "execute",
+       "report"
+      ],
+      "effects": [
+       "execute:git_push"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "execute"
+          ],
+          "result": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [
+        "report"
+       ],
+       "tasks": [
+        {
+         "name": "report",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "report"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute",
+         "report"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    },
+    {
+     "op": {
+      "replay": 2
+     },
+     "outcome": {
+      "status": "done",
+      "interrupts": [],
+      "error": null,
+      "calls": [
+       "execute",
+       "report"
+      ],
+      "effects": [
+       "execute:git_push"
+      ]
+     },
+     "history": [
+      {
+       "id": 0,
+       "parent": null,
+       "step": -1,
+       "source": "input",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "__start__"
+       ],
+       "tasks": [
+        {
+         "name": "__start__",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": []
+         }
+        }
+       ]
+      },
+      {
+       "id": 1,
+       "parent": 0,
+       "step": 0,
+       "source": "loop",
+       "values": {
+        "log": []
+       },
+       "next": [
+        "planner"
+       ],
+       "tasks": [
+        {
+         "name": "planner",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "planner"
+          ],
+          "plan": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 2,
+       "parent": 1,
+       "step": 1,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "execute"
+          ],
+          "result": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 3,
+       "parent": 2,
+       "step": 2,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [
+        "report"
+       ],
+       "tasks": [
+        {
+         "name": "report",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "report"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 4,
+       "parent": 3,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute",
+         "report"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [],
+       "tasks": []
+      },
+      {
+       "id": 5,
+       "parent": 2,
+       "step": 2,
+       "source": "fork",
+       "values": {
+        "log": [
+         "planner"
+        ],
+        "plan": "delete 3 stale branches"
+       },
+       "next": [
+        "execute"
+       ],
+       "tasks": [
+        {
+         "name": "execute",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "execute"
+          ],
+          "result": "delete 3 stale branches"
+         }
+        }
+       ]
+      },
+      {
+       "id": 6,
+       "parent": 5,
+       "step": 3,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [
+        "report"
+       ],
+       "tasks": [
+        {
+         "name": "report",
+         "error": null,
+         "interrupts": [],
+         "result": {
+          "log": [
+           "report"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "id": 7,
+       "parent": 6,
+       "step": 4,
+       "source": "loop",
+       "values": {
+        "log": [
+         "planner",
+         "execute",
+         "report"
+        ],
+        "plan": "delete 3 stale branches",
+        "result": "delete 3 stale branches"
+       },
+       "next": [],
+       "tasks": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
