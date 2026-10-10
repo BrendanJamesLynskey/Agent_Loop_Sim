@@ -107,25 +107,47 @@ function cond(c: Obj, state: Obj): boolean {
   throw new GraphError(`unknown comparison ${c.op}`);
 }
 
-export function route(router: Obj, state: Obj): string[] {
+function isObj(g: unknown): g is Obj {
+  return g !== null && typeof g === "object" && !Array.isArray(g);
+}
+
+function expand(g: unknown, state: Obj): unknown[] {
+  if (isObj(g)) {
+    const out: Obj[] = [];
+    for (const item of (state[g.over] ?? []) as unknown[]) {
+      const arg: Obj = { [g.as]: clone(item) };
+      for (const k of (g.with ?? []) as string[]) arg[k] = clone(state[k] ?? null);
+      out.push({ send: g.send, arg });
+    }
+    return out;
+  }
+  return [g];
+}
+
+/** A router; a target is a node name or a send leaf, expanded into ``Send`` packets ``{send, arg}``. */
+export function route(router: Obj, state: Obj): unknown[] {
   let g: unknown;
   if ("goto" in router) g = router.goto;
   else if (cond(router.if, state)) g = router.then;
   else g = router.else;
-  if (g !== null && typeof g === "object" && !Array.isArray(g)) return route(g as Obj, state);
-  return Array.isArray(g) ? [...(g as string[])] : [g as string];
+  if (isObj(g) && !("send" in g)) return route(g, state);
+  const out: unknown[] = [];
+  for (const x of Array.isArray(g) ? g : [g]) out.push(...expand(x, state));
+  return out;
 }
 
 export function runOps(node: Obj, state: Obj, ctx: Obj): Obj {
   const upd: Obj = {};
   for (const op of node.ops as Obj[]) {
     const k = op.op;
+    if ("when" in op && !cond(op.when, state)) continue;
     if (k === "set") upd[op.key] = clone(op.value);
     else if (k === "append") upd[op.key] = [clone(op.value)];
     else if (k === "delta") upd[op.key] = op.value;
     else if (k === "inc") upd[op.key] = ((state[op.key] ?? 0) as number) + op.by;
     else if (k === "len") upd[op.key] = ((state[op.of] ?? []) as unknown[]).length;
     else if (k === "copy") upd[op.key] = clone(state[op.from] ?? null);
+    else if (k === "collect") upd[op.key] = [clone(state[op.from] ?? null)];
     else if (k === "effect") (ctx.effects as string[]).push(node.name + ":" + op.name);
     else if (k === "fail") {
       if ((ctx.fail as string[]).includes(node.name)) throw new NodeFailure(op.message ?? "node failed");
@@ -153,6 +175,12 @@ function joinId(e: Obj): string {
   return "join:" + (e.from as string[]).join("+") + ":" + e.to;
 }
 
+function cmpKey(a: [number, string, number], b: [number, string, number]): number {
+  if (a[0] !== b[0]) return a[0] - b[0];
+  if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1;
+  return a[2] - b[2];
+}
+
 function isJoin(e: Obj): boolean {
   return !("router" in e) && Array.isArray(e.from);
 }
@@ -173,19 +201,32 @@ export class Thread {
     validate(spec);
   }
 
-  private put(parent: number | null, step: number, source: string, values: Obj, nxt: string[], barriers: Obj, ready: string[]): Obj {
+  private put(
+    parent: number | null,
+    step: number,
+    source: string,
+    values: Obj,
+    nxt: string[],
+    barriers: Obj,
+    ready: string[],
+    sends: Obj[] = [],
+  ): Obj {
     const bar: Obj = {};
     for (const [k, v] of Object.entries(barriers)) bar[k] = [...(v as string[])];
+    const snd = clone(sends);
+    const names = [...snd.map((x) => x.name as string), ...nxt];
     const cp: Obj = {
       id: this.cps.length,
       parent,
       step,
       source,
       values: ordered(this.spec, values),
-      next: nxt,
-      tasks: nxt.map((n) => ({ name: n, error: null, interrupts: [], result: null })),
+      next: names,
+      tasks: names.map((n) => ({ name: n, error: null, interrupts: [], result: null })),
       barriers: bar,
       ready: [...ready],
+      pull: [...nxt],
+      sends: snd,
     };
     this.cps.push(cp);
     this.latest = cp.id;
@@ -204,8 +245,9 @@ export class Thread {
     }));
   }
 
-  triggers(values: Obj, done: [string, Obj][], barriers: Obj): [string[], string[], Obj, Obj[]] {
+  triggers(values: Obj, done: [string, Obj][], barriers: Obj): [string[], string[], Obj, Obj[], Obj[]] {
     const trig = new Set<string>();
+    const sends: Obj[] = [];
     let bar: Obj = {};
     for (const [k, v] of Object.entries(barriers)) bar[k] = [...(v as string[])];
     const fired: Obj[] = [];
@@ -215,8 +257,13 @@ export class Thread {
           if (e.from !== name) continue;
           const own = applyWrites(this.spec, values, [[name, upd]]);
           for (const t of route(e.router, own)) {
+            if (isObj(t)) {
+              fired.push({ from: name, to: t.send, kind: "send", arg: t.arg });
+              sends.push({ name: t.send, arg: t.arg });
+              continue;
+            }
             fired.push({ from: name, to: t, kind: "conditional" });
-            if (t !== END) trig.add(t);
+            if (t !== END) trig.add(t as string);
           }
         } else if (Array.isArray(e.from)) {
           if (!e.from.includes(name)) continue;
@@ -258,7 +305,7 @@ export class Thread {
     const kept: Obj = {};
     for (const [k, v] of Object.entries(bar)) if ((v as string[]).length) kept[k] = v;
     bar = kept;
-    return [nxt, ready, bar, fired];
+    return [nxt, ready, bar, fired, sends];
   }
 
   invoke(inp: Obj | null = null, opts: InvokeOpts = {}): Obj {
@@ -278,9 +325,9 @@ export class Thread {
       cur.tasks[0].result = clone(inp);
       const values = applyWrites(this.spec, cur.values, [[START, inp]]);
       const done: [string, Obj][] = [[START, inp]];
-      const [nxt, ready, bar, fired] = this.triggers(cur.values, done, {});
+      const [nxt, ready, bar, fired, sends] = this.triggers(cur.values, done, {});
       const par = cur.id;
-      cur = this.put(cur.id, 0, "loop", values, nxt, bar, ready);
+      cur = this.put(cur.id, 0, "loop", values, nxt, bar, ready, sends);
       steps.push({ step: 0, tasks: [START], writes: [[START, clone(inp)]], fired, parent: par, checkpoint: cur.id });
       step = 1;
       reuse = false;
@@ -288,7 +335,7 @@ export class Thread {
       const base = this.cps[opts.checkpoint]!;
       stop = base.step + 1 + recursionLimit + 1;
       if (base.source === "update" || base.source === "fork") cur = base;
-      else cur = this.put(base.id, base.step + 1, "fork", base.values, base.next, base.barriers, base.ready);
+      else cur = this.put(base.id, base.step + 1, "fork", base.values, base.pull, base.barriers, base.ready, base.sends);
       step = cur.step + 1;
       reuse = false;
     } else {
@@ -308,7 +355,12 @@ export class Thread {
         status = "recursion_limit";
         break;
       }
-      const tasks: string[] = [...cur.ready];
+      // [push index or -1, node name, record]: push tasks first, in packet order, then pull tasks
+      const npush = (cur.sends as Obj[]).length;
+      const todo: [number, string, Obj][] = (cur.sends as Obj[]).map((s, i) => [i, s.name as string, cur.tasks[i] as Obj]);
+      for (const t of cur.ready as string[])
+        todo.push([-1, t, (cur.tasks as Obj[]).slice(npush).find((x) => x.name === t)!]);
+      const tasks: string[] = todo.map(([, t]) => t);
       if (!tasks.length) {
         status = "done";
         break;
@@ -318,13 +370,15 @@ export class Thread {
         status = "interrupt_before";
         break;
       }
-      const writes: [string, Obj][] = [];
+      const keyed: [[number, string, number], string, Obj][] = [];
       const failed: string[] = [];
+      let firstError: string | null = null;
       const paused: unknown[] = [];
-      for (const t of tasks) {
-        const rec = (cur.tasks as Obj[]).find((x) => x.name === t)!;
+      for (const [i, t, rec] of todo) {
+        // LangGraph applies writes in task-path order: pull tasks by name, then push tasks by index
+        const key: [number, string, number] = i >= 0 ? [1, "", i] : [0, t, 0];
         if (first && reuse && rec.result !== null) {
-          writes.push([t, clone(rec.result)]);
+          keyed.push([key, t, clone(rec.result)]);
           continue;
         }
         const ctx: Obj = { fail: ctxFail, effects };
@@ -332,11 +386,12 @@ export class Thread {
         calls.push(t);
         let upd: Obj;
         try {
-          upd = runOps(nodeSpec(this.spec, t), cur.values, ctx);
+          upd = runOps(nodeSpec(this.spec, t), i >= 0 ? (cur.sends[i].arg as Obj) : cur.values, ctx);
         } catch (e) {
           if (e instanceof NodeFailure) {
             rec.error = "NodeFailure('" + e.message + "')";
             failed.push(t);
+            if (firstError === null) firstError = rec.error;
             continue;
           }
           if (e instanceof Interrupt) {
@@ -347,14 +402,16 @@ export class Thread {
           throw e;
         }
         rec.result = clone(upd);
-        writes.push([t, upd]);
+        keyed.push([key, t, upd]);
       }
       first = false;
-      writes.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+      keyed.sort((a, b) => cmpKey(a[0], b[0]));
+      const writes: [string, Obj][] = keyed.map(([, t, u]) => [t, u]);
       halt = { step, tasks, writes: writes.map(([n, u]) => [n, clone(u)]), failed, interrupts: paused, parent: cur.id };
+      if (npush) halt.sends = clone(cur.sends);
       if (failed.length) {
         status = "error";
-        error = "NodeFailure: " + (cur.tasks as Obj[]).find((x) => x.name === failed[0])!.error;
+        error = "NodeFailure: " + firstError;
         break;
       }
       if (paused.length) {
@@ -374,10 +431,13 @@ export class Thread {
         throw e;
       }
       halt = null;
-      const [nxt, ready, bar, fired] = this.triggers(cur.values, writes, cur.barriers);
+      const [nxt, ready, bar, fired, sends] = this.triggers(cur.values, writes, cur.barriers);
       const par = cur.id;
-      cur = this.put(cur.id, step, "loop", values, nxt, bar, ready);
-      steps.push({ step, tasks, writes: writes.map(([n, u]) => [n, clone(u)]), fired, parent: par, checkpoint: cur.id });
+      const ran = clone(cur.sends);
+      cur = this.put(cur.id, step, "loop", values, nxt, bar, ready, sends);
+      const st: Obj = { step, tasks, writes: writes.map(([n, u]) => [n, clone(u)]), fired, parent: par, checkpoint: cur.id };
+      if (npush) st.sends = ran;
+      steps.push(st);
       step += 1;
       const ia: string[] = this.spec.interrupt_after ?? [];
       if (ia.length && tasks.some((t) => ia.includes(t))) {
@@ -402,8 +462,8 @@ export class Thread {
   updateState(checkpoint: number, values: Obj, asNode: string): number {
     const base = this.cps[checkpoint]!;
     const nw = applyWrites(this.spec, base.values, [[asNode, values]]);
-    const [nxt, ready, bar] = this.triggers(base.values, [[asNode, values]], base.barriers);
-    const cp = this.put(base.id, base.step + 1, "update", nw, nxt, bar, ready);
+    const [nxt, ready, bar, , sends] = this.triggers(base.values, [[asNode, values]], base.barriers);
+    const cp = this.put(base.id, base.step + 1, "update", nw, nxt, bar, ready, sends);
     return cp.id;
   }
 }

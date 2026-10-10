@@ -12,7 +12,7 @@ from typing import Annotated, Any, TypedDict
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.errors import GraphRecursionError, InvalidUpdateError
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, interrupt
+from langgraph.types import Command, Send, interrupt
 
 
 class NodeFailure(Exception):
@@ -45,10 +45,30 @@ def cond(c: dict[str, Any], state: dict[str, Any]) -> bool:
             "==": operator.eq, "!=": operator.ne}[c["op"]](a, c["value"])
 
 
+def sends(leaf: dict[str, Any], state: dict[str, Any]) -> list[Send]:
+    """A send leaf: one ``Send(node, {as: item, **with})`` per item of ``state[over]``."""
+    out = []
+    for item in state.get(leaf["over"], []):
+        arg = {leaf["as"]: item}
+        for k in leaf.get("with", []):
+            arg[k] = state.get(k)
+        out.append(Send(leaf["send"], arg))
+    return out
+
+
 def router_fn(r: dict[str, Any]):
     def pick(router: dict[str, Any], state: dict[str, Any]) -> Any:
         g = router["goto"] if "goto" in router else (router["then"] if cond(router["if"], state) else router["else"])
-        return pick(g, state) if isinstance(g, dict) else g
+        if isinstance(g, dict) and "send" not in g:
+            return pick(g, state)
+        if isinstance(g, dict):
+            return sends(g, state)
+        if isinstance(g, list) and any(isinstance(x, dict) for x in g):
+            out: list[Any] = []
+            for x in g:
+                out += sends(x, state) if isinstance(x, dict) else [x]
+            return out
+        return g
     return lambda state: pick(r, state)
 
 
@@ -67,6 +87,8 @@ def node_fn(node: dict[str, Any], world: World):
         out: dict[str, Any] = {}
         for op in node["ops"]:
             k = op["op"]
+            if "when" in op and not cond(op["when"], state):
+                continue
             if k == "set":
                 out[op["key"]] = op["value"]
             elif k == "append":
@@ -79,6 +101,8 @@ def node_fn(node: dict[str, Any], world: World):
                 out[op["key"]] = len(state.get(op["of"], []))
             elif k == "copy":
                 out[op["key"]] = state.get(op["from"])
+            elif k == "collect":
+                out[op["key"]] = [state.get(op["from"])]
             elif k == "effect":
                 world.effects.append(name + ":" + op["name"])
             elif k == "fail":
