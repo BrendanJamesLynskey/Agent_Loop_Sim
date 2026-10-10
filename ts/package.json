@@ -1,6 +1,6 @@
 {
   "name": "agent-loop-sim",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "TypeScript port of Agent_Loop_Sim, matched to the Python reference's fixtures exactly.",
   "license": "MIT",

@@ -1,4 +1,4 @@
-# Orchestration module results, part 2 (engine 1.6.0)
+# Orchestration module results, part 2 (engine 1.7.0)
 
 Written by `scripts/make_fixtures.py` (CI checks it is up to date). Every token size, accuracy, latency, rate limit and failure rate here is illustrative (see the module docstrings); prices are the engine's dated list prices (`accounting.PRICES`), latency is the engine's hosted profile.
 
@@ -149,30 +149,32 @@ Written by `scripts/make_fixtures.py` (CI checks it is up to date). Every token 
 | debate | 1.95 | input | 6.0 | 0.920 | 4418.1 | 4916.7 | 5017.6 | 0.1239 | 1.74 |
 | debate | 1.95 | input | 8.0 | 0.925 | 4862.5 | 5283.6 | 5362.6 | 0.1232 | 1.76 |
 
-## Choosing a pattern (DES at 2.0 workflows/min, 1,500-token tool results)
+## Choosing a pattern (DES, 1,500-token tool results; arrivals per minute: 1.0 for 4 sub-questions, 0.25 for 16 sub-questions)
 
-| sub-questions | pattern | success | closed form | p95 (s) | $ per success | completed/min |
-|---|---|---|---|---|---|---|
-| 4 | single | 0.855 | 0.857 | 20.2 | 0.0519 | 1.83 |
-| 4 | supervisor | 0.815 | 0.817 | 56.9 | 0.1011 | 1.74 |
-| 4 | hierarchical | 0.820 | 0.777 | 230.9 | 0.1247 | 1.73 |
-| 4 | swarm | 0.745 | 0.764 | 1673.6 | 0.1509 | 1.29 |
-| 4 | debate | 0.900 | 0.877 | 5553.3 | 0.1807 | 1.09 |
-| 4 | map_reduce | 0.830 | 0.829 | 46.5 | 0.0964 | 1.78 |
-| 16 | single | 0.115 | 0.112 | 3791.3 | 1.5860 | 0.17 |
-| 16 | supervisor | 0.475 | 0.464 | 11139.8 | 0.6283 | 0.38 |
-| 16 | hierarchical | 0.430 | 0.450 | 12129.2 | 0.7275 | 0.32 |
-| 16 | swarm | 0.015 | 0.007 | 77767.7 | 77.4780 | 0.00 |
-| 16 | debate | 0.145 | 0.123 | 28800.6 | 3.6030 | 0.05 |
-| 16 | map_reduce | 0.535 | 0.505 | 10971.2 | 0.5216 | 0.44 |
+| sub-questions | pattern | success | closed form | p95 (s) | $ per success | completed/min | capacity (workflows/min) |
+|---|---|---|---|---|---|---|---|
+| 4 | single | 0.850 | 0.857 | 19.9 | 0.0522 | 0.89 | 4.83 |
+| 4 | supervisor | 0.824 | 0.817 | 44.8 | 0.0999 | 0.86 | 2.92 |
+| 4 | hierarchical | 0.788 | 0.777 | 57.2 | 0.1297 | 0.82 | 2.43 |
+| 4 | swarm | 0.769 | 0.764 | 99.9 | 0.1461 | 0.80 | 1.77 |
+| 4 | debate | 0.873 | 0.877 | 784.6 | 0.1862 | 0.91 | 1.23 |
+| 4 | map_reduce | 0.834 | 0.829 | 22.5 | 0.0959 | 0.87 | 2.97 |
+| 16 | single | 0.105 | 0.112 | 51.7 | 1.7370 | 0.03 | 1.48 |
+| 16 | supervisor | 0.472 | 0.464 | 192.5 | 0.6318 | 0.12 | 0.82 |
+| 16 | hierarchical | 0.452 | 0.450 | 217.5 | 0.6920 | 0.12 | 0.78 |
+| 16 | swarm | 0.008 | 0.007 | 218889.6 | 145.1505 | 0.00 | 0.15 |
+| 16 | debate | 0.131 | 0.123 | 993.4 | 3.9842 | 0.03 | 0.37 |
+| 16 | map_reduce | 0.523 | 0.505 | 152.4 | 0.5335 | 0.14 | 0.84 |
 
 | sub-questions | constraints | survivors | pick |
 |---|---|---|---|
-| 4 | success ≥ 0.8 | single, supervisor, hierarchical, debate, map_reduce | debate |
-| 4 | success ≥ 0.8, p95 ≤ 60000 | single, supervisor, map_reduce | single |
-| 4 | success ≥ 0.6, p95 ≤ 120000, cost_per_success ≤ 0.5 | single, supervisor, map_reduce | single |
-| 4 | success ≥ 0.95 | none | none |
+| 4 | success ≥ 0.8 | single, supervisor, debate, map_reduce | debate |
+| 4 | success ≥ 0.8, p95 ≤ 30000 | single, map_reduce | single |
+| 4 | success ≥ 0.4, p95 ≤ 180000 | single, supervisor, hierarchical, swarm, map_reduce | single |
+| 4 | success ≥ 0.4, p95 ≤ 180000, cost_per_success ≤ 0.6 | single, supervisor, hierarchical, swarm, map_reduce | single |
+| 4 | success ≥ 0.4, capacity ≥ 1.0 | single, supervisor, hierarchical, swarm, debate, map_reduce | debate |
 | 16 | success ≥ 0.8 | none | none |
-| 16 | success ≥ 0.8, p95 ≤ 60000 | none | none |
-| 16 | success ≥ 0.6, p95 ≤ 120000, cost_per_success ≤ 0.5 | none | none |
-| 16 | success ≥ 0.95 | none | none |
+| 16 | success ≥ 0.8, p95 ≤ 30000 | none | none |
+| 16 | success ≥ 0.4, p95 ≤ 180000 | map_reduce | map_reduce |
+| 16 | success ≥ 0.4, p95 ≤ 180000, cost_per_success ≤ 0.6 | map_reduce | map_reduce |
+| 16 | success ≥ 0.4, capacity ≥ 1.0 | none | none |

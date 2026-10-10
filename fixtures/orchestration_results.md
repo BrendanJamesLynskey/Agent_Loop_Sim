@@ -1,4 +1,4 @@
-# Orchestration module results (engine 1.6.0)
+# Orchestration module results (engine 1.7.0)
 
 Written by `scripts/make_fixtures.py` (CI checks it is up to date). Node durations, the checkpoint write (15 ms) and every durable-execution timing are illustrative; the semantics are checked against LangGraph.
 

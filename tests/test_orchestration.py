@@ -1,4 +1,4 @@
-"""The orchestration module (engine 1.6.0): the graph runtime against the committed LangGraph
+"""The orchestration module (engine 1.6.0; Send sessions since 1.7.0): the graph runtime against the committed LangGraph
 recording, its rules one by one, the views, durable execution, and the closed forms against the
 seeded simulation."""
 from __future__ import annotations
