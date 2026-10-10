@@ -42,6 +42,7 @@ from agent_loop_sim.protocols import transport as ptrans  # noqa: E402
 from agent_loop_sim.protocols import views as pviews  # noqa: E402
 from context_fixtures import context_fixtures  # noqa: E402
 from context2_fixtures import context2_fixtures  # noqa: E402
+from orchestration_fixtures import orchestration_fixtures  # noqa: E402
 
 TEXTS = [
     "Hello, world! It's a test. They'll've DON'T  x\n\n  y\t\tz   \n",
@@ -331,6 +332,10 @@ def build() -> dict[str, str]:
     c2fx, c2md = context2_fixtures()
     files["fixtures/context2_fixtures.json"] = json.dumps(c2fx, ensure_ascii=False, separators=(",", ":")) + "\n"
     files["fixtures/context2_results.md"] = c2md
+    ofx, omd, odata = orchestration_fixtures()
+    files["fixtures/orchestration_fixtures.json"] = json.dumps(ofx, ensure_ascii=False, separators=(",", ":")) + "\n"
+    files["fixtures/orchestration_results.md"] = omd
+    files["ts/src/orchestration_data.json"] = json.dumps(odata, ensure_ascii=False, indent=1) + "\n"
     for tid, tr in traces.items():
         files[f"traces/{tid}.events.jsonl"] = dumps_jsonl(tr["events"])
     return files

@@ -17,7 +17,7 @@ const tok = new Tokenizer(readFileSync(join(ROOT, "src/agent_loop_sim/data/qwen2
 const A = P.a2a;
 
 describe("engine version", () => {
-  it("matches the fixtures", () => expect(fx.engine).toBe("1.5.0"));
+  it("matches the fixtures", () => expect(fx.engine).toBe("1.6.0"));
 });
 
 describe("the official A2A SDK's recordings", () => {

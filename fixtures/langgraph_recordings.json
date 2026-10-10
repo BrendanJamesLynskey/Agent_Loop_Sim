@@ -171,10 +171,10 @@
       "interrupts": [],
       "error": null,
       "calls": [
+       "compose",
        "papers",
        "plan",
-       "web",
-       "write"
+       "web"
       ],
       "effects": []
      },
@@ -300,16 +300,16 @@
         ]
        },
        "next": [
-        "write"
+        "compose"
        ],
        "tasks": [
         {
-         "name": "write",
+         "name": "compose",
          "error": null,
          "interrupts": [],
          "result": {
           "log": [
-           "write"
+           "compose"
           ],
           "report": 2
          }
@@ -327,7 +327,7 @@
          "plan",
          "papers",
          "web",
-         "write"
+         "compose"
         ],
         "notes": 5,
         "sources": [
@@ -682,8 +682,7 @@
         ]
        },
        "next": [
-        "c",
-        "e"
+        "c"
        ],
        "tasks": [
         {
@@ -695,12 +694,6 @@
            "c"
           ]
          }
-        },
-        {
-         "name": "e",
-         "error": null,
-         "interrupts": [],
-         "result": null
         }
        ]
       },

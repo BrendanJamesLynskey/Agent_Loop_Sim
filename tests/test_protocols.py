@@ -17,7 +17,7 @@ SDK = json.loads((ROOT / "fixtures" / "sdk_exchanges.json").read_text(encoding="
 
 
 def test_version():
-    assert VERSION == "1.5.0"
+    assert VERSION == "1.6.0"
 
 
 @pytest.mark.parametrize("sc", scenarios.SCENARIOS, ids=[s["name"] for s in scenarios.SCENARIOS])

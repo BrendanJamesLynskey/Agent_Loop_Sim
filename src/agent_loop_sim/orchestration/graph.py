@@ -293,6 +293,11 @@ class Thread:
                     fired.append({"from": name, "to": e["to"], "kind": "edge"})
                     if e["to"] != END:
                         trig.add(e["to"])
+        for f in fired:
+            if f["kind"] == "join":
+                for e in self.spec["edges"]:
+                    if "router" not in e and isinstance(e["from"], list) and e["to"] == f["to"] and f["from"] in e["from"]:
+                        f["waiting"] = [s for s in e["from"] if s not in bar.get(_join_id(e), [])]
         touched: set[str] = set()
         for e in self.spec["edges"]:
             if "router" not in e and isinstance(e["from"], list):
@@ -334,8 +339,10 @@ class Thread:
             values = apply_writes(self.spec, cur["values"], [(START, inp)])
             done = [(START, inp)]
             nxt, ready, bar, fired = self._triggers(cur["values"], done, {})
-            steps.append({"step": 0, "tasks": [START], "writes": [[START, copy.deepcopy(inp)]], "fired": fired})
+            par = cur["id"]
             cur = self._put(cur["id"], 0, "loop", values, nxt, bar, ready)
+            steps.append({"step": 0, "tasks": [START], "writes": [[START, copy.deepcopy(inp)]], "fired": fired,
+                          "parent": par, "checkpoint": cur["id"]})
             step = 1
             reuse = False
         else:
@@ -359,6 +366,7 @@ class Thread:
         status = "done"
         interrupts: list[Any] = []
         error = None
+        halt = None
         first = True
         while True:
             if step > stop:
@@ -398,6 +406,9 @@ class Thread:
                 rec["result"] = copy.deepcopy(upd)
                 writes.append((t, upd))
             first = False
+            writes.sort(key=lambda w: w[0])
+            halt = {"step": step, "tasks": tasks, "writes": [[n, copy.deepcopy(u)] for n, u in writes],
+                    "failed": failed, "interrupts": paused, "parent": cur["id"]}
             if failed:
                 status = "error"
                 error = "NodeFailure: " + next(x for x in cur["tasks"] if x["name"] == failed[0])["error"]
@@ -406,16 +417,18 @@ class Thread:
                 status = "interrupted"
                 interrupts = paused
                 break
-            writes.sort(key=lambda w: w[0])
             try:
                 values = apply_writes(self.spec, cur["values"], writes)
             except InvalidUpdateError as e:
                 status = "error"
                 error = "InvalidUpdateError: " + str(e)
                 break
+            halt = None
             nxt, ready, bar, fired = self._triggers(cur["values"], writes, cur["barriers"])
-            steps.append({"step": step, "tasks": tasks, "writes": [[n, copy.deepcopy(u)] for n, u in writes], "fired": fired})
+            par = cur["id"]
             cur = self._put(cur["id"], step, "loop", values, nxt, bar, ready)
+            steps.append({"step": step, "tasks": tasks, "writes": [[n, copy.deepcopy(u)] for n, u in writes], "fired": fired,
+                          "parent": par, "checkpoint": cur["id"]})
             step += 1
             ia = self.spec.get("interrupt_after", [])
             if ia and any(t in ia for t in tasks):
@@ -423,7 +436,7 @@ class Thread:
                 break
         return {"status": status, "values": copy.deepcopy(cur["values"]), "next": list(cur["next"]),
                 "interrupts": interrupts, "error": error, "calls": calls, "effects": effects,
-                "checkpoint": cur["id"], "steps": steps}
+                "checkpoint": cur["id"], "steps": steps, "halt": halt}
 
     def update_state(self, checkpoint: int, values: dict[str, Any], as_node: str) -> int:
         """``update_state(config_at(checkpoint), values, as_node)``: an ``update`` checkpoint whose
@@ -433,6 +446,27 @@ class Thread:
         nxt, ready, bar, _ = self._triggers(base["values"], [(as_node, values)], base["barriers"])
         cp = self._put(base["id"], base["step"] + 1, "update", new, nxt, bar, ready)
         return cp["id"]
+
+
+def comparable_history(spec: dict[str, Any], hist: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The history as the conformance check compares it. One detail of LangGraph 1.2.14 is not
+    deterministic: whether ``next`` lists a join target whose barrier is still incomplete (it did
+    in about 9 runs of 10 in a measurement here; the channel versions it compares carry a random
+    suffix). Such a task never runs from that checkpoint, so for every checkpoint that has a
+    ``loop`` child, a join target whose task has no result, error or interrupt is dropped from
+    ``next`` and ``tasks`` on both sides. Everything else is compared as is."""
+    targets = {e["to"] for e in spec["edges"] if "router" not in e and isinstance(e["from"], list)}
+    parents = {c["parent"] for c in hist if c["source"] == "loop"}
+    out = []
+    for c in hist:
+        c = copy.deepcopy(c)
+        if c["id"] in parents:
+            drop = [t["name"] for t in c["tasks"] if t["name"] in targets and t["result"] is None
+                    and t["error"] is None and not t["interrupts"]]
+            c["next"] = [n for n in c["next"] if n not in drop]
+            c["tasks"] = [t for t in c["tasks"] if t["name"] not in drop]
+        out.append(c)
+    return out
 
 
 def outcome(r: dict[str, Any]) -> dict[str, Any]:
@@ -468,7 +502,8 @@ def run_session(spec: dict[str, Any], ops: list[dict[str, Any]]) -> dict[str, An
         elif "update" in op:
             cid = th.update_state(op["at"], op["update"], op["as_node"])
             r = {"status": "updated", "values": copy.deepcopy(th.cps[cid]["values"]), "next": list(th.cps[cid]["next"]),
-                 "interrupts": [], "error": None, "calls": [], "effects": [], "checkpoint": cid, "steps": []}
+                 "interrupts": [], "error": None, "calls": [], "effects": [], "checkpoint": cid, "steps": [],
+                 "halt": None}
         else:
             raise GraphError(f"unknown session op {op}")
         out.append({"op": op, "result": r, "history": th.history()})

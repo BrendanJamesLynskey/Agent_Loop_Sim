@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "conformance"))
 
-from agent_loop_sim.orchestration.graph import outcome, run_session  # noqa: E402
+from agent_loop_sim.orchestration.graph import comparable_history, outcome, run_session  # noqa: E402
 from agent_loop_sim.orchestration.scenarios import SESSIONS, graph  # noqa: E402
 
 OUT = ROOT / "fixtures" / "langgraph_recordings.json"
@@ -28,9 +28,11 @@ OUT = ROOT / "fixtures" / "langgraph_recordings.json"
 def engine_sessions() -> list[dict]:
     out = []
     for s in SESSIONS:
-        r = run_session(graph(s["graph"]), s["ops"])
+        g = graph(s["graph"])
+        r = run_session(g, s["ops"])
         out.append({"name": s["name"], "graph": s["graph"],
-                    "ops": [{"op": o["op"], "outcome": outcome(o["result"]), "history": o["history"]} for o in r["ops"]]})
+                    "ops": [{"op": o["op"], "outcome": outcome(o["result"]),
+                             "history": comparable_history(g, o["history"])} for o in r["ops"]]})
     return out
 
 
@@ -38,8 +40,10 @@ def live_sessions() -> list[dict]:
     import langgraph_graphs as LG
     out = []
     for s in SESSIONS:
-        r = LG.run_session(graph(s["graph"]), s["ops"])
-        out.append({"name": s["name"], "graph": s["graph"], "ops": r["ops"]})
+        g = graph(s["graph"])
+        r = LG.run_session(g, s["ops"])
+        out.append({"name": s["name"], "graph": s["graph"],
+                    "ops": [dict(o, history=comparable_history(g, o["history"])) for o in r["ops"]]})
     return out
 
 
