@@ -1,5 +1,5 @@
 /**
- * The statistics of evaluating agents (engine 1.8.0): pass@k and pass^k, intervals for a success
+ * The statistics of evaluating agents (engine 1.8.0; graders and cost since 1.9.0): pass@k and pass^k, intervals for a success
  * rate, clustered standard errors, paired comparisons and power. A port of
  * agent_loop_sim/evals/stats.py (same operations in the same order; sums are left-to-right loops).
  */
@@ -307,4 +307,94 @@ export function mdeUnpaired(n: number, p: number, alpha = ALPHA, power = 0.8): n
 
 export function mdePaired(n: number, psi: number, alpha = ALPHA, power = 0.8): number {
   return (zcrit(alpha) + normPpf(power)) * Math.sqrt(psi / n);
+}
+
+// ── graders and cost (since 1.9) ──
+
+/** Counts by (truth row, judged column), in the order of `labels`. */
+export function confusion(truth: string[], judged: string[], labels: string[]): number[][] {
+  const t = labels.map(() => labels.map(() => 0));
+  for (let i = 0; i < truth.length && i < judged.length; i++) {
+    const r = labels.indexOf(truth[i]!);
+    const c = labels.indexOf(judged[i]!);
+    t[r]![c] = t[r]![c]! + 1;
+  }
+  return t;
+}
+
+/** Cohen's κ from a square table: (p_o − p_e)/(1 − p_e). */
+export function cohenKappa(table: number[][]): Obj {
+  const k = table.length;
+  let n = 0.0;
+  let diag = 0.0;
+  for (let i = 0; i < k; i++) {
+    for (let j = 0; j < k; j++) n = n + table[i]![j]!;
+    diag = diag + table[i]![i]!;
+  }
+  const po = diag / n;
+  let pe = 0.0;
+  for (let i = 0; i < k; i++) {
+    let row = 0.0;
+    let col = 0.0;
+    for (let j = 0; j < k; j++) {
+      row = row + table[i]![j]!;
+      col = col + table[j]![i]!;
+    }
+    pe = pe + (row / n) * (col / n);
+  }
+  const kappa = pe < 1.0 ? (po - pe) / (1.0 - pe) : 1.0;
+  return { n, po, pe, kappa };
+}
+
+/** Rogan and Gladen's correction of an observed rate for a grader's sensitivity and specificity. */
+export function roganGladen(pObs: number, se: number, sp: number): number {
+  const x = (pObs + sp - 1.0) / (se + sp - 1.0);
+  return x < 0.0 ? 0.0 : x > 1.0 ? 1.0 : x;
+}
+
+/** A judge-graded rate corrected with Se and Sp estimated on a calibration set; delta-method SE. */
+export function correctedRate(k: number, n: number, seK: number, seN: number, spK: number, spN: number, alpha = ALPHA): Obj {
+  const p = k / n;
+  const se = seK / seN;
+  const sp = spK / spN;
+  const j = se + sp - 1.0;
+  const pi = roganGladen(p, se, sp);
+  const v = ((p * (1.0 - p)) / n + (pi * pi * se * (1.0 - se)) / seN + ((1.0 - pi) * (1.0 - pi) * sp * (1.0 - sp)) / spN) / (j * j);
+  const s = Math.sqrt(v);
+  const z = zcrit(alpha);
+  return {
+    observed: p,
+    se,
+    sp,
+    youden: j,
+    corrected: pi,
+    stderr: s,
+    naive_stderr: Math.sqrt((p * (1.0 - p)) / n) / j,
+    ci: clip(pi - z * s, pi + z * s),
+  };
+}
+
+/** Indices of the points [cost, success] no other point beats, in order of cost (then success, highest first). */
+export function paretoFront(points: number[][]): number[] {
+  const keep: number[] = [];
+  for (let i = 0; i < points.length; i++) {
+    const [c, s] = points[i] as [number, number];
+    let beaten = false;
+    for (let j = 0; j < points.length; j++) {
+      const [c2, s2] = points[j] as [number, number];
+      if (j !== i && c2 <= c && s2 >= s && (c2 < c || s2 > s)) {
+        beaten = true;
+        break;
+      }
+    }
+    if (!beaten) keep.push(i);
+  }
+  keep.sort((a, b) => {
+    const pa = points[a]!;
+    const pb = points[b]!;
+    if (pa[0]! !== pb[0]!) return pa[0]! < pb[0]! ? -1 : 1;
+    if (pa[1]! !== pb[1]!) return pa[1]! > pb[1]! ? -1 : 1;
+    return a - b;
+  });
+  return keep;
 }

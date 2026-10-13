@@ -358,7 +358,7 @@ def test_swe_grading():
 
 def test_fixtures_are_current_engine():
     fx = json.loads((ROOT / "fixtures" / "evals_fixtures.json").read_text())
-    assert fx["engine"] == VERSION == "1.8.0"
+    assert fx["engine"] == VERSION == "1.9.0"
     assert fx["loop"] == json.loads(json.dumps(St.loop_study()))
     data = json.loads((ROOT / "ts" / "src" / "evals_data.json").read_text())
     assert data["loop"] == St.LOOP and data["swe"]["base"] == W.BASE
