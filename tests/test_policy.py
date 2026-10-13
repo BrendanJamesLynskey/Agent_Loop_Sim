@@ -337,3 +337,12 @@ def test_fixtures_up_to_date():
     assert fx["engine"] == VERSION == "1.10.0"
     assert len(fx["caps"]["subsets"]) == 256
     assert all(s["trifecta"]["all"] == s["exposure"]["exposed"] for s in fx["caps"]["subsets"])
+
+
+def test_sandbox_action_frames():
+    full = T.sandbox_action_frames([x["id"] for x in K.LAYERS])
+    assert len(full) == len(K.ACTIONS)
+    assert [f["outcome"] for f in full] == [r["outcome"] for r in S.matrix([x["id"] for x in K.LAYERS])]
+    assert "not what it carries" in full[-1]["caption"]
+    none = T.sandbox_action_frames([])
+    assert all(f["outcome"] in ("works", "open") for f in none)

@@ -23,7 +23,7 @@ from . import depth as D
 from . import engine as E
 from . import labels as L
 from . import sandbox as S
-from .catalogue import (BROAD, CIRCLE_TOOLS, DEPTH, DEST_ORDER, LAYERS, PLANS, PRIVILEGE, TOOL_ORDER,
+from .catalogue import (ACTIONS, BROAD, CIRCLE_TOOLS, DEPTH, DEST_ORDER, LAYERS, PLANS, PRIVILEGE, TOOL_ORDER,
                         TOOLS)
 
 
@@ -220,12 +220,35 @@ def sandbox_frames() -> list[dict[str, Any]]:
     return frames
 
 
+def sandbox_action_frames(active: list[str]) -> list[dict[str, Any]]:
+    """One frame per action under the active layers: who stops it, and a caption."""
+    names = {x["id"]: x["name"] for x in LAYERS}
+    frames = []
+    for a, r in zip(ACTIONS, S.matrix(active)):
+        who = " and the ".join(names[b["layer"]].lower() for b in r["by"])
+        why = r["by"][0]["reason"] if r["by"] else ""
+        text = a["text"][0].upper() + a["text"][1:]
+        if r["outcome"] == "stopped":
+            cap = f"{text}: not needed, and stopped by the {who} ({why})."
+        elif r["outcome"] == "broken":
+            cap = f"{text}: the task needs it, but the {who} stops it ({why}), so the task breaks."
+        elif r["outcome"] == "works":
+            cap = f"{text}: the task needs it, and no active layer stops it."
+        elif a["kind"] == "net" and "egress" in active:
+            cap = (f"{text}: not needed, and nothing stops it: the allow-list checks where a connection goes, "
+                   f"not what it carries.")
+        else:
+            cap = f"{text}: not needed, and no active layer stops it."
+        frames.append(dict(r, text=a["text"], kind=a["kind"], caption=cap))
+    return frames
+
+
 def all_layer_sets() -> list[dict[str, Any]]:
     out = []
     for mask in range(1 << len(LAYERS)):
         active = [x["id"] for i, x in enumerate(LAYERS) if mask >> i & 1]
         rows = S.matrix(active)
-        out.append({"layers": active, "rows": rows, "tally": S.tally(rows)})
+        out.append({"layers": active, "rows": rows, "tally": S.tally(rows), "frames": sandbox_action_frames(active)})
     return out
 
 

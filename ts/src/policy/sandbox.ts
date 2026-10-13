@@ -16,7 +16,7 @@ export function stops(layer: Obj, action: Obj): string | null {
     return null;
   }
   if (lid === "fs_scope") {
-    if (action.kind === "file" && !layer.allow.includes(action.zone)) return `${action.zone} is outside the allowed file scope`;
+    if (action.kind === "file" && !layer.allow.includes(action.zone)) return `${action.zone} files are outside the allowed file scope`;
     return null;
   }
   if (lid === "egress") {

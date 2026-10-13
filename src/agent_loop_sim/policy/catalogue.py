@@ -103,7 +103,7 @@ ACTIONS: list[dict[str, Any]] = [
      "text": "start a process on the host, outside the sandbox"},
     {"id": "net_registry", "kind": "net", "op": "get", "dest": "registry", "need": True,
      "text": "download a package from the registry"},
-    {"id": "net_other", "kind": "net", "op": "send", "dest": "other", "need": False,
+    {"id": "net_other", "kind": "net", "op": "send", "dest": "other-host", "need": False,
      "text": "connect to any other host"},
     {"id": "net_registry_put", "kind": "net", "op": "send", "dest": "registry", "need": False,
      "text": "upload data to the allow-listed registry"},

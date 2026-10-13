@@ -6,7 +6,7 @@
 import { fixed } from "../context/text";
 import type { Obj } from "../data";
 import * as C from "./capabilities";
-import { BROAD, CIRCLE_TOOLS, DEPTH, DEST_ORDER, LAYERS, PLANS, PRIVILEGE, TOOL_ORDER, TOOLS } from "./catalogue";
+import { ACTIONS, BROAD, CIRCLE_TOOLS, DEPTH, DEST_ORDER, LAYERS, PLANS, PRIVILEGE, TOOL_ORDER, TOOLS } from "./catalogue";
 import * as D from "./depth";
 import * as E from "./engine";
 import * as L from "./labels";
@@ -259,12 +259,32 @@ export function sandboxFrames(): Obj[] {
   return frames;
 }
 
+export function sandboxActionFrames(active: string[]): Obj[] {
+  const names: Record<string, string> = {};
+  for (const x of LAYERS) names[x.id] = x.name;
+  const rows = S.matrix(active);
+  return ACTIONS.map((a, i) => {
+    const r = rows[i]!;
+    const who = (r.by as Obj[]).map((b) => names[b.layer]!.toLowerCase()).join(" and the ");
+    const why = r.by.length > 0 ? r.by[0].reason : "";
+    const text = a.text[0].toUpperCase() + a.text.slice(1);
+    let cap: string;
+    if (r.outcome === "stopped") cap = `${text}: not needed, and stopped by the ${who} (${why}).`;
+    else if (r.outcome === "broken") cap = `${text}: the task needs it, but the ${who} stops it (${why}), so the task breaks.`;
+    else if (r.outcome === "works") cap = `${text}: the task needs it, and no active layer stops it.`;
+    else if (a.kind === "net" && active.includes("egress"))
+      cap = `${text}: not needed, and nothing stops it: the allow-list checks where a connection goes, not what it carries.`;
+    else cap = `${text}: not needed, and no active layer stops it.`;
+    return { ...r, text: a.text, kind: a.kind, caption: cap };
+  });
+}
+
 export function allLayerSets(): Obj[] {
   const out: Obj[] = [];
   for (let mask = 0; mask < 1 << LAYERS.length; mask++) {
     const active = LAYERS.filter((_, i) => (mask >> i) & 1).map((x) => x.id as string);
     const rows = S.matrix(active);
-    out.push({ layers: active, rows, tally: S.tally(rows) });
+    out.push({ layers: active, rows, tally: S.tally(rows), frames: sandboxActionFrames(active) });
   }
   return out;
 }

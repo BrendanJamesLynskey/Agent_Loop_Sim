@@ -470,7 +470,7 @@
    "id": "net_other",
    "kind": "net",
    "op": "send",
-   "dest": "other",
+   "dest": "other-host",
    "need": false,
    "text": "connect to any other host"
   },

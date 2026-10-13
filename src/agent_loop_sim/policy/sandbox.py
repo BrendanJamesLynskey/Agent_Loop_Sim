@@ -28,7 +28,7 @@ def stops(layer: dict[str, Any], action: dict[str, Any]) -> str | None:
         return None
     if lid == "fs_scope":
         if action["kind"] == "file" and action["zone"] not in layer["allow"]:
-            return f"{action['zone']} is outside the allowed file scope"
+            return f"{action['zone']} files are outside the allowed file scope"
         return None
     if lid == "egress":
         if action["kind"] == "net" and action["dest"] not in layer["allow"]:
