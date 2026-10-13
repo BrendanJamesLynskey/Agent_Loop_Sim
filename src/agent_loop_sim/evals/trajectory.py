@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..context.text import fixed
 from ..harness import Run, sort_keys
 from ..jsonfmt import dumps
 from ..models import ReplayModel
@@ -199,6 +200,14 @@ def grade(events: list[dict[str, Any]], files: dict[str, str], task: str) -> dic
         frames[-1]["flags"] = frames[-1]["flags"] + end_flags
     grades = {"outcome": outcome, "self_report": claimed,
               "trajectory": outcome and verified and counts["unsafe_run"] == 0}
+    yn = {True: "pass", False: "fail"}
+    for i, fr in enumerate(frames):
+        cap = f"Event {i + 1} of {len(frames)}: {fr['label']}" + (f" [{'; '.join(fr['flags'])}]" if fr["flags"] else "")
+        cap = cap if cap.endswith((".", "…", "?", "!")) else cap + "."
+        if i == len(frames) - 1:
+            cap += (f" Outcome {yn[grades['outcome']]}, self-report {yn[grades['self_report']]}, trajectory "
+                    f"{yn[grades['trajectory']]}; process score {fixed(score + 0.0, 2)}.")
+        fr["caption"] = cap
     tot = end["totals"]
     return {"status": end["status"], "answer": answer, "outcome": outcome, "claimed": claimed, "verified": verified,
             "waste": waste, "counts": counts, "unsafe": unsafe, "score": score, "grades": grades,

@@ -4,6 +4,7 @@
  * self-report, trajectory). A port of agent_loop_sim/evals/trajectory.py; the lists come from the
  * Python reference through evals2_data.json. See that file for the rules.
  */
+import { fixed } from "../context/text";
 import { scenario as getScenario, type Obj } from "../data";
 import data from "../evals2_data.json";
 import { Run } from "../harness";
@@ -151,6 +152,16 @@ export function grade(events: Obj[], files: Record<string, string>, task: string
   else if (claimed && !verified) endFlags.push("unverified claim");
   if (frames.length) frames[frames.length - 1]!.flags = [...frames[frames.length - 1]!.flags, ...endFlags];
   const grades = { outcome, self_report: claimed, trajectory: outcome && verified && counts.unsafe_run === 0 };
+  const yn = (b: boolean): string => (b ? "pass" : "fail");
+  frames.forEach((fr, i) => {
+    let cap = `Event ${i + 1} of ${frames.length}: ${fr.label}` + (fr.flags.length ? ` [${(fr.flags as string[]).join("; ")}]` : "");
+    if (!/[.…?!]$/.test(cap)) cap += ".";
+    if (i === frames.length - 1)
+      cap +=
+        ` Outcome ${yn(grades.outcome)}, self-report ${yn(grades.self_report)}, trajectory ` +
+        `${yn(grades.trajectory)}; process score ${fixed(score + 0.0, 2)}.`;
+    fr.caption = cap;
+  });
   const tot = end.totals;
   return {
     status: end.status,
