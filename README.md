@@ -16,7 +16,9 @@ reducers, checkpoints, interrupts, time travel) checked checkpoint for checkpoin
 durable execution (an event history, replay, non-determinism and idempotency keys); since 1.7, `Send` (map-reduce) in
 that runtime, multi-agent patterns with per-agent token accounting, a **discrete-event simulation** of many workflows
 against a rate-limited model endpoint, and reliability maths tested against simulation; since 1.8, **evals**: the statistics of evaluating agents (pass@k and pass^k, Wilson, exact and bootstrap intervals,
-clustered errors, McNemar and power) on a synthetic item-response benchmark, and one SWE-bench-style task end to end.
+clustered errors, McNemar and power) on a synthetic item-response benchmark, and one SWE-bench-style task end to end;
+since 1.9, **graders and pitfalls**: a simulated LLM judge with its biases and the swap test, a trajectory grader over
+the traces, one model under many harnesses (and what each configuration costs), and benchmark contamination.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -27,8 +29,8 @@ clustered errors, McNemar and power) on a synthetic item-response benchmark, and
 Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.app)** and
 **[Agent Protocols Explained](https://agent-protocols-explained.vercel.app)** and
 **[Agent Context Explained](https://agent-context-explained.vercel.app)** and
-**[Agent Orchestration Explained](https://agent-orchestration-explained.vercel.app)**, which vendor the TS port at a
-pinned commit.
+**[Agent Orchestration Explained](https://agent-orchestration-explained.vercel.app)** and
+**[Agent Evals Explained](https://agent-evals-explained.vercel.app)**, which vendor the TS port at a pinned commit.
 
 ## The pieces
 
@@ -64,6 +66,10 @@ pinned commit.
 | `evals/generator.py` / `.ts` | a synthetic item-response benchmark: task difficulty, agent skill, runs correlated within a task |
 | `evals/swe.py` / `.ts` | one SWE-bench-style task: issue, patch (the harness), hidden FAIL_TO_PASS / PASS_TO_PASS tests, verdict |
 | `evals/study.py` / `.ts` | the Evals site's chapter studies and their frames |
+| `evals/judge.py` / `.ts` | a simulated LLM judge: position, verbosity and self-preference biases, the swap test, Cohen's κ, a pass/fail judge corrected with a calibration set (since 1.9) |
+| `evals/trajectory.py` / `.ts` | a rule-based grader over event traces: waste, unsafe actions, verification, false claims |
+| `evals/scaffold.py` / `.ts` | one stochastic model on a twelve-task suite under many scaffolds (tools, call style, turn budget), through the harness; cost per task and the Pareto front |
+| `evals/contamination.py` / `.ts` | leaked tasks, n-gram overlap, canary strings and a time split on the synthetic benchmark |
 
 ## Policies
 
@@ -378,8 +384,47 @@ number is in [`fixtures/evals_results.md`](fixtures/evals_results.md).
   tie (341/500 against 339/500); sample-size tables; two agents compared on the same tasks, with the variance split
   between tasks and runs.
 
+## Graders, harnesses, cost and contamination (since 1.9)
+
+Ported statement for statement to `ts/src/evals/`, checked against
+[`fixtures/evals2_fixtures.json`](fixtures/evals2_fixtures.json) with no tolerance (every frame, every run of the
+scaffold study through the TS harness); every number is in [`fixtures/evals2_results.md`](fixtures/evals2_results.md).
+
+- **`stats`** gains Cohen's κ (tested against statsmodels' `cohens_kappa`), the Rogan–Gladen correction of a rate
+  measured by an imperfect grader with its delta-method standard error when sensitivity and specificity are estimated
+  on a calibration set (Greenland 1988; tested against finite differences and by simulated coverage), and the
+  Pareto front of (cost, success) points (tested against its definition).
+- **`judge`**: each response has a latent quality, a length and a "judge's own family" flag; the judge prefers the
+  first of two responses with probability logistic((Δquality + β_len Δlength + β_self Δown + β_pos)/τ), a
+  Bradley–Terry choice with the three biases [Zheng et al. 2023](https://arxiv.org/abs/2306.05685) measured in
+  GPT-4 as a judge. Every pair is judged in both orders (the swap test): an order-dependent verdict becomes a tie.
+  Swapping removes the position term exactly and leaves length and self-preference alone. A pass/fail judge with
+  sensitivity Se and specificity Sp reports π·Se + (1 − π)(1 − Sp), which a calibration set corrects.
+- **`trajectory`**: grades the engine's own traces (scripted runs and the three recorded Qwen2.5 traces replayed)
+  on waste (malformed output, failed and repeated calls), unsafe shell actions (run or stopped by the harness),
+  verification (tests run after the last edit) and the final claim; three verdicts (outcome, self-report,
+  trajectory) and an illustrative process score. The recorded ReAct run says "The tests are now passing" without
+  having edited anything: a self-report grader passes it, the outcome and trajectory graders do not.
+- **`scaffold`**: `FixerModel`, a seeded stochastic policy (not a language model) whose edits are right with the
+  item-response probability and correlated within a task, on twelve one-function repositories; it reads, edits,
+  runs the tests when it has a shell, and edits again until they pass or the turn budget runs out; text (ReAct)
+  calls come out malformed more often than native ones. Every configuration (two agents × tools × style × budget)
+  runs every task eight times through the harness, with common random numbers across scaffolds, so the
+  configurations can be compared run by run (McNemar). Costs and tokens are the harness's own accounting.
+- **`contamination`**: tasks with random token texts and creation dates; a share of those before the training
+  cutoff leak, verbatim or paraphrased; a leaked task is answered from memory with a fixed probability. 8-gram
+  overlap finds every verbatim leak and almost no paraphrase ((1 − 0.25)^8 ≈ 0.10 of a paraphrase's n-grams
+  survive); a canary string says only that something leaked; the score before and after the cutoff separates.
+  n-gram contamination checks follow GPT-3's ([Brown et al. 2020](https://arxiv.org/abs/2005.14165)); canaries,
+  BIG-bench's ([Srivastava et al. 2022](https://arxiv.org/abs/2206.04615)); time splits, LiveCodeBench's
+  ([Jain et al. 2024](https://arxiv.org/abs/2403.07974)).
+
 ## Versions
 
+- **1.9.0** (2026-10-13): `evals/judge.py`, `trajectory.py`, `scaffold.py`, `contamination.py` and five functions
+  in `stats` (`confusion`, `cohen_kappa`, `rogan_gladen`, `corrected_rate`, `pareto_front`); new fixture files
+  `fixtures/evals2_fixtures.json` and `fixtures/evals2_results.md`, and `ts/src/evals2_data.json`. Every 1.8 fixture
+  is unchanged apart from the `engine` field.
 - **1.8.0** (2026-10-13): the `evals` package (`mathx`, `stats`, `generator`, `swe`, `study`); new fixture files
   `fixtures/evals_fixtures.json` and `fixtures/evals_results.md`, and `ts/src/evals_data.json`. Every 1.7 fixture is
   unchanged apart from the `engine` field.
@@ -484,6 +529,12 @@ in Python and in TypeScript.
   skill, every within-task correlation and every chapter configuration are illustrative: nothing is fitted to a real
   benchmark or model. The SWE-style task is the engine's three-function toy repository. The statistics are not
   illustrative: they are the standard estimators, checked against scipy and statsmodels.
+- **Graders, harnesses, contamination (1.9)**: every response quality and length, the judge's biases (position 0.8,
+  length 0.6, self 0.8), its noise (τ 0.3), the pass/fail judge's Se 0.95 and Sp 0.7, the process score's weights,
+  the task suite's difficulties, both agents' skills, the malformed-output rates (0.02 native, 0.12 ReAct), the
+  pairing of the two agents with two list prices, and every leak, paraphrase and memorisation rate are
+  illustrative. Token counts and costs are the harness's real accounting of the simulated runs. The contamination
+  "texts" are random token ids, not language.
 
 ## Run it
 

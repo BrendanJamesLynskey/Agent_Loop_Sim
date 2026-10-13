@@ -377,3 +377,77 @@ def mde_unpaired(n: int, p: float, alpha: float = ALPHA, power: float = 0.8) -> 
 def mde_paired(n: int, psi: float, alpha: float = ALPHA, power: float = 0.8) -> float:
     """The same on n shared tasks with discordance ψ (small-difference approximation)."""
     return (zcrit(alpha) + norm_ppf(power)) * math.sqrt(psi / n)
+
+
+# ── graders and cost (since 1.9) ─────────────────────────────────────────
+
+
+def confusion(truth: list[str], judged: list[str], labels: list[str]) -> list[list[int]]:
+    """Counts by (truth row, judged column), in the order of ``labels``."""
+    t = [[0 for _ in labels] for _ in labels]
+    for x, y in zip(truth, judged):
+        t[labels.index(x)][labels.index(y)] += 1
+    return t
+
+
+def cohen_kappa(table: list[list[int]]) -> dict[str, float]:
+    """Cohen's κ (1960) from a square table: (p_o − p_e)/(1 − p_e), with p_o the share on the diagonal
+    and p_e the agreement expected by chance from the two raters' marginal shares."""
+    k = len(table)
+    n = 0.0
+    diag = 0.0
+    for i in range(k):
+        for j in range(k):
+            n = n + table[i][j]
+        diag = diag + table[i][i]
+    po = diag / n
+    pe = 0.0
+    for i in range(k):
+        row = 0.0
+        col = 0.0
+        for j in range(k):
+            row = row + table[i][j]
+            col = col + table[j][i]
+        pe = pe + (row / n) * (col / n)
+    kappa = (po - pe) / (1.0 - pe) if pe < 1.0 else 1.0
+    return {"n": n, "po": po, "pe": pe, "kappa": kappa}
+
+
+def rogan_gladen(p_obs: float, se: float, sp: float) -> float:
+    """The true rate behind an observed rate from an imperfect grader with sensitivity ``se`` and
+    specificity ``sp`` (Rogan and Gladen 1978): (p_obs + sp − 1)/(se + sp − 1), clipped to [0, 1]."""
+    x = (p_obs + sp - 1.0) / (se + sp - 1.0)
+    return 0.0 if x < 0.0 else (1.0 if x > 1.0 else x)
+
+
+def corrected_rate(k: int, n: int, se_k: int, se_n: int, sp_k: int, sp_n: int, alpha: float = ALPHA) -> dict[str, Any]:
+    """A judge-graded rate corrected for the judge's errors, which are estimated on a labelled
+    calibration set (``se_k`` of ``se_n`` true passes judged pass; ``sp_k`` of ``sp_n`` true fails
+    judged fail). The standard error comes from the delta method (Greenland 1988):
+    Var(π̂) = [Var(p) + π̂² Var(Se) + (1 − π̂)² Var(Sp)] / (Se + Sp − 1)²."""
+    p = k / n
+    se = se_k / se_n
+    sp = sp_k / sp_n
+    j = se + sp - 1.0
+    pi = rogan_gladen(p, se, sp)
+    v = (p * (1.0 - p) / n + pi * pi * se * (1.0 - se) / se_n + (1.0 - pi) * (1.0 - pi) * sp * (1.0 - sp) / sp_n) / (j * j)
+    s = math.sqrt(v)
+    z = zcrit(alpha)
+    return {"observed": p, "se": se, "sp": sp, "youden": j, "corrected": pi, "stderr": s,
+            "naive_stderr": math.sqrt(p * (1.0 - p) / n) / j, "ci": _clip(pi - z * s, pi + z * s)}
+
+
+def pareto_front(points: list[list[float]]) -> list[int]:
+    """Indices of the points [cost, success] no other point beats (cost no higher and success no
+    lower, one of them strictly), in order of cost (then success, highest first)."""
+    keep = []
+    for i, (c, s) in enumerate(points):
+        beaten = False
+        for j, (c2, s2) in enumerate(points):
+            if j != i and c2 <= c and s2 >= s and (c2 < c or s2 > s):
+                beaten = True
+                break
+        if not beaten:
+            keep.append(i)
+    keep.sort(key=lambda i: (points[i][0], -points[i][1], i))
+    return keep
