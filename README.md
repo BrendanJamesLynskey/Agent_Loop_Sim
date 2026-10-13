@@ -15,7 +15,8 @@ reranker, measured with recall@k, MRR and nDCG on a fixed, openly licensed corpu
 reducers, checkpoints, interrupts, time travel) checked checkpoint for checkpoint against real, pinned LangGraph, and
 durable execution (an event history, replay, non-determinism and idempotency keys); since 1.7, `Send` (map-reduce) in
 that runtime, multi-agent patterns with per-agent token accounting, a **discrete-event simulation** of many workflows
-against a rate-limited model endpoint, and reliability maths tested against simulation.
+against a rate-limited model endpoint, and reliability maths tested against simulation; since 1.8, **evals**: the statistics of evaluating agents (pass@k and pass^k, Wilson, exact and bootstrap intervals,
+clustered errors, McNemar and power) on a synthetic item-response benchmark, and one SWE-bench-style task end to end.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -58,6 +59,11 @@ pinned commit.
 | `context/views.py` / `.ts` | frames for the Context site: BM25 term by term, nearest neighbours, RRF rank by rank and the rerank, chunk boundaries |
 | `context/mathx.py` / `.ts` | fdlibm's natural logarithm, bit for bit in both languages (for BM25's IDF and nDCG) |
 | `protocols/security.py` / `.ts` | tool poisoning, a confused deputy and state-handle hijacking, each with and without its defence (since 1.3) |
+| `evals/mathx.py` / `.ts` | exp, ln Γ, the incomplete beta function and the normal CDF and quantile, bit for bit in both languages (since 1.8) |
+| `evals/stats.py` / `.ts` | pass@k, pass^k, Wald/Wilson/exact/bootstrap intervals and their coverage, clustered SEs, McNemar, paired comparisons, power and sample size |
+| `evals/generator.py` / `.ts` | a synthetic item-response benchmark: task difficulty, agent skill, runs correlated within a task |
+| `evals/swe.py` / `.ts` | one SWE-bench-style task: issue, patch (the harness), hidden FAIL_TO_PASS / PASS_TO_PASS tests, verdict |
+| `evals/study.py` / `.ts` | the Evals site's chapter studies and their frames |
 
 ## Policies
 
@@ -339,8 +345,44 @@ Ported statement for statement to `ts/src/orchestration/`, checked against
   input bucket never exceeded over any window, Little's law as an identity, and the reliability closed forms
   (12 configurations, 6,000 runs each).
 
+## Evals (since 1.8)
+
+The statistics of evaluating agents, with a synthetic benchmark to show them on. Ported statement for statement to
+`ts/src/evals/`, checked against [`fixtures/evals_fixtures.json`](fixtures/evals_fixtures.json) with no tolerance; every
+number is in [`fixtures/evals_results.md`](fixtures/evals_results.md).
+
+- **`mathx`**: special functions both languages compute bit for bit: fdlibm's `exp` and `log`, ln Γ (shift above 20,
+  then Stirling's series), the regularised incomplete beta function (Lentz's continued fraction), the normal CDF
+  (Marsaglia's 2004 series; Laplace's continued fraction in the tails) and its quantile (Wichura's AS 241, transcribed
+  from R's `qnorm.c`). Tested against the standard library and scipy.
+- **`stats`**: the unbiased **pass@k** of [Chen et al. 2021](https://arxiv.org/abs/2107.03374) (their product form)
+  and **pass^k** of [τ-bench](https://arxiv.org/abs/2406.12045), C(c, k)/C(n, k), with the biased plug-in for
+  contrast; Wald, Wilson, Clopper–Pearson (exact) and percentile-bootstrap intervals, and each closed-form interval's
+  exact coverage; cluster-robust (CR1) standard errors with tasks as clusters; McNemar's test (exact and
+  continuity-corrected); the paired and unpaired difference between two agents; the two-proportion z test; power and
+  sample size for unpaired (Fleiss) and paired (Connor 1987) designs. Tested against scipy and statsmodels
+  (`proportion_confint`, `mcnemar`, `proportions_ztest`, OLS with cluster-robust covariance), exact combinatorics,
+  and simulation for the power formulas.
+- **`generator`**: a synthetic benchmark under a two-parameter logistic item-response model (task difficulty b and
+  discrimination a, agent skill θ, P(pass) = 1/(1 + e^(−a(θ − b))); IRT applied to LLM benchmarks by
+  [tinyBenchmarks](https://arxiv.org/abs/2402.14992)). A population of 4,000 tasks is drawn from a seed; a benchmark
+  samples tasks from it (the super-population view of [Miller 2024](https://arxiv.org/abs/2411.00640)). Runs on a
+  task share one outcome with probability sqrt(ρ), so two runs on the same task correlate exactly ρ.
+- **`swe`**: one SWE-bench-style task ([Jimenez et al. 2023](https://arxiv.org/abs/2310.06770)) end to end: an issue,
+  the harness with a scripted model making one of three patches (the right fix, an overfit one, one that breaks
+  another function), hidden FAIL_TO_PASS and PASS_TO_PASS tests in the fake `pytest`, and the verdict. With weak
+  hidden tests the overfit patch counts as resolved, the problem [SWE-Bench+](https://arxiv.org/abs/2410.06992)
+  reports.
+- **`study`**: the Evals site's chapter studies, each with frames and captions: runs accumulating with the naive and
+  clustered intervals; pass@k against pass^k as k grows; the benchmark repeated, with every interval's coverage; the
+  tie (341/500 against 339/500); sample-size tables; two agents compared on the same tasks, with the variance split
+  between tasks and runs.
+
 ## Versions
 
+- **1.8.0** (2026-10-13): the `evals` package (`mathx`, `stats`, `generator`, `swe`, `study`); new fixture files
+  `fixtures/evals_fixtures.json` and `fixtures/evals_results.md`, and `ts/src/evals_data.json`. Every 1.7 fixture is
+  unchanged apart from the `engine` field.
 - **1.7.0** (2026-10-10): `Send` in the graph runtime (op `collect` and an optional `when` condition on any op) with
   nine new LangGraph conformance sessions; `orchestration/patterns.py`, `des.py`, `reliability.py`, `study.py`; new
   fixture files `fixtures/orchestration2_fixtures.json` and `fixtures/orchestration2_results.md`. Every 1.6 fixture
@@ -438,6 +480,10 @@ in Python and in TypeScript.
   defaults (e = 0.05, w = 0.03, a verifier with recall 0.8 and 5% false rejections) are all illustrative. A timed-out
   attempt is billed in full and an errored one not at all (assumptions). The client waits for capacity rather than
   collecting 429s.
+- **Evals (1.8)**: the task population (4,000 tasks, difficulty sd 1.3, discrimination 0.7 to 1.9), every agent's
+  skill, every within-task correlation and every chapter configuration are illustrative: nothing is fitted to a real
+  benchmark or model. The SWE-style task is the engine's three-function toy repository. The statistics are not
+  illustrative: they are the standard estimators, checked against scipy and statsmodels.
 
 ## Run it
 

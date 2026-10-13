@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-loop-sim"
-version = "1.7.0"
-description = "A deterministic agent-harness simulator: the loop, tool calls, permissions, context management, prompt caching, sub-agents, hooks and error recovery, plus MCP protocol state machines checked against the official SDK, a LangGraph-conformant graph runtime and durable execution, with a real tokenizer, replayable traces and a TypeScript port that matches it exactly."
+version = "1.8.0"
+description = "A deterministic agent-harness simulator: the loop, tool calls, permissions, context management, prompt caching, sub-agents, hooks and error recovery, plus MCP protocol state machines checked against the official SDK, a LangGraph-conformant graph runtime and durable execution, the statistics of agent evaluation on a synthetic benchmark, with a real tokenizer, replayable traces and a TypeScript port that matches it exactly."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -13,7 +13,7 @@ authors = [{ name = "Brendan Lynskey" }]
 dependencies = ["regex>=2023.0"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "jsonschema>=4.0"]
+dev = ["pytest>=8.0", "jsonschema>=4.0", "numpy>=1.26", "scipy>=1.11", "statsmodels>=0.14"]
 conformance = ["mcp==2.3.0", "a2a-sdk[http-server]==1.2.2", "langgraph==1.2.14", "langgraph-checkpoint==4.2.0"]
 offline = ["onnxruntime==1.30.0", "tokenizers==0.23.2", "huggingface_hub==1.33.0", "numpy==2.5.3"]
 

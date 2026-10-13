@@ -44,6 +44,7 @@ from context_fixtures import context_fixtures  # noqa: E402
 from context2_fixtures import context2_fixtures  # noqa: E402
 from orchestration_fixtures import orchestration_fixtures  # noqa: E402
 from orchestration2_fixtures import orchestration2_fixtures  # noqa: E402
+from evals_fixtures import evals_fixtures  # noqa: E402
 
 TEXTS = [
     "Hello, world! It's a test. They'll've DON'T  x\n\n  y\t\tz   \n",
@@ -340,6 +341,10 @@ def build() -> dict[str, str]:
     o2fx, o2md = orchestration2_fixtures()
     files["fixtures/orchestration2_fixtures.json"] = json.dumps(o2fx, ensure_ascii=False, separators=(",", ":")) + "\n"
     files["fixtures/orchestration2_results.md"] = o2md
+    edata, efx, emd = evals_fixtures(tok)
+    files["ts/src/evals_data.json"] = json.dumps(edata, ensure_ascii=False, indent=1) + "\n"
+    files["fixtures/evals_fixtures.json"] = json.dumps(efx, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n"
+    files["fixtures/evals_results.md"] = emd
     for tid, tr in traces.items():
         files[f"traces/{tid}.events.jsonl"] = dumps_jsonl(tr["events"])
     return files

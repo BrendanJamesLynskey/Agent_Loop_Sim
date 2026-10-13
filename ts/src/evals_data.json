@@ -1,0 +1,334 @@
+{
+ "version": "1.8.0",
+ "population": {
+  "size": 4000,
+  "difficulty_sd": 1.3,
+  "a_lo": 0.7,
+  "a_hi": 1.9,
+  "seed": 2501
+ },
+ "loop": {
+  "theta": 0.6,
+  "tasks": 40,
+  "runs": 3,
+  "rho": 0.5,
+  "seed": 2511
+ },
+ "passk": {
+  "theta": -0.2,
+  "tasks": 30,
+  "n": 10,
+  "rho": 0.3,
+  "seed": 2531
+ },
+ "bias": {
+  "mu": 0.3,
+  "n": 10,
+  "k": 5,
+  "reps": 4000,
+  "seed": 2533
+ },
+ "unc": {
+  "theta": 0.4,
+  "sizes": [
+   50,
+   200,
+   500
+  ],
+  "modes": [
+   "tasks",
+   "runs"
+  ],
+  "replicates": 30,
+  "boot": 200,
+  "seed": 2541
+ },
+ "cover": {
+  "sizes": [
+   20,
+   100
+  ],
+  "ps": [
+   0.02,
+   0.04,
+   0.06,
+   0.08,
+   0.1,
+   0.12,
+   0.14,
+   0.16,
+   0.18,
+   0.2,
+   0.22,
+   0.24,
+   0.26,
+   0.28,
+   0.3,
+   0.32,
+   0.34,
+   0.36,
+   0.38,
+   0.4,
+   0.42,
+   0.44,
+   0.46,
+   0.48,
+   0.5,
+   0.52,
+   0.54,
+   0.56,
+   0.58,
+   0.6,
+   0.62,
+   0.64,
+   0.66,
+   0.68,
+   0.7,
+   0.72,
+   0.74,
+   0.76,
+   0.78,
+   0.8,
+   0.82,
+   0.84,
+   0.86,
+   0.88,
+   0.9,
+   0.92,
+   0.94,
+   0.96,
+   0.98
+  ]
+ },
+ "tie": {
+  "k1": 341,
+  "k2": 339,
+  "n": 500
+ },
+ "paired": {
+  "theta_a": 0.45,
+  "theta_b": 0.1,
+  "tasks": 300,
+  "runs": [
+   1,
+   3,
+   5
+  ],
+  "rho": 0.5,
+  "batch": 10,
+  "seed": 2551
+ },
+ "sizes": {
+  "margins": [
+   0.05,
+   0.03,
+   0.02,
+   0.01
+  ],
+  "margin_ps": [
+   0.5,
+   0.8
+  ],
+  "deltas": [
+   0.1,
+   0.05,
+   0.03,
+   0.01
+  ],
+  "base": 0.6,
+  "psi": 0.2
+ },
+ "alpha": 0.05,
+ "methods": [
+  "wald",
+  "wilson",
+  "exact",
+  "bootstrap"
+ ],
+ "swe": {
+  "issue": "add() returns the wrong answer\n\n`add(2, 3)` returns -1, but it should return 5. sub() and mul() look fine.",
+  "base": {
+   "README.md": "# tinycalc\n\nThree arithmetic helpers and their tests. Run the tests with `pytest`.\n",
+   "calc.py": "\"\"\"Tiny calculator functions.\"\"\"\n\n\ndef add(a, b):\n    return a - b\n\n\ndef sub(a, b):\n    return a - b\n\n\ndef mul(a, b):\n    return a * b\n",
+   "test_calc.py": "from calc import sub, mul\n\n\ndef test_sub():\n    assert sub(7, 4) == 3\n\n\ndef test_mul():\n    assert mul(6, 7) == 42\n"
+  },
+  "test_patches": {
+   "thorough": "from calc import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n    assert add(-1, 1) == 0\n    assert add(10, 0) == 10\n",
+   "weak": "from calc import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n"
+  },
+  "patches": {
+   "fix": [
+    {
+     "thought": "Look at the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "thought": "Read the code the issue is about.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Change the code.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a + b"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Run the tests.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "final": "Fixed add(): it subtracted instead of adding."
+    }
+   ],
+   "overfit": [
+    {
+     "thought": "Look at the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "thought": "Read the code the issue is about.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Change the code.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a * b - 1"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Run the tests.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "final": "add(2, 3) now returns 5."
+    }
+   ],
+   "collateral": [
+    {
+     "thought": "Look at the repository.",
+     "calls": [
+      {
+       "name": "list_files",
+       "args": {}
+      }
+     ]
+    },
+    {
+     "thought": "Read the code the issue is about.",
+     "calls": [
+      {
+       "name": "read_file",
+       "args": {
+        "path": "calc.py"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Change the code.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def add(a, b):\n    return a - b",
+        "new_text": "def add(a, b):\n    return a + b"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Change the code.",
+     "calls": [
+      {
+       "name": "edit_file",
+       "args": {
+        "path": "calc.py",
+        "old_text": "def sub(a, b):\n    return a - b",
+        "new_text": "def sub(a, b):\n    return a + b"
+       }
+      }
+     ]
+    },
+    {
+     "thought": "Run the tests.",
+     "calls": [
+      {
+       "name": "run_shell",
+       "args": {
+        "command": "pytest"
+       }
+      }
+     ]
+    },
+    {
+     "final": "Fixed the arithmetic in calc.py."
+    }
+   ]
+  },
+  "titles": {
+   "fix": "the right fix",
+   "overfit": "an overfit patch",
+   "collateral": "a fix that breaks sub()"
+  },
+  "fail_to_pass": [
+   "test_issue.py::test_add"
+  ],
+  "pass_to_pass": [
+   "test_calc.py::test_sub",
+   "test_calc.py::test_mul"
+  ]
+ }
+}

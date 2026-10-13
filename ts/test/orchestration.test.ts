@@ -16,7 +16,7 @@ const fx = JSON.parse(readFileSync(join(ROOT, "fixtures/orchestration_fixtures.j
 const rec = JSON.parse(readFileSync(join(ROOT, "fixtures/langgraph_recordings.json"), "utf8")) as Obj;
 
 describe("engine version", () => {
-  it("matches the fixtures", () => expect(fx.engine).toBe("1.7.0"));
+  it("matches the fixtures", () => expect(fx.engine).toBe("1.8.0"));
 });
 
 describe("helpers", () => {
