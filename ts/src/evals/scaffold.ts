@@ -304,3 +304,29 @@ export function captionRun(confId: string, r: Obj): string {
     `; $${fixed(r.cost + 0.0, 4)}.`
   );
 }
+
+/** Chapter 10's animation: configurations placed cheapest first, with the running Pareto front. */
+export function costFrames(cost: Obj, agent: string | null = null): Obj[] {
+  const pts = (cost.points as Obj[]).filter((p) => agent === null || p.agent === agent);
+  pts.sort((p, q) => {
+    if (p.cost !== q.cost) return p.cost < q.cost ? -1 : 1;
+    if (p.rate !== q.rate) return p.rate > q.rate ? -1 : 1;
+    return p.id < q.id ? -1 : p.id > q.id ? 1 : 0;
+  });
+  const frames: Obj[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const seen = pts.slice(0, i + 1);
+    const front = S.paretoFront(seen.map((q) => [q.cost as number, q.rate as number])).map((j) => seen[j]!.id as string);
+    const p = pts[i]!;
+    const on = front.includes(p.id);
+    const d = describe(p.id);
+    const cap =
+      `${d.slice(0, 1).toUpperCase()}${d.slice(1)}: ${fixed(p.rate * 100.0 + 0.0, 1)}% resolved ` +
+      `at $${fixed(p.cost + 0.0, 4)} a task, $${fixed(p.per_solved + 0.0, 4)} per solved task. ` +
+      (on
+        ? "On the front: nothing placed so far is both cheaper and better."
+        : "Off the front: something placed so far is cheaper and at least as good.");
+    frames.push({ id: p.id, front, on, caption: cap });
+  }
+  return frames;
+}

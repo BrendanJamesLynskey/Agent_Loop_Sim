@@ -312,3 +312,23 @@ def caption_run(conf_id: str, r: dict[str, Any]) -> str:
     return (f"{TASKS[r['t']]['name']}(), run {r['j'] + 1}: {'resolved' if r['resolved'] else 'not resolved'} after "
             f"{r['turns']} model calls and {r['edits']} edit{'s' if r['edits'] != 1 else ''}"
             + (f", {r['malformed']} malformed" if r["malformed"] else "") + f"; ${fixed(r['cost'] + 0.0, 4)}.")
+
+
+def cost_frames(cost: dict[str, Any], agent: str | None = None) -> list[dict[str, Any]]:
+    """Chapter 10's animation: the configurations placed on the cost–success plane one at a time, cheapest
+    first (``agent`` keeps only that agent's), each frame with the Pareto front of the points placed so
+    far and a caption."""
+    pts = [p for p in cost["points"] if agent is None or p["agent"] == agent]
+    pts = sorted(pts, key=lambda p: (p["cost"], -p["rate"], p["id"]))
+    frames = []
+    for i in range(len(pts)):
+        seen = pts[: i + 1]
+        front = [seen[j]["id"] for j in S.pareto_front([[q["cost"], q["rate"]] for q in seen])]
+        p = pts[i]
+        on = p["id"] in front
+        cap = (f"{describe(p['id'])[:1].upper()}{describe(p['id'])[1:]}: {fixed(p['rate'] * 100.0 + 0.0, 1)}% resolved "
+               f"at ${fixed(p['cost'] + 0.0, 4)} a task, ${fixed(p['per_solved'] + 0.0, 4)} per solved task. "
+               + ("On the front: nothing placed so far is both cheaper and better." if on else
+                  "Off the front: something placed so far is cheaper and at least as good."))
+        frames.append({"id": p["id"], "front": front, "on": on, "caption": cap})
+    return frames

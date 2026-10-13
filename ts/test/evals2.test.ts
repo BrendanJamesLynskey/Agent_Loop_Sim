@@ -66,6 +66,10 @@ describe("the scaffold study", () => {
     }
   });
   it("cost", () => expect(norm(F.costStudy(st))).toEqual(fx.cost));
+  it("cost frames", () => {
+    for (const a of ["all", "small", "large"])
+      expect(norm(F.costFrames(F.costStudy(st), a === "all" ? null : a))).toEqual(fx.cost_frames[a]);
+  });
 });
 
 describe("contamination", () => {

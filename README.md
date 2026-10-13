@@ -68,7 +68,7 @@ Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.a
 | `evals/study.py` / `.ts` | the Evals site's chapter studies and their frames |
 | `evals/judge.py` / `.ts` | a simulated LLM judge: position, verbosity and self-preference biases, the swap test, Cohen's κ, a pass/fail judge corrected with a calibration set (since 1.9) |
 | `evals/trajectory.py` / `.ts` | a rule-based grader over event traces: waste, unsafe actions, verification, false claims |
-| `evals/scaffold.py` / `.ts` | one stochastic model on a twelve-task suite under many scaffolds (tools, call style, turn budget), through the harness; cost per task and the Pareto front |
+| `evals/scaffold.py` / `.ts` | one stochastic model on a twelve-task suite under many scaffolds (tools, call style, turn budget), through the harness; cost per task, the Pareto front and its frames |
 | `evals/contamination.py` / `.ts` | leaked tasks, n-gram overlap, canary strings and a time split on the synthetic benchmark |
 
 ## Policies

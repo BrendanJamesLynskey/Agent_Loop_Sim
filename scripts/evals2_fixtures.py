@@ -67,6 +67,7 @@ def evals2_fixtures(tok: Any) -> tuple[dict[str, Any], dict[str, Any], str]:
                      "paired": [F.paired_scaffolds(sc, a, b) for a, b in PAIRS], "examples": examples,
                      "files": {t["name"]: F.files_for(t) for t in F.TASKS}},
         "cost": F.cost_study(sc),
+        "cost_frames": {a: F.cost_frames(F.cost_study(sc), None if a == "all" else a) for a in ["all", "small", "large"]},
         "contamination": C.contamination_study(),
         "ngrams": C.ngrams([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 8),
     }
