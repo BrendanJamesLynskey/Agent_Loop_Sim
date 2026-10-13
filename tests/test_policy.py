@@ -346,3 +346,21 @@ def test_sandbox_action_frames():
     assert "not what it carries" in full[-1]["caption"]
     none = T.sandbox_action_frames([])
     assert all(f["outcome"] in ("works", "open") for f in none)
+
+
+def test_decisions_are_monotone_in_grants():
+    """Shrinking a grant (any of its tools, scopes, destinations or private destinations) never relaxes a decision."""
+    def subsets(xs):
+        return [[x for i, x in enumerate(xs) if m >> i & 1] for m in range(1 << len(xs))]
+    scopes = K.BROAD["scopes"]
+    big = K.BROAD
+    for t in K.TOOL_ORDER:
+        for d in (K.TOOLS[t]["dests"] if K.TOOLS[t]["egress"] else [None]):
+            for lab in LABS:
+                top = E.RANK[E.decide(t, lab, d, big)["decision"]]
+                for tools in [K.TOOL_ORDER, [x for x in K.TOOL_ORDER if x != t]]:
+                    for sc in [scopes, [s for s in scopes if s != K.TOOLS[t]["scope"]]]:
+                        for eg in subsets(K.DEST_ORDER):
+                            for pd in subsets(["self"]):
+                                small = {"tools": tools, "scopes": sc, "egress": eg, "private_dests": pd}
+                                assert E.RANK[E.decide(t, lab, d, small)["decision"]] >= top
