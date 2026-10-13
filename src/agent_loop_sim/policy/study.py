@@ -67,12 +67,13 @@ def boundary_frames(plan_id: str, mode: str = "context", grant: dict[str, Any] |
         t = TOOLS[r["tool"]]
         if r["decision"] == "skip":
             frames.append({"step": r["i"], "from": a, "to": b, "value": None, "label": None, "decision": "skip",
-                           "values": dict(known), "ctx": r["ctx"],
+                           "values": dict(known), "ctx": L.join_all(list(known.values())),
                            "caption": f"Step {n}: {r['tool']} is skipped: an input it needs was never produced."})
             continue
         where = {"tools": "a tool", "outside": "the outside world (" + str(r["dest"]) + ")", "model": "the model"}[b]
+        # the call is made before its result returns: the context is what the model holds now
         frames.append({"step": r["i"], "from": a, "to": b, "value": ",".join(r["args"]), "label": r["effective"],
-                       "decision": r["decision"], "values": dict(known), "ctx": r["ctx"],
+                       "decision": r["decision"], "values": dict(known), "ctx": L.join_all(list(known.values())),
                        "caption": f"Step {n}: {r['tool']} is called; its arguments and control carry "
                                   f"{_lab(r['effective'])} to {where}. {r['why'][0].upper()}{r['why'][1:]}."})
         if r["ran"] and r["out_label"] is not None:

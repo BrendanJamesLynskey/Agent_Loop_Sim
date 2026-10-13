@@ -73,7 +73,7 @@ export function boundaryFrames(planId: string, mode = "context", grant: Obj | nu
         label: null,
         decision: "skip",
         values: { ...known },
-        ctx: r.ctx,
+        ctx: L.joinAll(Object.values(known) as L.Label[]),
         caption: `Step ${n}: ${r.tool} is skipped: an input it needs was never produced.`,
       });
       continue;
@@ -87,7 +87,8 @@ export function boundaryFrames(planId: string, mode = "context", grant: Obj | nu
       label: r.effective,
       decision: r.decision,
       values: { ...known },
-      ctx: r.ctx,
+      // the call is made before its result returns: the context is what the model holds now
+      ctx: L.joinAll(Object.values(known) as L.Label[]),
       caption:
         `Step ${n}: ${r.tool} is called; its arguments and control carry ` +
         `${lab(r.effective)} to ${where}. ${r.why[0].toUpperCase()}${r.why.slice(1)}.`,
