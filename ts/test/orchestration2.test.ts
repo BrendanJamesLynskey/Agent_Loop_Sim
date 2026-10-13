@@ -16,7 +16,7 @@ const ROOT = join(__dirname, "..", "..");
 const fx = JSON.parse(readFileSync(join(ROOT, "fixtures/orchestration2_fixtures.json"), "utf8")) as Obj;
 
 describe("engine version and constants", () => {
-  it("version", () => expect(fx.engine).toBe("1.7.0"));
+  it("version", () => expect(fx.engine).toBe("1.8.0"));
   it("constants", () => {
     expect(P.TASK).toEqual(fx.consts.task);
     expect(P.MODEL).toEqual(fx.consts.model);
