@@ -426,6 +426,12 @@ export function dualFrames(pid: string): Obj {
 
 // ── chapter 8 ────────────────────────────────────────────────────────────
 
+function routeText(r: Obj): string {
+  if (r.routes.length === 0) return "; no steered attempt has a route.";
+  if (r.reach === 0.0) return "; the policy closes every route a steered attempt could take.";
+  return `; a steered attempt's best route passes with ${pct(r.reach, 0)}.`;
+}
+
 export function approvalFrames(th: string, suite: Obj[] | null = null): Obj {
   const tasks = suite ?? U.makeSuite();
   const d = U.withThreshold(U.defence("policy"), th);
@@ -447,7 +453,7 @@ export function approvalFrames(th: string, suite: Obj[] | null = null): Obj {
     const cap =
       `${p.id}: ${p.title}. It ${how}, with ${r.prompts} prompt${r.prompts === 1 ? "" : "s"}` +
       (r.prompts > 0 ? ` (a mistaken approval at the last: ${pct(r.miss, 0)})` : "") +
-      (r.routes.length > 0 ? `; a steered attempt's best route passes with ${pct(r.reach, 0)}.` : "; no steered attempt has a route.");
+      routeText(r);
     frames.push({ task: p.id, title: p.title, steps, row: r, prompts, risky, gated, caption: cap });
   });
   return { threshold: th, frames, summary: U.summarise(rows) };

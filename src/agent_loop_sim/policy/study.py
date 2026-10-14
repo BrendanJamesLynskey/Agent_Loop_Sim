@@ -376,6 +376,14 @@ def dual_frames(pid: str) -> dict[str, Any]:
 # ── chapter 8 ────────────────────────────────────────────────────────────
 
 
+def _route_text(r: dict[str, Any]) -> str:
+    if not r["routes"]:
+        return "; no steered attempt has a route."
+    if r["reach"] == 0.0:
+        return "; the policy closes every route a steered attempt could take."
+    return f"; a steered attempt's best route passes with {pct(r['reach'], 0)}."
+
+
 def approval_frames(th: str, suite: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """The label policy (classic agent, broad grant) under one approval threshold, task by task over the first
     tasks of the suite, with running totals; and the whole suite's summary."""
@@ -402,8 +410,7 @@ def approval_frames(th: str, suite: list[dict[str, Any]] | None = None) -> dict[
             how = "completes"
         cap = (f"{p['id']}: {p['title']}. It {how}, with {r['prompts']} prompt{'' if r['prompts'] == 1 else 's'}"
                + (f" (a mistaken approval at the last: {pct(r['miss'], 0)})" if r["prompts"] > 0 else "")
-               + (f"; a steered attempt's best route passes with {pct(r['reach'], 0)}." if r["routes"] else
-                  "; no steered attempt has a route."))
+               + _route_text(r))
         frames.append({"task": p["id"], "title": p["title"], "steps": steps, "row": r, "prompts": prompts,
                        "risky": risky, "gated": gated, "caption": cap})
     return {"threshold": th, "frames": frames, "summary": U.summarise(rows)}
