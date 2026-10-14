@@ -18,7 +18,10 @@ that runtime, multi-agent patterns with per-agent token accounting, a **discrete
 against a rate-limited model endpoint, and reliability maths tested against simulation; since 1.8, **evals**: the statistics of evaluating agents (pass@k and pass^k, Wilson, exact and bootstrap intervals,
 clustered errors, McNemar and power) on a synthetic item-response benchmark, and one SWE-bench-style task end to end;
 since 1.9, **graders and pitfalls**: a simulated LLM judge with its biases and the swap test, a trajectory grader over
-the traces, one model under many harnesses (and what each configuration costs), and benchmark contamination.
+the traces, one model under many harnesses (and what each configuration costs), and benchmark contamination; since
+1.10, **policy**: agent security on the defender's side, over abstract labels only (where a value came from and how
+secret it is), with a policy engine, least privilege, the "lethal trifecta" check, audience-bound tokens, sandbox
+layers and the maths of layered, imperfect detectors.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -70,6 +73,12 @@ Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.a
 | `evals/trajectory.py` / `.ts` | a rule-based grader over event traces: waste, unsafe actions, verification, false claims |
 | `evals/scaffold.py` / `.ts` | one stochastic model on a twelve-task suite under many scaffolds (tools, call style, turn budget), through the harness; cost per task, the Pareto front and its frames |
 | `evals/contamination.py` / `.ts` | leaked tasks, n-gram overlap, canary strings and a time split on the synthetic benchmark |
+| `policy/labels.py` / `.ts` | labels: source (user, trusted tool, untrusted) × sensitivity (public, private), a product lattice (since 1.10) |
+| `policy/engine.py` / `.ts` | a plan's labels step by step, in a classic agent or planned in advance, and each call's decision (allow, ask, deny) with the rules that fired |
+| `policy/capabilities.py` / `.ts` | least privilege for a plan, the trifecta check and an exhaustive search for a flow out, audience-bound tokens |
+| `policy/sandbox.py` / `.ts` | which abstract actions a file-system scope, a container and a network allow-list each stop |
+| `policy/depth.py` / `.ts` | layered detectors: independent and common-mode correlated misses, closed forms and a seeded simulation |
+| `policy/study.py` / `.ts` | the Security site's chapter studies and their frames |
 
 ## Policies
 
@@ -419,8 +428,41 @@ scaffold study through the TS harness); every number is in [`fixtures/evals2_res
   BIG-bench's ([Srivastava et al. 2022](https://arxiv.org/abs/2206.04615)); time splits, LiveCodeBench's
   ([Jain et al. 2024](https://arxiv.org/abs/2403.07974)).
 
+## Policy (since 1.10)
+
+Agent security from the defender's side. The module never models content: no prompts, no payloads, and no model that
+follows anything. Values carry **labels**, and the questions are where the trust boundaries are, how labels flow, and
+what each defence stops and costs. Ported statement for statement to `ts/src/policy/`, checked against
+[`fixtures/policy_fixtures.json`](fixtures/policy_fixtures.json) with no tolerance; every number is in
+[`fixtures/policy_results.md`](fixtures/policy_results.md).
+
+- **`labels`**: source (user ⊑ trusted tool ⊑ untrusted) × sensitivity (public ⊑ private). A derived value carries
+  the join of its inputs' labels. The tests check every lattice law exhaustively.
+- **`engine`**: a plan is a fixed list of calls over eight abstract tools (reads, a transform, a write, a send). In a
+  **classic agent** the model picks every call after reading everything returned so far, so each call is controlled
+  by the join of its whole context; **planned in advance** (plan-then-execute, as in CaMeL,
+  [Debenedetti et al. 2025](https://arxiv.org/abs/2503.18813)), labels flow only along the plan's arguments. Rules
+  over the call's effective label and the task's grant decide allow, ask or deny, and every decision lists the rules
+  that fired. Tested: the effective label equals an independent provenance computation on every plan of up to three
+  calls (over 100,000 call decisions), no untrusted-steered call ever carries private data out, and raising a label
+  never relaxes a decision.
+- **`capabilities`**: the least privilege a plan needs; the **trifecta** (private data, untrusted input and an
+  outbound channel held at once, [Simon Willison's term](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)) checked against an exhaustive search for a flow out on every
+  subset of the tools; OAuth-style tokens bound to one audience, which another server rejects.
+- **`sandbox`**: abstract actions (read a file in a zone, start a process, connect to a destination) against a
+  file-system scope, a container and a network allow-list; an allow-listed destination that accepts uploads is the
+  residual no layer stops.
+- **`depth`**: layered detectors that each miss with probability mᵢ: independent, P = ∏ mᵢ; with a shared blind spot
+  c, P = c + (1 − c) ∏ (mᵢ − c)/(1 − c) ≥ c. Rates come only from published measurements: InjecAgent's 24%
+  ([Zhan et al. 2024](https://arxiv.org/abs/2403.02691)) and Spotlighting's > 50% → < 2%
+  ([Hines et al. 2024](https://arxiv.org/abs/2403.14720)); the other layers' rates are illustrative. The closed forms
+  are tested against the seeded simulation.
+
 ## Versions
 
+- **1.10.0** (2026-10-14): the `policy` package (`labels`, `catalogue`, `engine`, `capabilities`, `sandbox`, `depth`,
+  `study`); new fixture files `fixtures/policy_fixtures.json` and `fixtures/policy_results.md`, and
+  `ts/src/policy_data.json`. Every 1.9 fixture is unchanged apart from the `engine` field.
 - **1.9.0** (2026-10-13): `evals/judge.py`, `trajectory.py`, `scaffold.py`, `contamination.py` and five functions
   in `stats` (`confusion`, `cohen_kappa`, `rogan_gladen`, `corrected_rate`, `pareto_front`); new fixture files
   `fixtures/evals2_fixtures.json` and `fixtures/evals2_results.md`, and `ts/src/evals2_data.json`. Every 1.8 fixture
@@ -535,6 +577,11 @@ in Python and in TypeScript.
   pairing of the two agents with two list prices, and every leak, paraphrase and memorisation rate are
   illustrative. Token counts and costs are the harness's real accounting of the simulated runs. The contamination
   "texts" are random token ids, not language.
+- **Policy (1.10)**: the eight tools, three destinations, six plans, the grants, the sandbox actions and layers are
+  abstract placeholders, not products. The detector layers' miss rates other than provenance marking's (20% and 30%)
+  and the shared blind spots are illustrative; provenance marking's 4% is the ratio of Spotlighting's published
+  bounds (< 2% / > 50%), and the 24% base rate is InjecAgent's ReAct GPT-4 figure. The rules are one reasonable
+  policy, not a standard.
 
 ## Run it
 
