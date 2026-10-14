@@ -7,7 +7,9 @@ Two ways the model's choices are labelled (``mode``):
 - ``context``: a classic agent. The model chooses every call, and every argument, after reading everything
   in its context, so each call is **controlled** by the join of everything returned so far.
 - ``dataflow``: plan-then-execute (as in CaMeL): the plan comes from the user's request alone, values flow
-  only along the plan's arguments, and a call is controlled by the user.
+  only along the plan's arguments, and a call is controlled by the user. A step may name values whose content
+  decides it (``ctrl``, since 1.11: the plan branches on what a read returned); its control is then the join
+  of those values' labels, so the dependency is tracked rather than hidden.
 
 A call's **effective label** is the join of its arguments' labels and its control label. The rules:
 
@@ -67,9 +69,10 @@ def explain(tool: str, eff: L.Label, d: dict[str, Any]) -> str:
 
 
 def run_plan(plan: dict[str, Any], grant: dict[str, Any], mode: str = "context",
-             approve: bool = True) -> list[dict[str, Any]]:
+             approve: bool = True, enforce: bool = True) -> list[dict[str, Any]]:
     """Each step's labels and decision. A denied (or unapproved) call does not run, and its output is
-    missing; a later step that needs a missing value is skipped."""
+    missing; a later step that needs a missing value is skipped. With ``enforce`` off (since 1.11: an agent
+    with no label policy) every decision is still computed and recorded, but every call runs."""
     if mode not in ("context", "dataflow"):
         raise ValueError(mode)
     vals: dict[str, L.Label] = {}
@@ -78,6 +81,8 @@ def run_plan(plan: dict[str, Any], grant: dict[str, Any], mode: str = "context",
     for i, st in enumerate(plan["steps"]):
         rec: dict[str, Any] = {"i": i, "op": st["op"], "tool": st.get("tool"), "args": list(st.get("args", [])),
                                "dest": st.get("dest"), "out": st.get("out")}
+        if "ctrl" in st:
+            rec["ctrl"] = list(st["ctrl"])
         if st["op"] == "input":
             lab = L.label("user", st["sens"])
             vals[st["out"]] = lab
@@ -86,8 +91,11 @@ def run_plan(plan: dict[str, Any], grant: dict[str, Any], mode: str = "context",
                         "ran": True, "ctx": dict(ctx), "why": "the user's request: (" + L.text(lab) + ")"})
             out.append(rec)
             continue
-        missing = [a for a in st["args"] if a not in vals]
-        control = dict(ctx) if mode == "context" else dict(L.BOTTOM)
+        missing = [a for a in st["args"] + st.get("ctrl", []) if a not in vals]
+        if mode == "context":
+            control = dict(ctx)
+        else:
+            control = L.join_all([vals[a] for a in st.get("ctrl", []) if a in vals])
         if missing:
             rec.update({"control": control, "effective": None, "out_label": None, "decision": "skip", "fired": [],
                         "ran": False, "ctx": dict(ctx), "why": "skipped: needs " + ", ".join(missing)})
@@ -96,7 +104,7 @@ def run_plan(plan: dict[str, Any], grant: dict[str, Any], mode: str = "context",
         eff = L.join_all([vals[a] for a in st["args"]] + [control])
         t = TOOLS[st["tool"]]
         d = decide(st["tool"], eff, st.get("dest"), grant)
-        ran = d["decision"] == "allow" or (d["decision"] == "ask" and approve)
+        ran = d["decision"] == "allow" or (d["decision"] == "ask" and approve) or not enforce
         lab = None
         if ran and t["kind"] == "read":
             lab = L.join(t["out"], eff)
@@ -106,7 +114,10 @@ def run_plan(plan: dict[str, Any], grant: dict[str, Any], mode: str = "context",
             vals[st["out"]] = lab
             ctx = L.join(ctx, lab)
         why = explain(st["tool"], eff, d)
-        if d["decision"] == "ask":
+        if not enforce:
+            if d["decision"] != "allow":
+                why += " (not enforced: it runs)"
+        elif d["decision"] == "ask":
             why += " (approved)" if approve else " (refused)"
         rec.update({"control": control, "effective": eff, "out_label": lab, "decision": d["decision"],
                     "fired": d["fired"], "ran": ran, "ctx": dict(ctx), "why": why})

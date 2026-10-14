@@ -10,7 +10,13 @@ each with a caption. Labels only: no frame holds content.
 - ``privilege_study`` (chapter 4): one task under a broad grant and under its least privilege, with a call
   outside the task, and the tokens each grant mints.
 - ``sandbox_frames`` (chapter 5): sandbox layers added one at a time.
-- ``depth_study``: layered detectors, independent and correlated (closed forms, and a simulation).
+- ``depth_study`` / ``depth_frames`` (chapter 6): layered detectors, independent and correlated (closed forms,
+  a simulation, and attempts drawn one by one through the layers).
+- ``dual_frames`` (chapter 7, since 1.11): plan-then-execute: who handles each step, what the planner sees, and
+  the policy's decision, beside the classic agent's.
+- ``approval_study`` (chapter 8): approval thresholds over the benign suite: prompts, gated routes, fatigue.
+- ``frontier_study`` (chapter 9): every defence's cost and risk, fixed and adaptive attacks.
+- ``checklist`` (chapter 10): a design audited against chapters 1 to 9.
 """
 from __future__ import annotations
 
@@ -18,13 +24,15 @@ import copy
 from typing import Any
 
 from ..context.text import fixed
+from ..rng import Rng
 from . import capabilities as C
 from . import depth as D
 from . import engine as E
 from . import labels as L
 from . import sandbox as S
-from .catalogue import (ACTIONS, BROAD, CIRCLE_TOOLS, DEPTH, DEST_ORDER, LAYERS, PLANS, PRIVILEGE, TOOL_ORDER,
-                        TOOLS)
+from . import utility as U
+from .catalogue import (ACTIONS, ADAPTIVE, BROAD, CIRCLE_TOOLS, DEFENCES, DEPTH, DEPTH_DOTS, DEST_ORDER,
+                        DUAL_PLANS, LAYERS, PLANS, PRIVILEGE, TOOL_ORDER, TOOLS, UTILITY)
 
 
 def _zones(tool: str | None, op: str) -> tuple[str, str]:
@@ -253,7 +261,7 @@ def all_layer_sets() -> list[dict[str, Any]]:
     return out
 
 
-# ── defence in depth (chapter 6, in 26B) ───────────────────────────────────
+# ── defence in depth (chapter 6) ─────────────────────────────────────────
 
 
 def depth_study(cfg: dict[str, Any] = DEPTH) -> dict[str, Any]:
@@ -263,6 +271,252 @@ def depth_study(cfg: dict[str, Any] = DEPTH) -> dict[str, Any]:
             for c in cfg["c"]]
     return {"table": D.depth_table(cfg["base"], m, cfg["c"], cfg["attempts"]),
             "independent": D.all_miss_independent(m), "sims": sims, "corr": corr}
+
+
+def depth_frames(c: float, k: int | None = None, cfg: dict[str, Any] = DEPTH,
+                 dots: dict[str, Any] = DEPTH_DOTS) -> dict[str, Any]:
+    """Attempts drawn one by one: each steers an undefended model at the base rate, then must get past the first
+    k layers (common-mode mixture with shared blind spot c). ``stage`` is how far each attempt gets: 0 does not
+    steer the model, 1 steers it, 1 + j gets past j layers. Frame f shows the attempts at stage ≥ f, beside
+    the closed form."""
+    lay = cfg["layers"] if k is None else cfg["layers"][:k]
+    m = [x["miss"] for x in lay]
+    q = D.q_given_common(m, c)
+    r = Rng(dots["seed"])
+    stages = []
+    for _ in range(dots["n"]):
+        steer = r.random() < cfg["base"]
+        common = r.random() < c
+        st = 1 if steer else 0
+        alive = steer
+        for i in range(len(q)):
+            u = r.random()
+            alive = alive and (common or u < q[i])
+            if alive:
+                st = st + 1
+        stages.append(st)
+    frames = []
+    n = dots["n"]
+    for f in range(len(m) + 2):
+        count = 0
+        for x in stages:
+            if x >= f:
+                count += 1
+        if f == 0:
+            exp = float(n)
+            cap = f"{n} attempts arrive in untrusted results."
+        elif f == 1:
+            exp = n * cfg["base"]
+            cap = (f"With no defence, {count} of them steer the model (expected {fixed(exp, 1)}: the base rate "
+                   f"{pct(cfg['base'], 0)}).")
+        else:
+            exp = n * cfg["base"] * D.all_miss_common(m[:f - 1], c)
+            cap = (f"+ {lay[f - 2]['name']} (misses {pct(m[f - 2], 0)}): {count} still get through (expected "
+                   f"{fixed(exp, 2)}).")
+        frames.append({"f": f, "count": count, "expected": exp, "caption": cap})
+    last = frames[-1]
+    last["caption"] = last["caption"] + (f" A shared blind spot of {pct(c)} sets a floor of {fixed(n * cfg['base'] * c, 2)}"
+                                         f" that no extra layer removes." if c > 0 else
+                                         " Every layer misses some, so the product never reaches zero.")
+    return {"c": c, "n": n, "stages": stages, "frames": frames}
+
+
+# ── chapter 7 ────────────────────────────────────────────────────────────
+
+
+def dual_plan(pid: str) -> dict[str, Any]:
+    return ADAPTIVE if pid == "adaptive" else PLANS[pid]
+
+
+def dual_frames(pid: str) -> dict[str, Any]:
+    """Plan-then-execute with least privilege: the planner writes the plan from the request alone and sees only
+    variable names; reads run as tools, transforms of untrusted values in a quarantined model, and the policy
+    checks each call on the labels the interpreter tracks. The classic agent's decision is alongside."""
+    plan = dual_plan(pid)
+    g = C.needed(plan)
+    a = E.run_plan(plan, g, "dataflow")
+    b = E.run_plan(plan, g, "context")
+    frames = []
+    seen: list[str] = []
+    for x, y in zip(a, b):
+        n = x["i"] + 1
+        if x["op"] == "input":
+            calls = [st["tool"] for st in plan["steps"] if st["op"] == "call"]
+            frames.append({"step": x["i"], "actor": "planner", "flow": x, "classic": y, "planner_sees": ["q"],
+                           "caption": f"Step {n}: the planner reads only the request and writes the whole plan: "
+                                      f"{' → '.join(calls)}. It will never read a tool's result."})
+            seen.append("q")
+            continue
+        t = TOOLS[x["tool"]]
+        if t["kind"] == "read":
+            actor = "tool"
+        elif t["kind"] == "transform":
+            actor = "quarantined"
+        else:
+            actor = "tool"
+        if x["ran"] and x["out"]:
+            seen.append(x["out"])
+        if x["decision"] == "skip":
+            what = "is skipped: an input it needs was never produced"
+        else:
+            what = f"is {VERB[x['decision']]} on ({L.text(x['effective'])})"
+        how = {"tool": "runs as a tool", "quarantined": "runs in the quarantined model, which has no tools"}[actor]
+        ctrl = ""
+        if "ctrl" in x:
+            ctrl = (f" The plan branches on {', '.join(x['ctrl'])}, so the call's control is "
+                    f"{_lab(x['control'])}, tracked rather than hidden.")
+        frames.append({"step": x["i"], "actor": actor, "flow": x, "classic": y, "planner_sees": list(seen),
+                       "caption": f"Step {n}, {x['tool']} {how} and {what}; the classic agent's call is "
+                                  f"{VERB[y['decision']]}.{ctrl}"})
+    return {"plan": pid, "title": plan["title"], "frames": frames, "summary": {"dataflow": E.summary(a),
+                                                                               "context": E.summary(b)},
+            "extra_calls": UTILITY["planner_calls"]}
+
+
+# ── chapter 8 ────────────────────────────────────────────────────────────
+
+
+def approval_frames(th: str, suite: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """The label policy (classic agent, broad grant) under one approval threshold, task by task over the first
+    tasks of the suite, with running totals; and the whole suite's summary."""
+    tasks = suite if suite is not None else U.make_suite()
+    d = U.with_threshold(U.defence("policy"), th)
+    rows = [U.evaluate(p, d) for p in tasks]
+    frames = []
+    prompts = 0
+    gated = 0
+    risky = 0
+    for p, r in zip(tasks[:UTILITY["frames"]], rows):
+        prompts += r["prompts"]
+        if r["routes"]:
+            risky += 1
+            if r["reach"] < 1.0:
+                gated += 1
+        calls = [st for st in p["steps"] if st["op"] == "call"]
+        steps = []
+        for st, dec in zip(calls, r["decisions"]):
+            steps.append({"tool": st["tool"], "dest": st.get("dest"), "decision": dec})
+        if r["blocked"]:
+            how = f"blocked at {r['blocked'][0]} ({', '.join(r['by_rule'])})"
+        else:
+            how = "completes"
+        cap = (f"{p['id']}: {p['title']}. It {how}, with {r['prompts']} prompt{'' if r['prompts'] == 1 else 's'}"
+               + (f" (a mistaken approval at the last: {pct(r['miss'], 0)})" if r["prompts"] > 0 else "")
+               + (f"; a steered attempt's best route passes with {pct(r['reach'], 0)}." if r["routes"] else
+                  "; no steered attempt has a route."))
+        frames.append({"task": p["id"], "title": p["title"], "steps": steps, "row": r, "prompts": prompts,
+                       "risky": risky, "gated": gated, "caption": cap})
+    return {"threshold": th, "frames": frames, "summary": U.summarise(rows)}
+
+
+def approval_study(suite: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    tasks = suite if suite is not None else U.make_suite()
+    curve = [{"n": n, "miss": U.approval_miss(n)} for n in range(1, 11)]
+    return {"thresholds": {th: approval_frames(th, tasks) for th in UTILITY["thresholds"]}, "fatigue": curve}
+
+
+# ── chapter 9 ────────────────────────────────────────────────────────────
+
+
+def frontier_study(suite: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Both attacker settings, and one frame per defence in order, with a caption."""
+    tasks = suite if suite is not None else U.make_suite()
+    out: dict[str, Any] = {"n": len(tasks), "adaptive_share": 0.0}
+    k = 0
+    for p in tasks:
+        if p["adaptive"]:
+            k += 1
+    out["adaptive_share"] = k / len(tasks)
+    for key, adaptive in [("fixed", False), ("adaptive", True)]:
+        fr = U.frontier(adaptive, tasks)
+        frames = []
+        for i, pt in enumerate(fr["points"]):
+            on = "on the frontier" if pt["id"] in fr["front"] else "beaten by another point"
+            frames.append({"i": i, "id": pt["id"], "caption":
+                           f"{pt['name']}: finishes {pct(pt['utility'])} of the benign tasks with "
+                           f"{fixed(pt['prompts'], 2)} prompts and {fixed(pt['extra'], 2)} extra calls per task; "
+                           f"a steered attempt succeeds in {pct(pt['risk'], 2)} of tasks ({on})."})
+        out[key] = dict(fr, frames=frames)
+    d = U.defence("planned")
+    rows = [U.evaluate(p, d) for p in tasks]
+    out["sim"] = U.simulate(rows, d, DEPTH["base"], UTILITY["reps"], UTILITY["seed"])
+    return out
+
+
+# ── chapter 10 ───────────────────────────────────────────────────────────
+
+def _detector_value(n: int, policy: bool) -> str:
+    layers = f"{n} detector layer{'' if n == 1 else 's'}"
+    if policy:
+        return layers + ", backed by the policy" if n else "no detectors needed: the policy decides on labels"
+    return layers + " and nothing structural behind them" if n else "no detectors and no policy"
+
+
+CHECK_DEFAULT: dict[str, Any] = {"defence": "planned", "approval": None, "sandbox": ["fs_scope", "container", "egress"]}
+
+
+def checklist(design: dict[str, Any] = CHECK_DEFAULT, suite: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Audit a design (one of the frontier's defences, optionally with a stricter approval rule, plus sandbox
+    layers) against chapters 1 to 9, on the benign suite. Each item: pass, warn or fail, the measured value,
+    and the chapter it comes from. Risk is judged against an adaptive attacker (the worst case)."""
+    tasks = suite if suite is not None else U.make_suite()
+    d = dict(U.defence(design["defence"]))
+    if design.get("approval"):
+        d["approval"] = design["approval"]
+        d["id"] = d["id"] + "+" + design["approval"]
+    base = DEPTH["base_range"][1]
+    rows = [U.evaluate(p, d, base, UTILITY, True) for p in tasks]
+    sm = U.summarise(rows)
+    tri = 0
+    unneeded = 0
+    for p in tasks:
+        g = U.grant_of(p, d)
+        if C.trifecta(g)["all"]:
+            tri += 1
+        unneeded += len(C.over_grant(g, p)["tools"])
+    t = S.tally(S.matrix(design["sandbox"]))
+    fr = U.frontier(True, tasks)
+    pts = [x for x in fr["points"] if x["id"] != d["id"]] + [dict(sm, id=d["id"], name="this design")]
+    on_front = d["id"] in U.pareto(pts)
+    items = [
+        {"ch": 1, "item": "Every value carries a label, and every call is checked against the policy",
+         "verdict": "pass" if d["policy"] else "fail",
+         "value": "labels tracked" if d["policy"] else "no labels: the agent cannot tell where data came from"},
+        {"ch": 2, "item": "No untrusted result can choose a write or send that nothing checks",
+         "verdict": "pass" if sm["ungated"] == 0.0 else ("warn" if sm["ungated"] < 0.1 else "fail"),
+         "value": f"{pct(sm['ungated'])} of tasks have an unchecked route"},
+        {"ch": 3, "item": "No task holds private data, untrusted input and an outbound channel unpoliced",
+         "verdict": "pass" if tri == 0 else ("warn" if d["policy"] else "fail"),
+         "value": f"{tri} of {len(tasks)} tasks hold all three" + (", and the policy denies the flow out"
+                                                                    if tri and d["policy"] else "")},
+        {"ch": 4, "item": "Each task holds only the tools and scopes it needs",
+         "verdict": "pass" if unneeded == 0 else "fail",
+         "value": f"{fixed(unneeded / len(tasks), 2)} unneeded tools per task"},
+        {"ch": 5, "item": "Code runs in a sandbox with a file scope, a container and an egress allow-list",
+         "verdict": "pass" if t["open"] <= 1 and t["broken"] == 0 else ("warn" if t["open"] <= 2 else "fail"),
+         "value": f"{t['open']} unneeded action{'' if t['open'] == 1 else 's'} still open, {t['broken']} needed broken"},
+        {"ch": 6, "item": "Detectors are one layer, never the only one",
+         "verdict": "pass" if d["policy"] else ("warn" if d["layers"] else "fail"),
+         "value": _detector_value(len(d["layers"]), d["policy"])},
+        {"ch": 7, "item": "Untrusted data cannot change the plan",
+         "verdict": "pass" if d["mode"] == "dataflow" else ("warn" if d["policy"] else "fail"),
+         "value": "planned in advance" if d["mode"] == "dataflow" else "a classic agent: every result steers"},
+        {"ch": 8, "item": "Few prompts per task, so each approval gets attention",
+         "verdict": "pass" if sm["prompts"] <= 0.5 else ("warn" if sm["prompts"] <= 1.5 else "fail"),
+         "value": f"{fixed(sm['prompts'], 2)} prompts per task"},
+        {"ch": 9, "item": "The design sits on the security–utility frontier, within the risk budget",
+         "verdict": "pass" if on_front and sm["risk"] < UTILITY["risk_budget"] else
+                    ("warn" if on_front or sm["risk"] < UTILITY["risk_budget"] else "fail"),
+         "value": f"{pct(sm['utility'])} of tasks finish; risk {pct(sm['risk'], 2)} per task against an adaptive attacker"},
+    ]
+    frames = []
+    score = 0
+    for i, it in enumerate(items):
+        if it["verdict"] == "pass":
+            score += 1
+        frames.append(dict(it, i=i, passed=score, caption=f"Chapter {it['ch']}: {it['item'].lower()}? "
+                                                           f"{it['verdict'].upper()}: {it['value']}."))
+    return {"design": design, "items": items, "frames": frames, "summary": sm, "passed": score}
 
 
 def pct(x: float, d: int = 1) -> str:

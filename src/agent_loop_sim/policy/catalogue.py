@@ -152,3 +152,74 @@ DEPTH: dict[str, Any] = {
     "c": [0.0, 0.005, 0.01, 0.02, 0.04],
     "attempts": 1000, "seed": 2601, "trials": 20000,
 }
+
+# ── the utility-cost model and the frontier (since 1.11) ────────────────────
+
+# A fixed suite of benign tasks, generated with the shared seeded generator: each reads one to three sources
+# (from READ_TOOLS, without repeats), summarises them, and finishes at one sink (or just answers the user).
+# `adaptive`: the share of tasks whose last step is decided by what the last read returned (the plan branches
+# on it, as in "file it wherever the ticket's category says"). Every task is one the user asked for, so a
+# defence that blocks it costs utility. The generator's shares are illustrative.
+SUITE: dict[str, Any] = {
+    "n": 120, "seed": 2611, "min_reads": 1, "max_reads": 3, "adaptive": 0.25,
+    "read_tools": ["read_notes", "read_inbox", "read_ticket", "search_docs", "fetch_page"],
+    "sinks": [{"tool": None, "dest": None, "text": "answer the user"},
+              {"tool": "write_file", "dest": None, "text": "save a file"},
+              {"tool": "send_message", "dest": "self", "text": "send it to the user"},
+              {"tool": "send_message", "dest": "org", "text": "send it to a colleague"},
+              {"tool": "send_message", "dest": "web", "text": "send it to an outside address"}],
+}
+
+# The defences the frontier compares. policy: the label policy is enforced; grant: "broad" or "task" (least
+# privilege, only with the policy); mode: "context" (a classic agent) or "dataflow" (plan-then-execute);
+# layers: detector layers from DEPTH, with shared blind spot c; approval: which calls a human must approve
+# besides the policy's asks ("none", "consequential": every write or send, "every": every tool call);
+# approve: whether the policy's asks can be approved (False: they are refused).
+DEFENCES: list[dict[str, Any]] = [
+    {"id": "none", "name": "No defence", "policy": False, "grant": "broad", "mode": "context", "layers": [],
+     "c": 0.0, "approval": "none", "approve": True},
+    {"id": "marking", "name": "Provenance marking", "policy": False, "grant": "broad", "mode": "context",
+     "layers": ["marking"], "c": 0.0, "approval": "none", "approve": True},
+    {"id": "detectors", "name": "Three detector layers", "policy": False, "grant": "broad", "mode": "context",
+     "layers": ["marking", "classifier", "output_check"], "c": 0.01, "approval": "none", "approve": True},
+    {"id": "approve_all", "name": "Approve every write and send", "policy": False, "grant": "broad",
+     "mode": "context", "layers": [], "c": 0.0, "approval": "consequential", "approve": True},
+    {"id": "policy", "name": "Label policy", "policy": True, "grant": "broad", "mode": "context", "layers": [],
+     "c": 0.0, "approval": "none", "approve": True},
+    {"id": "policy_refuse", "name": "Label policy, no approvals", "policy": True, "grant": "broad",
+     "mode": "context", "layers": [], "c": 0.0, "approval": "none", "approve": False},
+    {"id": "least", "name": "Label policy + least privilege", "policy": True, "grant": "task", "mode": "context",
+     "layers": [], "c": 0.0, "approval": "none", "approve": True},
+    {"id": "planned", "name": "Plan-then-execute + policy + least privilege", "policy": True, "grant": "task",
+     "mode": "dataflow", "layers": [], "c": 0.0, "approval": "none", "approve": True},
+]
+DEFENCE_ORDER = [d["id"] for d in DEFENCES]
+
+# The cost side's parameters. fp: the share of benign results (or, for the output check, calls) a detector
+# layer wrongly flags, which stops the task. Provenance marking's is 0: Spotlighting reports "minimal impact on
+# task efficacy" (arXiv 2403.14720); the other two are illustrative. A human's chance of approving a call they
+# should have refused is `approval_first_miss` at a task's first prompt, and each further prompt in the same
+# task keeps only `approval_decay` of the remaining attention (approval fatigue; illustrative).
+# planner_calls: the extra model call a plan-then-execute agent makes to write its plan. Every steered
+# attempt is one per task that holds untrusted input, at DEPTH's base rate (InjecAgent). risk_budget: chapter
+# 10's illustrative ceiling on a design's risk per task against an adaptive attacker.
+UTILITY: dict[str, Any] = {
+    "fp": {"marking": 0.0, "classifier": 0.02, "output_check": 0.03},
+    "fp_illustrative": {"marking": False, "classifier": True, "output_check": True},
+    "approval_first_miss": 0.1, "approval_decay": 0.85,
+    "planner_calls": 1, "reps": 400, "seed": 2612,
+    "thresholds": ["refuse", "policy", "consequential", "every"],
+    "frames": 12, "risk_budget": 0.05,
+}
+
+# Chapter 7: a task whose last step is decided by what a read returned (the plan branches on the ticket's
+# category), and the plan-then-execute pieces each step runs in.
+ADAPTIVE: dict[str, Any] = {"title": "File a ticket's summary wherever its category says", "steps": [
+    {"op": "input", "out": "q", "sens": "public"},
+    {"op": "call", "tool": "read_ticket", "args": ["q"], "out": "t"},
+    {"op": "call", "tool": "summarise", "args": ["t"], "out": "s"},
+    {"op": "call", "tool": "write_file", "args": ["s"], "ctrl": ["t"], "out": None}]}
+DUAL_PLANS = ["notes_then_page", "research_page", "reply_from_notes", "adaptive"]
+
+# Chapter 6's animation: attempts drawn one by one through the layers.
+DEPTH_DOTS: dict[str, Any] = {"n": 400, "seed": 2613}
