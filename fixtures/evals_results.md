@@ -1,4 +1,4 @@
-# Evals module results (engine 1.11.0)
+# Evals module results (engine 1.11.1)
 
 Written by `scripts/make_fixtures.py` (CI checks it is up to date). Every difficulty, skill, correlation and benchmark here is synthetic and illustrative (see `evals/generator.py`); the statistics are exact under the stated assumptions.
 

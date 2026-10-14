@@ -18,7 +18,7 @@ const tok = new Tokenizer(readFileSync(join(ROOT, "src/agent_loop_sim/data/qwen2
 const norm = (x: unknown): unknown => JSON.parse(JSON.stringify(x));
 
 describe("version", () => {
-  it("is 1.11.0", () => expect(fx.engine).toBe("1.11.0"));
+  it("is 1.11.1", () => expect(fx.engine).toBe("1.11.1"));
 });
 
 describe("graders' statistics", () => {

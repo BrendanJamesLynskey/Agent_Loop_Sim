@@ -239,5 +239,5 @@ def test_checklist():
 
 def test_fixtures_up_to_date():
     fx = json.loads((ROOT / "fixtures" / "policy2_fixtures.json").read_text(encoding="utf-8"))
-    assert fx["engine"] == VERSION == "1.11.0"
+    assert fx["engine"] == VERSION == "1.11.1"
     assert fx["suite"] == SUITE
