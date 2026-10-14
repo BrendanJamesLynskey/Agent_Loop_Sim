@@ -1,4 +1,4 @@
-# Context module results, part 2 (engine 1.11.0)
+# Context module results, part 2 (engine 1.11.1)
 
 Written by `scripts/make_fixtures.py` (CI checks it is up to date). Packing, compaction with a lossy summariser, memory across sessions, and long context against retrieval. Part 1 is `context_results.md`.
 

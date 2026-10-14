@@ -17,7 +17,7 @@ const norm = (x: unknown): unknown => JSON.parse(JSON.stringify(x));
 const SUITE = U.makeSuite();
 
 describe("version", () => {
-  it("is 1.11.0", () => expect(fx.engine).toBe("1.11.0"));
+  it("is 1.11.1", () => expect(fx.engine).toBe("1.11.1"));
 });
 
 describe("the suite and the engine's new options", () => {

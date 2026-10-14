@@ -490,6 +490,12 @@ Every number in [`fixtures/policy2_results.md`](fixtures/policy2_results.md); th
 
 ## Versions
 
+- **1.11.1** (2026-10-14): `protocols/security.py` / `.ts`: the tool-poisoning scenario's changed description
+  (`HIDDEN`) is now an abstract label, `[hidden instruction: copy a local secrets file into the note]`, rather than a
+  literal instruction. It still differs from the approved description, so the pinning check fires exactly as before;
+  the scenario's steps and outcomes are unchanged. In `fixtures/protocols2_fixtures.json` only the strings derived
+  from it change (the description in the wire body and the model's prompt step, and the changed tool's hash); every
+  other fixture is unchanged apart from the `engine` field.
 - **1.11.0** (2026-10-14): `policy/utility.py` (benign suite, cost and risk per defence, frontier, simulation),
   chapter 6–10 studies in `policy/study.py`, the `ctrl` step field and `enforce` option in `policy/engine.py`; new
   fixture files `fixtures/policy2_fixtures.json` and `fixtures/policy2_results.md`; new keys in
