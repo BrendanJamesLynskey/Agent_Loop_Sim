@@ -1,6 +1,7 @@
 /**
- * The policy engine (engine 1.10.0): run a plan over labels and decide each call (allow, ask or deny,
- * with every rule that fired). A port of agent_loop_sim/policy/engine.py; see it for the rules.
+ * The policy engine (engine 1.10.0; `ctrl` and `enforce` since 1.11.0): run a plan over labels and decide
+ * each call (allow, ask or deny, with every rule that fired). A port of agent_loop_sim/policy/engine.py; see
+ * it for the rules.
  */
 import type { Obj } from "../data";
 import { TOOLS } from "./catalogue";
@@ -41,7 +42,7 @@ export function explain(tool: string, eff: L.Label, d: Obj): string {
   return d.decision + ": " + d.fired.map((f: Obj) => f.reason).join("; ");
 }
 
-export function runPlan(plan: Obj, grant: Obj, mode = "context", approve = true): Obj[] {
+export function runPlan(plan: Obj, grant: Obj, mode = "context", approve = true, enforce = true): Obj[] {
   if (mode !== "context" && mode !== "dataflow") throw new Error(mode);
   const vals: Record<string, L.Label> = {};
   let ctx: L.Label = { ...L.BOTTOM };
@@ -55,6 +56,7 @@ export function runPlan(plan: Obj, grant: Obj, mode = "context", approve = true)
       dest: st.dest ?? null,
       out: st.out ?? null,
     };
+    if ("ctrl" in st) rec.ctrl = [...st.ctrl];
     if (st.op === "input") {
       const lab = L.label("user", st.sens);
       vals[st.out] = lab;
@@ -72,8 +74,10 @@ export function runPlan(plan: Obj, grant: Obj, mode = "context", approve = true)
       out.push(rec);
       return;
     }
-    const missing = (st.args as string[]).filter((a) => !(a in vals));
-    const control: L.Label = mode === "context" ? { ...ctx } : { ...L.BOTTOM };
+    const ctrl: string[] = st.ctrl ?? [];
+    const missing = [...(st.args as string[]), ...ctrl].filter((a) => !(a in vals));
+    const control: L.Label =
+      mode === "context" ? { ...ctx } : L.joinAll(ctrl.filter((a) => a in vals).map((a) => vals[a]!));
     if (missing.length > 0) {
       Object.assign(rec, {
         control,
@@ -91,7 +95,7 @@ export function runPlan(plan: Obj, grant: Obj, mode = "context", approve = true)
     const eff = L.joinAll([...(st.args as string[]).map((a) => vals[a]!), control]);
     const t = TOOLS[st.tool]!;
     const d = decide(st.tool, eff, st.dest ?? null, grant);
-    const ran = d.decision === "allow" || (d.decision === "ask" && approve);
+    const ran = d.decision === "allow" || (d.decision === "ask" && approve) || !enforce;
     let lab: L.Label | null = null;
     if (ran && t.kind === "read") lab = L.join(t.out, eff);
     else if (ran && t.kind === "transform") lab = eff;
@@ -100,7 +104,9 @@ export function runPlan(plan: Obj, grant: Obj, mode = "context", approve = true)
       ctx = L.join(ctx, lab);
     }
     let why = explain(st.tool, eff, d);
-    if (d.decision === "ask") why += approve ? " (approved)" : " (refused)";
+    if (!enforce) {
+      if (d.decision !== "allow") why += " (not enforced: it runs)";
+    } else if (d.decision === "ask") why += approve ? " (approved)" : " (refused)";
     Object.assign(rec, {
       control,
       effective: eff,

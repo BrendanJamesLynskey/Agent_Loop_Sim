@@ -24,7 +24,7 @@ const NARROW = {
 const GRANTS: Record<string, Obj> = { broad: K.BROAD, narrow: NARROW };
 
 describe("version", () => {
-  it("is 1.10.0", () => expect(fx.engine).toBe("1.10.0"));
+  it("is 1.11.0", () => expect(fx.engine).toBe("1.11.0"));
 });
 
 describe("labels", () => {

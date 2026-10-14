@@ -21,7 +21,8 @@ since 1.9, **graders and pitfalls**: a simulated LLM judge with its biases and t
 the traces, one model under many harnesses (and what each configuration costs), and benchmark contamination; since
 1.10, **policy**: agent security on the defender's side, over abstract labels only (where a value came from and how
 secret it is), with a policy engine, least privilege, the "lethal trifecta" check, audience-bound tokens, sandbox
-layers and the maths of layered, imperfect detectors.
+layers and the maths of layered, imperfect detectors; since 1.11, a **utility-cost model**: what each defence costs on
+a seeded suite of benign tasks, and the security–utility frontier for fixed and adaptive attacks.
 
 - **Python is the reference** (`src/agent_loop_sim`); a **TypeScript port** (`ts/`) reproduces its fixtures
   exactly: token ids, random draws, every event of every run, every animation frame. No tolerance.
@@ -33,7 +34,8 @@ Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.a
 **[Agent Protocols Explained](https://agent-protocols-explained.vercel.app)** and
 **[Agent Context Explained](https://agent-context-explained.vercel.app)** and
 **[Agent Orchestration Explained](https://agent-orchestration-explained.vercel.app)** and
-**[Agent Evals Explained](https://agent-evals-explained.vercel.app)**, which vendor the TS port at a pinned commit.
+**[Agent Evals Explained](https://agent-evals-explained.vercel.app)** and
+**[Agent Security Explained](https://agent-security-explained.vercel.app)**, which vendor the TS port at a pinned commit.
 
 ## The pieces
 
@@ -78,6 +80,7 @@ Used by **[Agent Harnesses Explained](https://agent-harnesses-explained.vercel.a
 | `policy/capabilities.py` / `.ts` | least privilege for a plan, the trifecta check and an exhaustive search for a flow out, audience-bound tokens |
 | `policy/sandbox.py` / `.ts` | which abstract actions a file-system scope, a container and a network allow-list each stop |
 | `policy/depth.py` / `.ts` | layered detectors: independent and common-mode correlated misses, closed forms and a seeded simulation |
+| `policy/utility.py` / `.ts` | a seeded suite of benign tasks; each defence's cost (tasks blocked, prompts, extra calls) and risk; the frontier (since 1.11) |
 | `policy/study.py` / `.ts` | the Security site's chapter studies and their frames |
 
 ## Policies
@@ -458,8 +461,39 @@ what each defence stops and costs. Ported statement for statement to `ts/src/pol
   ([Hines et al. 2024](https://arxiv.org/abs/2403.14720)); the other layers' rates are illustrative. The closed forms
   are tested against the seeded simulation.
 
+### The cost of each defence (since 1.11)
+
+Every number in [`fixtures/policy2_results.md`](fixtures/policy2_results.md); the TS port matches
+[`fixtures/policy2_fixtures.json`](fixtures/policy2_fixtures.json) exactly.
+
+- **`utility.make_suite`**: 120 benign tasks drawn with the shared seeded generator: each reads one to three
+  sources, summarises them and answers the user, saves a file or sends to the user, a colleague or an outside
+  address; a quarter of them branch on what their last read returned. The engine's new `ctrl` field records that
+  branch: planned in advance, such a step's control is the join of the labels it branches on, so the dependency is
+  tracked rather than hidden. `run_plan(..., enforce=False)` runs a plan with no policy (decisions recorded, not
+  applied).
+- **`utility.evaluate`**: one task under one defence (none, provenance marking, three detector layers, approving
+  every write and send, the label policy with and without approvals, plus least privilege, plan-then-execute). Cost:
+  whether a call the task needs is blocked (and by which rule), a detector's false positives, prompts, extra model
+  calls. Risk: one steering attempt per task that holds untrusted input succeeds at the base rate, passes the detector
+  layers, and needs a **route**: a write or send whose control is untrusted, or (in a classic agent) an unplanned send
+  at the least-restricted point; the policy closes a route, a human gates it at a fatigue-adjusted miss rate. Threats
+  are only this abstract event. Tested: the closed forms against the seeded simulation, least privilege never adds
+  risk or blocks a benign task, an adaptive attacker never lowers risk, the Pareto front against its definition.
+- **`utility.frontier`**: every defence's mean cost and risk, and the points no other point beats on tasks finished,
+  risk and prompts. Two attacker settings: fixed attacks (InjecAgent's 24% base rate, detector rates as above) and an
+  **adaptive attacker**, who gets past every detector layer (adaptive attacks bypassed all eight defences tested with
+  over 50% success, [Zhan et al. 2025](https://arxiv.org/abs/2503.00061)) at a 50% base rate.
+- **`study`**: attempts drawn through the layers (chapter 6), plan-then-execute step by step beside a classic agent
+  (chapter 7), approval thresholds with fatigue (chapter 8), the frontier (chapter 9), a design audited against
+  chapters 1 to 9 (chapter 10).
+
 ## Versions
 
+- **1.11.0** (2026-10-14): `policy/utility.py` (benign suite, cost and risk per defence, frontier, simulation),
+  chapter 6–10 studies in `policy/study.py`, the `ctrl` step field and `enforce` option in `policy/engine.py`; new
+  fixture files `fixtures/policy2_fixtures.json` and `fixtures/policy2_results.md`; new keys in
+  `ts/src/policy_data.json`. Every 1.10 fixture is unchanged apart from the `engine` field.
 - **1.10.0** (2026-10-14): the `policy` package (`labels`, `catalogue`, `engine`, `capabilities`, `sandbox`, `depth`,
   `study`); new fixture files `fixtures/policy_fixtures.json` and `fixtures/policy_results.md`, and
   `ts/src/policy_data.json`. Every 1.9 fixture is unchanged apart from the `engine` field.
@@ -582,6 +616,13 @@ in Python and in TypeScript.
   and the shared blind spots are illustrative; provenance marking's 4% is the ratio of Spotlighting's published
   bounds (< 2% / > 50%), and the 24% base rate is InjecAgent's ReAct GPT-4 figure. The rules are one reasonable
   policy, not a standard.
+- **Policy (1.11)**: the benign suite's mix (reads, sinks, a quarter branching), the classifier's and the output
+  check's false-positive rates (2% and 3%; provenance marking's 0 follows Spotlighting's "minimal impact on task
+  efficacy"), the approval miss rate (10% at a task's first prompt, each further prompt keeping 85% of the remaining
+  attention), the one-attempt-per-task model, the planner's one extra call and chapter 10's thresholds and 5% risk
+  budget are illustrative. The adaptive setting's "every detector passed, 50% base rate" is a bound read from the
+  cited results, not a measurement of these layers. Utility on this suite is not comparable with CaMeL's 77% / 84% on
+  AgentDojo.
 
 ## Run it
 

@@ -8,4 +8,5 @@ export * as engine from "./engine";
 export * as capabilities from "./capabilities";
 export * as sandbox from "./sandbox";
 export * as depth from "./depth";
+export * as utility from "./utility";
 export * as study from "./study";

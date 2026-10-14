@@ -47,6 +47,7 @@ from orchestration2_fixtures import orchestration2_fixtures  # noqa: E402
 from evals_fixtures import evals_fixtures  # noqa: E402
 from evals2_fixtures import evals2_fixtures  # noqa: E402
 from policy_fixtures import policy_fixtures  # noqa: E402
+from policy2_fixtures import policy2_fixtures  # noqa: E402
 
 TEXTS = [
     "Hello, world! It's a test. They'll've DON'T  x\n\n  y\t\tz   \n",
@@ -355,6 +356,9 @@ def build() -> dict[str, str]:
     files["ts/src/policy_data.json"] = json.dumps(pdata, ensure_ascii=False, indent=1) + "\n"
     files["fixtures/policy_fixtures.json"] = json.dumps(pfx2, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n"
     files["fixtures/policy_results.md"] = pmd
+    p2fx, p2md = policy2_fixtures()
+    files["fixtures/policy2_fixtures.json"] = json.dumps(p2fx, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n"
+    files["fixtures/policy2_results.md"] = p2md
     for tid, tr in traces.items():
         files[f"traces/{tid}.events.jsonl"] = dumps_jsonl(tr["events"])
     return files

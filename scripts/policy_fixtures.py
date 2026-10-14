@@ -27,7 +27,10 @@ def policy_data() -> dict[str, Any]:
             "tools": K.TOOLS, "tool_order": K.TOOL_ORDER, "dests": K.DESTS, "dest_order": K.DEST_ORDER,
             "plans": K.PLANS, "plan_order": K.PLAN_ORDER, "broad": K.BROAD, "circles": K.CIRCLES,
             "circle_tools": K.CIRCLE_TOOLS, "privilege": K.PRIVILEGE, "actions": K.ACTIONS, "layers": K.LAYERS,
-            "published": K.PUBLISHED, "depth": K.DEPTH}
+            "published": K.PUBLISHED, "depth": K.DEPTH,
+            # since 1.11
+            "suite": K.SUITE, "defences": K.DEFENCES, "defence_order": K.DEFENCE_ORDER, "utility": K.UTILITY,
+            "adaptive": K.ADAPTIVE, "dual_plans": K.DUAL_PLANS, "depth_dots": K.DEPTH_DOTS}
 
 
 def tool_subsets() -> list[list[str]]:
