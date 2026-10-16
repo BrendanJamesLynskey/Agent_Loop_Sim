@@ -1,4 +1,4 @@
-# Policy module results, part two (engine 1.11.1)
+# Policy module results, part two (engine 1.12.0)
 
 Written by `scripts/make_fixtures.py` (CI checks it is up to date). The benign task suite, the detector false-positive rates of the classifier and the output check, the approval miss rates and fatigue are illustrative; the decisions follow from the rules. Base rates and provenance marking's rates come from the published measurements (arXiv IDs in `policy_results.md`); the adaptive setting follows arXiv 2503.00061 (all eight defences tested bypassed, attack success over 50%).
 

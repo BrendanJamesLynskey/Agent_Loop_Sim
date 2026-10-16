@@ -107,14 +107,17 @@ export function cacheFrames(events: Ev[]): Obj[] {
   let cumPlain = 0;
   for (const e of events) {
     if (e.type !== "model_call") continue;
-    const plain = (e.input_tokens * price.input + e.output_tokens * price.output) / 1e6;
+    const think = (e.thinking_tokens as number | undefined) ?? 0;
+    const plain = (e.input_tokens * price.input + (e.output_tokens + think) * price.output) / 1e6;
     cum += e.cost;
     cumPlain += plain;
-    frames.push({
+    const f: Obj = {
       turn: e.turn, agent: e.agent, input: e.input_tokens, cached: e.cached_tokens,
       uncached: e.input_tokens - e.cached_tokens, output: e.output_tokens,
       hit: e.cached_tokens / e.input_tokens, cost: e.cost, plain, cum, cum_plain: cumPlain, ttft: e.ttft,
-    });
+    };
+    if (think) f.thinking = think;
+    frames.push(f);
   }
   return frames;
 }

@@ -102,8 +102,15 @@ events = run(scenario("fix_test_cleanup"), {
     "recovery": {"retries": 2, "backoff_ms": 500, "backoff_factor": 2,
                  "loop_repeats": 3, "loop_action": "stop", "malformed": "feedback"},
     "sandbox": {"mode": "workspace", "network": False},     # off | workspace | read_only (1.1; optional)
+    "thinking": {"tokens": 2000},                           # reasoning tokens per acting call (1.12; optional)
 })
 ```
+
+Thinking (1.12): every acting call also generates `tokens` reasoning tokens, billed at the output price and
+decoded at the decode rate, reported as the call's `thinking_tokens` (and in the run's totals). They are not
+added to the context. Claude's 4.6-and-later models do keep earlier turns' thinking in the context and bill it
+as input ([Claude API, extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking));
+that part is not modelled. Leaving `thinking` out keeps every earlier run byte-identical.
 
 The sandbox (1.1) wraps the shell only, as the public harnesses' sandboxes do; the file tools stay under
 the permission rules. `workspace` lets a command write inside the repository only and blocks the network;
@@ -490,6 +497,18 @@ Every number in [`fixtures/policy2_results.md`](fixtures/policy2_results.md); th
 
 ## Versions
 
+- **1.12.0** (2026-10-16): the price table (`accounting.PRICES`) re-checked against the vendors' pages on
+  2026-10-16 and extended with the current models: Claude Opus 5.5, Sonnet 5.5, Haiku 5.5 (prompts up to
+  100,000 tokens) and Fable 5.1; OpenAI GPT-6.1 Sol, GPT-6 Luna and GPT-6 Astra (standard tier, short context);
+  and one open-weights model, gpt-oss-120b, at Together AI's serverless list price. Every entry now names its
+  `generation` and its cache `read_multiplier` (ρ: 0.1 on most models, 0.05 on Opus 5.5, Sonnet 5.5 and GPT-6.1
+  Sol, 0.025 on Fable 5.1). The Claude 5.x models cache from 512 tokens; GPT-5.6 and later charge a 1.25× cache
+  write and count cached tokens exactly; gpt-oss-120b has no cached-input price listed and is modelled with no
+  cache (`cache_listed` false). The older entries keep their prices, which are unchanged. New optional policy
+  `thinking` (above), the event field `thinking_tokens` and the cache frames' `thinking`. Six new parity runs in
+  `fixtures/engine_fixtures.json`; every earlier fixture, trace and data file changes only in the `engine` field,
+  apart from `ts/src/engine_data.json` (the price table) and the three `accessed` dates in
+  `fixtures/context2_fixtures.json`.
 - **1.11.1** (2026-10-14): `protocols/security.py` / `.ts`: the tool-poisoning scenario's changed description
   (`HIDDEN`) is now an abstract label, `[hidden instruction: copy a local secrets file into the note]`, rather than a
   literal instruction. It still differs from the approved description, so the pinning check fires exactly as before;
@@ -566,9 +585,12 @@ in Python and in TypeScript.
   [Claude API pricing page](https://platform.claude.com/docs/en/about-claude/pricing),
   [its prompt-caching page](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) and the
   [OpenAI API pricing page](https://developers.openai.com/api/docs/pricing) /
-  [prompt-caching guide](https://developers.openai.com/api/docs/guides/prompt-caching), accessed 2026-10-07.
-  Prices change; and token counts here are Qwen2.5's, not those providers' tokenizers. A cost is "what this
-  many tokens would cost at that price", not a quote.
+  [prompt-caching guide](https://developers.openai.com/api/docs/guides/prompt-caching), and
+  [Together AI's pricing page](https://www.together.ai/pricing) (gpt-oss-120b), accessed 2026-10-16.
+  Prices change; and token counts here are Qwen2.5's, not those providers' tokenizers (Claude's pricing page
+  notes that Claude 4.7 and later models use a tokenizer that produces about 30% more tokens for the same
+  text). A cost is "what this many tokens would cost at that price", not a quote. Thinking budgets are fixed,
+  illustrative numbers.
 - **Latency**: the `hosted` profile is round illustrative numbers; `local-i7` uses the medians of the
   recorded traces' llama.cpp timings (prefill 42.7 tokens/s, decode 16.5 tokens/s; the 50 ms overhead is
   assumed). Tool latencies and the human's answer times are illustrative.

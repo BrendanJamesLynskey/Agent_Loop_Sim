@@ -264,7 +264,7 @@ def test_ngrams():
 
 def test_fixtures_are_current():
     fx = json.loads((ROOT / "fixtures" / "evals2_fixtures.json").read_text())
-    assert fx["engine"] == VERSION == "1.11.1"
+    assert fx["engine"] == VERSION == "1.12.0"
     assert fx["judge"] == json.loads(json.dumps(J.judge_study()))
     data = json.loads((ROOT / "ts" / "src" / "evals2_data.json").read_text())
     assert data["scaffold"] == json.loads(json.dumps(F.SCAFFOLD)) and data["tasks"] == F.TASKS
