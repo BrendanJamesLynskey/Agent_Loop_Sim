@@ -160,6 +160,13 @@ RUNS: list[dict] = [
     {"scenario": "fix_test_guarded", "policy": {"style": "react", "parallel": False,
                                                 "permissions": {"mode": "ask", "rules": [], "human": HUMAN_DENY_RM}}},
     {"scenario": "research_subagent", "policy": {"context": {"window": 3000, "strategy": "summarise"}}},
+    # since 1.12: current models' prices (lower read multiplier, 512-token minimum) and thinking tokens
+    {"scenario": "fix_test", "policy": {"cache": {"price": "claude-sonnet-5.5"}}},
+    {"scenario": "research", "policy": {"cache": {"price": "claude-opus-5.5"}}},
+    {"scenario": "research", "policy": {"cache": {"price": "gpt-6.1-sol"}}},
+    {"scenario": "research", "policy": {"cache": {"price": "gpt-oss-120b"}}},
+    {"scenario": "research_subagent", "policy": {"cache": {"price": "claude-fable-5.1"}, "thinking": {"tokens": 2000}}},
+    {"scenario": "fix_test", "policy": {"cache": {"price": "claude-haiku-5.5"}, "thinking": {"tokens": 1000}}},
 ]
 
 SANDBOX_CASES = [

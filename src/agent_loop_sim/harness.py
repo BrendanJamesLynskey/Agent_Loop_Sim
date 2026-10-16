@@ -193,8 +193,11 @@ class Run:
         cached = self.cache.lookup(p["ids"], self.t)
         stored = self.cache.store(p["ids"], self.t)
         n_out = self.tok.count(text) + 1  # + the <|im_end|> that stops generation
-        ttft, dur = call_latency(self.profile, n_in, cached, n_out)
-        cost = call_cost(self.price, n_in, cached, stored, n_out)
+        # reasoning tokens (since 1.12): generated and billed as output, not kept in the context
+        think = int(self.policy["thinking"]["tokens"]) if "thinking" in self.policy and purpose == "act" else 0
+        ttft, dur = call_latency(self.profile, n_in, cached, n_out + think)
+        cost = call_cost(self.price, n_in, cached, stored, n_out + think)
+        extra: dict[str, Any] = {"thinking_tokens": think} if think > 0 else {}
         ev = self.emit(
             "model_call",
             agent,
@@ -204,6 +207,7 @@ class Run:
             input_tokens=n_in,
             cached_tokens=cached,
             output_tokens=n_out,
+            **extra,
             cost=cost,
             ttft=ttft,
             dur=dur,
@@ -532,6 +536,8 @@ def totals(events: list[dict[str, Any]]) -> dict[str, Any]:
             out["input_tokens"] += e["input_tokens"]
             out["cached_tokens"] += e["cached_tokens"]
             out["output_tokens"] += e["output_tokens"]
+            if "thinking_tokens" in e:
+                out["thinking_tokens"] = out.get("thinking_tokens", 0) + e["thinking_tokens"]
             out["cost"] += e["cost"]
         elif ty == "tool_result":
             out["tool_calls"] += 1

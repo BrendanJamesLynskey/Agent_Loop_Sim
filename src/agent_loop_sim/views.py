@@ -137,15 +137,19 @@ def cache_frames(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for e in events:
         if e["type"] != "model_call":
             continue
-        plain = (e["input_tokens"] * price["input"] + e["output_tokens"] * price["output"]) / 1e6
+        think = e.get("thinking_tokens", 0)
+        plain = (e["input_tokens"] * price["input"] + (e["output_tokens"] + think) * price["output"]) / 1e6
         cum += e["cost"]
         cum_plain += plain
-        frames.append({
+        f = {
             "turn": e["turn"], "agent": e["agent"], "input": e["input_tokens"], "cached": e["cached_tokens"],
             "uncached": e["input_tokens"] - e["cached_tokens"], "output": e["output_tokens"],
             "hit": e["cached_tokens"] / e["input_tokens"], "cost": e["cost"], "plain": plain,
             "cum": cum, "cum_plain": cum_plain, "ttft": e["ttft"],
-        })
+        }
+        if think:
+            f["thinking"] = think
+        frames.append(f)
     return frames
 
 
