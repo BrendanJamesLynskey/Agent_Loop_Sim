@@ -142,6 +142,49 @@ def test_cost_and_latency_formulas():
     assert ttft == pytest.approx(400 + 5000 / 5000 * 1000) and dur == pytest.approx(ttft + 1000)
 
 
+def test_price_table_read_multiplier_and_minimums():
+    # 1.12: every listed cache-read price is rho times the input price, and the write premium is
+    # 1.25x where the provider charges one (Claude API; OpenAI GPT-5.6 and later), none otherwise
+    for key, p in PRICES.items():
+        assert p["cache_read"] == pytest.approx(p["read_multiplier"] * p["input"]), key
+        assert p["generation"] and p["accessed"] == "2026-10-16"
+    for key in ["claude-sonnet-4.6", "claude-haiku-4.5", "claude-haiku-5.5", "gpt-6-luna", "gpt-6-astra", "gpt-5-mini"]:
+        assert PRICES[key]["read_multiplier"] == 0.1, key
+    for key in ["claude-opus-5.5", "claude-sonnet-5.5", "gpt-6.1-sol"]:
+        assert PRICES[key]["read_multiplier"] == 0.05, key
+    assert PRICES["claude-fable-5.1"]["read_multiplier"] == 0.025
+    for key in ["claude-opus-5.5", "claude-sonnet-5.5", "claude-haiku-5.5", "claude-fable-5.1"]:
+        assert PRICES[key]["min_tokens"] == 512 and PRICES[key]["cache_write"] == pytest.approx(1.25 * PRICES[key]["input"])
+    assert PRICES["gpt-5-mini"]["cache_write"] == PRICES["gpt-5-mini"]["input"]
+    assert not PRICES["gpt-oss-120b"]["cache_listed"]
+
+
+def test_thinking_tokens_are_billed_and_decoded_but_not_kept():
+    base = run(scenario("research"), {"cache": {"price": "claude-sonnet-5.5"}})
+    think = run(scenario("research"), {"cache": {"price": "claude-sonnet-5.5"}, "thinking": {"tokens": 1000}})
+    a = [e for e in base if e["type"] == "model_call"]
+    b = [e for e in think if e["type"] == "model_call"]
+    assert len(a) == len(b)
+    p = PRICES["claude-sonnet-5.5"]
+    for x, y in zip(a, b):
+        # the same prompts (thinking is not kept in the context), the same cache hits
+        assert (x["input_tokens"], x["cached_tokens"], x["output_tokens"]) == (y["input_tokens"], y["cached_tokens"], y["output_tokens"])
+        assert "thinking_tokens" not in x and y["thinking_tokens"] == 1000
+        assert y["cost"] - x["cost"] == pytest.approx(1000 * p["output"] / 1e6)
+        assert y["dur"] - x["dur"] == pytest.approx(1000 * 1000 / LATENCY["hosted"]["decode_tps"])
+    assert think[-1]["totals"]["thinking_tokens"] == 1000 * len(b)
+    assert "thinking_tokens" not in base[-1]["totals"]
+
+
+def test_small_prompts_cache_only_above_the_models_minimum():
+    # the fix-the-test prompts are under 1,024 tokens: cached at a 512-token minimum, not at 1,024
+    old = run(scenario("fix_test"), {"cache": {"price": "claude-sonnet-4.6"}})[-1]["totals"]
+    new = run(scenario("fix_test"), {"cache": {"price": "claude-sonnet-5.5"}})[-1]["totals"]
+    assert old["cached_tokens"] == 0 and new["cached_tokens"] > 0
+    oss = run(scenario("research"), {"cache": {"price": "gpt-oss-120b"}})[-1]["totals"]
+    assert oss["cached_tokens"] == 0
+
+
 def test_prompt_cache_prefix_block_min_and_ttl():
     c = PromptCache(True, min_tokens=4, block=2, ttl_ms=1000)
     assert c.lookup([1, 2, 3, 4, 5], 0) == 0

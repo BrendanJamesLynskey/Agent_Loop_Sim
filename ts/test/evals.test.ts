@@ -16,7 +16,7 @@ const fx = JSON.parse(readFileSync(join(ROOT, "fixtures/evals_fixtures.json"), "
 const tok = new Tokenizer(readFileSync(join(ROOT, "src/agent_loop_sim/data/qwen2.5-merges.txt"), "utf8"));
 
 describe("version", () => {
-  it("is 1.11.1", () => expect(fx.engine).toBe("1.11.1"));
+  it("is 1.12.0", () => expect(fx.engine).toBe("1.12.0"));
 });
 
 describe("special functions, bit for bit", () => {

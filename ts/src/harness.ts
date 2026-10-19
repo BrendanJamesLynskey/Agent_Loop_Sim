@@ -161,14 +161,17 @@ export class Run {
     const cached = this.cache.lookup(p.ids, this.t);
     const stored = this.cache.store(p.ids, this.t);
     const nOut = this.tok.count(text) + 1;
-    const [ttft, dur] = callLatency(this.profile, nIn, cached, nOut);
-    const cost = callCost(this.price, nIn, cached, stored, nOut);
+    // reasoning tokens (since 1.12): generated and billed as output, not kept in the context
+    const think = "thinking" in this.policy && purpose === "act" ? Math.trunc(Number(this.policy.thinking.tokens)) : 0;
+    const [ttft, dur] = callLatency(this.profile, nIn, cached, nOut + think);
+    const cost = callCost(this.price, nIn, cached, stored, nOut + think);
     const ev = this.emit("model_call", agent, this.t, {
       turn,
       purpose,
       input_tokens: nIn,
       cached_tokens: cached,
       output_tokens: nOut,
+      ...(think > 0 ? { thinking_tokens: think } : {}),
       cost,
       ttft,
       dur,
@@ -559,6 +562,7 @@ export function totals(events: Ev[]): Obj {
       out.input_tokens += e.input_tokens;
       out.cached_tokens += e.cached_tokens;
       out.output_tokens += e.output_tokens;
+      if ("thinking_tokens" in e) out.thinking_tokens = (out.thinking_tokens ?? 0) + e.thinking_tokens;
       out.cost += e.cost;
     } else if (ty === "tool_result") {
       out.tool_calls += 1;

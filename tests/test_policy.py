@@ -334,7 +334,7 @@ def test_no_content_only_labels():
 
 def test_fixtures_up_to_date():
     fx = json.loads((ROOT / "fixtures" / "policy_fixtures.json").read_text(encoding="utf-8"))
-    assert fx["engine"] == VERSION == "1.11.1"
+    assert fx["engine"] == VERSION == "1.12.0"
     assert len(fx["caps"]["subsets"]) == 256
     assert all(s["trifecta"]["all"] == s["exposure"]["exposed"] for s in fx["caps"]["subsets"])
 
